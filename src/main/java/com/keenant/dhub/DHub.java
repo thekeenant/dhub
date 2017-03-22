@@ -9,8 +9,15 @@ public class DHub {
         server = new ZServer();
     }
 
+    public ZServer getServer() {
+        return server;
+    }
+
     public void start() {
         server.start();
+    }
 
+    public void stop() {
+        server.stop();
     }
 }
