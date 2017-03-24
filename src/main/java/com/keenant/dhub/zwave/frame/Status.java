@@ -47,7 +47,7 @@ public final class Status implements Frame {
 
     @Override
     public String toString() {
-        return String.format("Status(%s)", this.name);
+        return this.name;
     }
 
     public static Optional<Status> fromByte(byte bite) {

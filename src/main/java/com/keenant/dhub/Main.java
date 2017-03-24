@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        DHub hub = new DHub();
+        Hub hub = new Hub();
         hub.start();
 
         ConsoleReader console = new ConsoleReader();
