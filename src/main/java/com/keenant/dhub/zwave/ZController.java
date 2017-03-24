@@ -2,21 +2,24 @@ package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.Controller;
+import com.keenant.dhub.zwave.messages.InitDataMsg;
+import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
+import com.keenant.dhub.zwave.messages.VersionMsg;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import com.keenant.dhub.zwave.transaction.Transaction;
 
-import java.util.Optional;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class ZController extends Controller {
     private final SerialPort port;
     private ZStick stick;
 
-    private final PriorityQueue<Transaction> transactions;
+    private final List<Transaction> transactions;
     private Transaction current;
 
     public ZController(SerialPort port) {
         this.port = port;
-        transactions = new PriorityQueue<>((o1, o2) -> o2.getPriority().compareTo(o1.getPriority()));
+        transactions = new ArrayList<>();
     }
 
     public ZStick getStick() {
@@ -45,13 +48,24 @@ public class ZController extends Controller {
         }
         else {
             // Move front of the queue to current, return that.
-            return Optional.of(current = transactions.poll());
+            Transaction txn = transactions.remove(0);
+            current = txn;
+            txn.start();
+            return Optional.of(txn);
         }
     }
 
     public void start() {
         stick = new ZStick(this, port);
         stick.start();
+
+        Transaction vers = new ReqResTransaction<>(new VersionMsg());
+        Transaction mem = new ReqResTransaction<>(new MemoryGetIdMsg());
+        Transaction init = new ReqResTransaction<>(new InitDataMsg());
+
+        queue(vers);
+        queue(mem);
+        queue(init);
     }
 
     public void stop() {

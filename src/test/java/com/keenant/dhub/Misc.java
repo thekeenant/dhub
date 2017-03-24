@@ -1,27 +1,79 @@
 package com.keenant.dhub;
 
+import com.keenant.dhub.logging.Level;
+import com.keenant.dhub.util.ByteList;
+import com.keenant.dhub.zwave.ZController;
 import com.keenant.dhub.zwave.ZStick;
+import com.keenant.dhub.zwave.cmd.BasicGetCmd;
 import com.keenant.dhub.zwave.cmd.BasicSetCmd;
-import com.keenant.dhub.zwave.frame.SendDataFrame;
+import com.keenant.dhub.zwave.frame.DataFrameType;
+import com.keenant.dhub.zwave.frame.IncomingDataFrame;
+import com.keenant.dhub.zwave.messages.SendDataMsg;
+import com.keenant.dhub.zwave.messages.SendDataMsg.Response;
+import com.keenant.dhub.zwave.frame.Status;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
+import com.keenant.dhub.zwave.transaction.Transaction;
+import com.sun.media.jfxmedia.logging.Logger;
 import org.junit.Test;
 
 public class Misc {
     @Test
+    public void testTransaction() {
+        SendDataMsg msg = new SendDataMsg(8, new BasicSetCmd(50));
+
+        ReqResTransaction<Response> txn = new ReqResTransaction<>(msg);
+        txn.start();
+        txn.handle(Status.ACK);
+        txn.handle(new IncomingDataFrame(new ByteList(0x13, 0x01, 0xE8), DataFrameType.REQ));
+        assert txn.isFinished();
+
+        txn = new ReqResTransaction<>(msg);
+        txn.start();
+        txn.handle(Status.ACK);
+        txn.handle(new IncomingDataFrame(new ByteList(0x12), DataFrameType.REQ));
+        assert txn.isFinished();
+    }
+
+    @Test
     public void misc() throws InterruptedException {
-        DHub hub = new DHub();
+
+        Hub hub = new Hub();
         hub.start();
 
-        Thread.sleep(1000);
+        ZController controller = hub.getZServer().getControllers().get(0);
 
-        ZStick stick = hub.getServer().getControllers().get(0).getStick();
+        SendDataMsg msg = new SendDataMsg(8, new BasicSetCmd(99));
+        Transaction txn = new ReqResTransaction<>(msg);
 
-        for (int i = 0; i < 100; i++) {
-            BasicSetCmd cmd = new BasicSetCmd(i % 2 == 0 ? 0 : 99);
-            SendDataFrame send = new SendDataFrame(11, cmd);
-            stick.write(send);
-            Thread.sleep(2000);
-        }
 
+        SendDataMsg msg2 = new SendDataMsg(8, new BasicSetCmd(0));
+        Transaction txn2 = new ReqResTransaction<>(msg2);
+
+
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
+        controller.queue(txn);
+        controller.queue(txn2);
 
         while (true) {
 

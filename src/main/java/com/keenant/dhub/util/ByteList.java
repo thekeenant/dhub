@@ -13,6 +13,11 @@ public class ByteList extends ArrayList<Byte> implements Byteable {
             add(bite);
     }
 
+    public ByteList(int... bytes) {
+        for (int bite : bytes)
+            add((byte) bite);
+    }
+
     public ByteList(byte bite) {
         add(bite);
     }

@@ -1,7 +1,9 @@
 package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.util.ByteList;
+import lombok.ToString;
 
+@ToString
 public class BasicSetCmd implements Cmd {
     private final byte value;
 
