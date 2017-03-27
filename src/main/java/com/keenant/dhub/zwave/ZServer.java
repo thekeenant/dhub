@@ -10,13 +10,9 @@ import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
 import com.keenant.dhub.zwave.messages.InitDataMsg;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
 import com.keenant.dhub.zwave.messages.VersionMsg;
-import com.keenant.dhub.zwave.transaction.Transaction;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 @ToString
@@ -29,6 +25,13 @@ public class ZServer implements Server<ZController>, Listener {
 
     public ZServer() {
 
+    }
+
+    public Optional<ZController> getByName(String name) {
+        if (name == null) {
+            throw new NullPointerException("Name cannot be null.");
+        }
+        return controllers.stream().filter(c -> c.getName().equals(name)).findAny();
     }
 
     /**
@@ -79,7 +82,6 @@ public class ZServer implements Server<ZController>, Listener {
             controller.queue(new VersionMsg());
             controller.queue(new MemoryGetIdMsg());
             controller.queue(new InitDataMsg());
-
         });
     }
 

@@ -71,9 +71,6 @@ public class ZController extends Controller {
     }
 
     public void queue(Transaction txn) {
-        if (!isAlive()) {
-            throw new UnsupportedOperationException("Controller is not alive. RIP.");
-        }
         transactions.add(txn);
     }
 
@@ -153,8 +150,12 @@ public class ZController extends Controller {
         thread = null;
     }
 
+    public String getName() {
+        return port.getSystemPortName();
+    }
+
     @Override
     public String toString() {
-        return "ZController(port=" + port.getSystemPortName() + ")";
+        return "ZController(port=" + getName() + ")";
     }
 }
