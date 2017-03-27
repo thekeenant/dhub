@@ -4,6 +4,8 @@ import com.google.common.eventbus.Subscribe;
 import com.keenant.dhub.core.util.Listener;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.cmd.BasicCmd;
+import com.keenant.dhub.zwave.cmd.SwitchMultilevelCmd;
+import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.messages.SendDataMsg;
 
@@ -18,9 +20,28 @@ public class ZWaveExamples {
         controller = new Controller("ttyACM0");
         controller.start();
 
-        basicSetTest();
+//        basicSetTest();
 
-        basicGetReportTest();
+//        basicGetReportTest();
+
+        multilevelSetTest();
+    }
+
+    private static void multilevelSetTest() {
+//        controller.queue(new SendDataMsg(NODE_ID, SwitchMultilevelCmd.set(10)));
+//        controller.queue(new SendDataMsg(NODE_ID, SwitchMultilevelCmd.set(99)));
+//        controller.queue(new SendDataMsg(NODE_ID, SwitchMultilevelCmd.set(0)));
+
+        controller.register(new Listener() {
+            @Subscribe
+            public void onCmd(CmdEvent event) {
+                System.out.println(event.getCmd());
+            }
+        });
+
+        controller.queue(new SendDataMsg(NODE_ID, SwitchMultilevelCmd.set(0)));
+        controller.queue(new SendDataMsg(NODE_ID, SwitchMultilevelCmd.setPercent(1.0)));
+        controller.queue(new SendDataMsg(NODE_ID, SwitchMultilevelCmd.get()));
     }
 
     /**
