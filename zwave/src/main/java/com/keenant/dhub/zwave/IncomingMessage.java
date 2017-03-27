@@ -11,17 +11,12 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 public interface IncomingMessage {
-    /**
-     * A list of all the possible parser functions.
-     *
-     * Beautiful Java, I know O_o'
-     */
-    List<BiFunction<ByteList, DataFrameType, Optional<? extends IncomingMessage>>> ALL_PARSERS = Arrays.asList(
+    List<BiFunction<ByteList, DataFrameType, Optional<? extends IncomingMessage>>> MSG_PARSERS = Arrays.asList(
             ApplicationCommandMsg::parse
     );
 
     static Optional<IncomingMessage> parse(ByteList data, DataFrameType type) {
-        for (BiFunction<ByteList, DataFrameType, Optional<? extends IncomingMessage>> parser : ALL_PARSERS) {
+        for (BiFunction<ByteList, DataFrameType, Optional<? extends IncomingMessage>> parser : MSG_PARSERS) {
             Optional<? extends IncomingMessage> opt = parser.apply(data, type);
             if (opt.isPresent()) {
                 // Optional<? extends IncomingMessage> to Optional<IncomingMessage>
@@ -36,5 +31,5 @@ public interface IncomingMessage {
      */
     DataFrameType getType();
 
-    IncomingMessageEvent createEvent(ZController controller);
+    IncomingMessageEvent createEvent(Controller controller);
 }

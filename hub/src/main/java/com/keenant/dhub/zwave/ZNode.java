@@ -6,10 +6,10 @@ import com.keenant.dhub.zwave.messages.SendDataMsg;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Response;
 
 public class ZNode {
-    private final ZController controller;
+    private final Controller controller;
     private final int id;
 
-    public ZNode(ZController controller, int id) {
+    public ZNode(Controller controller, int id) {
         this.controller = controller;
         this.id = id;
     }

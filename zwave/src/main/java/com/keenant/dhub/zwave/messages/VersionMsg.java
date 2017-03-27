@@ -1,13 +1,15 @@
 package com.keenant.dhub.zwave.messages;
 
-import com.keenant.dhub.zwave.ResponsiveMessage;
-import com.keenant.dhub.zwave.ZController;
-import com.keenant.dhub.zwave.frame.IncomingDataFrame;
-import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Priority;
+import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.IncomingMessage;
+import com.keenant.dhub.zwave.ResponsiveMessage;
+import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.event.message.VersionEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.VersionMsg.Response;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -27,7 +29,7 @@ public class VersionMsg implements ResponsiveMessage<ReqResTransaction<Response>
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(ZController controller, Priority priority) {
+    public ReqResTransaction<Response> createTransaction(Controller controller, Priority priority) {
         return new ReqResTransaction<>(controller, this, priority);
     }
 
@@ -37,12 +39,18 @@ public class VersionMsg implements ResponsiveMessage<ReqResTransaction<Response>
             return Optional.empty();
         }
 
-        return Optional.of(new Response(data));
+        return Optional.of(new Response());
     }
 
-    public static class Response extends IncomingDataFrame {
-        public Response(ByteList data) {
-            super(data);
+    public static class Response implements IncomingMessage {
+        @Override
+        public DataFrameType getType() {
+            return DataFrameType.RES;
+        }
+
+        @Override
+        public IncomingMessageEvent createEvent(Controller controller) {
+            return new VersionEvent(controller, this);
         }
     }
 }

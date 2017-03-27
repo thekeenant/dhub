@@ -2,8 +2,9 @@ package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.google.common.eventbus.Subscribe;
+import com.keenant.dhub.core.util.Listener;
 import com.keenant.dhub.hub.Server;
-import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.messages.InitDataMsg;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
 public class ZServer implements Server, Listener {
     private static final Logger log = Logging.getLogger("ZServer");
 
-    private List<ZController> controllers;
+    private List<Controller> controllers;
     private ZWatchdog watchdog;
     private boolean started;
 
@@ -26,7 +27,7 @@ public class ZServer implements Server, Listener {
 
     }
 
-    public Optional<ZController> getByName(String name) {
+    public Optional<Controller> getByName(String name) {
         if (name == null) {
             throw new NullPointerException("Name cannot be null.");
         }
@@ -38,9 +39,9 @@ public class ZServer implements Server, Listener {
      */
     @Override
     public void init() {
-        List<ZController> controllers = new ArrayList<>();
+        List<Controller> controllers = new ArrayList<>();
         for (SerialPort port : SerialPort.getCommPorts()) {
-            controllers.add(new ZController(port));
+            controllers.add(new Controller(port));
         }
         init(controllers);
     }
@@ -49,7 +50,7 @@ public class ZServer implements Server, Listener {
      * Initializes this server with specific controllers.
      * @param controllers The controllers this server should manage.
      */
-    public void init(Collection<ZController> controllers) {
+    public void init(Collection<Controller> controllers) {
         if (started) {
             throw new UnsupportedOperationException("Server already started.");
         }
@@ -58,7 +59,7 @@ public class ZServer implements Server, Listener {
         watchdog = new ZWatchdog(this);
     }
 
-    public void init(ZController... controllers) {
+    public void init(Controller... controllers) {
         init(Arrays.asList(controllers));
     }
 
@@ -90,17 +91,17 @@ public class ZServer implements Server, Listener {
     }
 
     @Subscribe
-    public void onIncomingMessage(IncomingMessageEvent event) {
+    public void onIncomingMessage(BasicReportEvent event) {
         log.info(event + " Received");
     }
 
     @Override
     public void stop() {
         started = false;
-        controllers.forEach(ZController::stop);
+        controllers.forEach(Controller::stop);
     }
 
-    public List<ZController> getControllers() {
+    public List<Controller> getControllers() {
         return controllers;
     }
 }

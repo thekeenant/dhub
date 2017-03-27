@@ -1,15 +1,15 @@
 package com.keenant.dhub.zwave.event;
 
-import com.keenant.dhub.zwave.ZController;
+import com.keenant.dhub.zwave.Controller;
 
 public class ControllerEvent {
-    private final ZController controller;
+    private final Controller controller;
 
-    public ControllerEvent(ZController controller) {
+    public ControllerEvent(Controller controller) {
         this.controller = controller;
     }
 
-    public ZController getController() {
+    public Controller getController() {
         return controller;
     }
 }

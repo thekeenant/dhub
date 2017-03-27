@@ -1,17 +1,18 @@
 package com.keenant.dhub.zwave.transaction;
 
-import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Priority;
-import com.keenant.dhub.zwave.ZController;
-import com.keenant.dhub.zwave.frame.Status;
+import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
+import com.keenant.dhub.zwave.frame.Status;
+import com.keenant.dhub.zwave.frame.UnknownDataFrame;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class ReqResTransaction<Res extends IncomingDataFrame> extends Transaction {
+public class ReqResTransaction<Res extends IncomingMessage> extends Transaction {
     private final ResponsiveMessage<ReqResTransaction<Res>, Res> message;
     private State state;
     private Res response;
@@ -23,15 +24,11 @@ public class ReqResTransaction<Res extends IncomingDataFrame> extends Transactio
         FAILED
     }
 
-    public ReqResTransaction(ZController controller, ResponsiveMessage<ReqResTransaction<Res>, Res> message, Priority priority) {
+    public ReqResTransaction(Controller controller, ResponsiveMessage<ReqResTransaction<Res>, Res> message, Priority priority) {
         super(controller, priority);
         this.message = message;
         this.state = null;
         this.response = null;
-    }
-
-    public ReqResTransaction(ZController controller, ResponsiveMessage<ReqResTransaction<Res>, Res> message) {
-        this(controller, message, Priority.DEFAULT);
     }
 
     public Optional<Res> getResponse() {
@@ -66,7 +63,7 @@ public class ReqResTransaction<Res extends IncomingDataFrame> extends Transactio
     }
 
     @Override
-    public IncomingDataFrame handle(IncomingDataFrame frame) {
+    public IncomingMessage handle(UnknownDataFrame frame) {
         switch (state) {
             case WAITING:
                 ByteList data = frame.toDataBytes();
@@ -74,6 +71,9 @@ public class ReqResTransaction<Res extends IncomingDataFrame> extends Transactio
                 if (res == null) {
                     state = State.FAILED;
                     break;
+                }
+                else {
+                    getController().onReceive(res);
                 }
 
                 response = res;
