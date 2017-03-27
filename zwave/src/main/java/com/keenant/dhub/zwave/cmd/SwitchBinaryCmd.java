@@ -16,26 +16,30 @@ import java.util.Optional;
 @ToString
 public class SwitchBinaryCmd {
     private static final byte ID = (byte) 0x25;
-    private static final byte SET = (byte) 0x01;
-    private static final byte GET = (byte) 0x02;
-    private static final byte REPORT = (byte) 0x03;
+    private static final byte ID_SET = (byte) 0x01;
+    private static final byte ID_GET = (byte) 0x02;
+    private static final byte ID_REPORT = (byte) 0x03;
 
-    private static final Get GET_INSTANCE = new Get();
+    private static final Set SET_ON = new Set(true);
+    private static final Set SET_OFF = new Set(false);
+    private static final Get GET = new Get();
+    private static final Report REPORT_ON = new Report(true);
+    private static final Report REPORT_OFF = new Report(false);
 
     /**
-     * Create a new binary switch set command.
+     * Get the binary switch set command.
      * @param value True for on, false for off.
      * @return The new command.
      */
     public static Set set(boolean value) {
-        return new Set(value);
+        return value ? SET_ON : SET_OFF;
     }
 
     /**
      * @return The get command.
      */
     public static Get get() {
-        return GET_INSTANCE;
+        return GET;
     }
 
     /**
@@ -50,9 +54,10 @@ public class SwitchBinaryCmd {
 
         byte type = data.get(1);
 
-        if (type == REPORT) {
+        if (type == ID_REPORT) {
             boolean value = data.get(2) == (byte) 0x01;
-            return Optional.of(new Report(value));
+            Report report = value ? REPORT_ON : REPORT_OFF;
+            return Optional.of(report);
         }
 
         return Optional.empty();
@@ -69,7 +74,7 @@ public class SwitchBinaryCmd {
         @Override
         public ByteList toBytes() {
             // Todo: Final byte is duration
-            return new ByteList(ID, SET, value ? (byte) 0xFF : (byte) 0x00, 0x00);
+            return new ByteList(ID, ID_SET, value ? (byte) 0xFF : (byte) 0x00, 0x00);
         }
     }
 
@@ -81,7 +86,7 @@ public class SwitchBinaryCmd {
 
         @Override
         public ByteList toBytes() {
-            return new ByteList(ID, GET);
+            return new ByteList(ID, ID_GET);
         }
     }
 
