@@ -1,16 +1,17 @@
 package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.core.util.Byteable;
-import com.keenant.dhub.zwave.frame.IncomingDataFrame;
-import com.keenant.dhub.zwave.transaction.Transaction;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.ByteList;
+import com.keenant.dhub.core.util.Byteable;
 import com.keenant.dhub.zwave.frame.DataFrame;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.frame.Status;
+import com.keenant.dhub.zwave.frame.UnknownDataFrame;
+import com.keenant.dhub.zwave.transaction.Transaction;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
@@ -22,27 +23,34 @@ import java.util.logging.Logger;
  * - Listens to the port to find new status frames or data frames.
  * - Reports data frames that are not part of a transaction to the controller.
  */
-public class ZThread implements Runnable {
-    private final ZController controller;
+public class Transceiver implements Runnable {
+    private final Controller controller;
     private final SerialPort port;
     private final Logger log;
 
     private Thread thread;
-    private boolean stopped;
+    private boolean notifyStop;
 
-    public ZThread(ZController controller, SerialPort port) {
+    public Transceiver(Controller controller, SerialPort port) {
         this.controller = controller;
         this.port = port;
         this.log = Logging.getLogger(port.getSystemPortName());
     }
 
+    /**
+     * @return If the transceiver thread is currently running.
+     */
     public boolean isAlive() {
         return thread != null && thread.isAlive();
     }
 
-    public void start() {
+    /**
+     * Open the serial port and start the thread to write/read.
+     * @throws UnsupportedOperationException If we are already running.
+     */
+    public void start() throws UnsupportedOperationException {
         if (isAlive()) {
-            throw new UnsupportedOperationException("ZThread already started.");
+            throw new UnsupportedOperationException("Transceiver already started.");
         }
 
         // Setup the port properly...
@@ -58,11 +66,17 @@ public class ZThread implements Runnable {
         thread.start();
     }
 
+    /**
+     * Notifies the running thread to stop reading and writing.
+     */
     public void stop() {
-        stopped = true;
+        notifyStop = true;
         thread = null;
     }
 
+    /**
+     * @return All available bytes from the port as a raw byte array.
+     */
     private byte[] readRaw() {
         if (port.bytesAvailable() <= 0) {
             return new byte[0];
@@ -72,10 +86,18 @@ public class ZThread implements Runnable {
         return bites;
     }
 
+    /**
+     * @return All available bytes from the port.
+     */
     private ByteList read() {
         return new ByteList(readRaw());
     }
 
+    /**
+     * Write data to the port.
+     * @param byteable The data to write to the port. It is converted
+     *                 to bytes via #{@link Byteable#toBytes()}.
+     */
     public void write(Byteable byteable) {
         log.log(Level.DEBUG, "Writing... " + byteable.toBytes());
         log.log(Level.DEV, "Writing... " + byteable);
@@ -84,7 +106,13 @@ public class ZThread implements Runnable {
         port.writeBytes(arr, arr.length);
     }
 
-    private Transaction updateTransaction(Transaction txn) {
+    /**
+     * Grab the current transaction from the device and write any
+     * outgoing frames that the transaction has queued to send.
+     * @param txn T The last acquired transaction by the transceiver.
+     * @return The current transaction, acquired from controller.
+     */
+    private Optional<Transaction> updateTransaction(Transaction txn) {
         if (txn == null) {
             txn = controller.updateCurrent().orElse(null);
         }
@@ -94,7 +122,7 @@ public class ZThread implements Runnable {
             sleep(10);
         }
 
-        return txn;
+        return Optional.ofNullable(txn);
     }
 
     @Override
@@ -112,7 +140,8 @@ public class ZThread implements Runnable {
         boolean dataframe = false;
 
         while (true) {
-            if (stopped) {
+            if (notifyStop) {
+                notifyStop = false;
                 port.closePort();
                 break;
             }
@@ -120,7 +149,7 @@ public class ZThread implements Runnable {
             // Add new data to buffer
             buffer.addAll(read());
 
-            Transaction txn = updateTransaction(null);
+            Transaction txn = updateTransaction(null).orElse(null);
 
             while (!buffer.isEmpty()) {
                 byte first = buffer.get(0);
@@ -132,7 +161,7 @@ public class ZThread implements Runnable {
                         log.log(Level.DEV, "Reading... " + status);
                         if (txn != null) {
                             txn.handle(status);
-                            txn = updateTransaction(txn);
+                            txn = updateTransaction(txn).orElse(null);
                         }
                         buffer.remove(0);
                     }
@@ -165,13 +194,13 @@ public class ZThread implements Runnable {
                     ByteList data = buffer.subList(1, length);
                     DataFrameType type = DataFrameType.valueOf(data.remove(0));
 
-                    IncomingDataFrame frame = new IncomingDataFrame(data, type);
-                    IncomingDataFrame resolved = txn.handle(frame);
+                    UnknownDataFrame frame = new UnknownDataFrame(data, type);
+                    IncomingMessage resolved = txn.handle(frame);
 
                     log.log(Level.DEBUG, "Reading... " + data + "(" + type + ")");
                     log.log(Level.DEV, "Reading... " + resolved);
 
-                    txn = updateTransaction(txn);
+                    txn = updateTransaction(txn).orElse(null);
                 }
                 // Something unexpected came?
                 else {
@@ -206,6 +235,11 @@ public class ZThread implements Runnable {
         }
     }
 
+    /**
+     * Helper method to sleep for a specified duration.
+     * @param ms Duration in milliseconds.
+     * @return True if the sleep was successful, false if otherwise.
+     */
     private boolean sleep(int ms) {
         try {
             Thread.sleep(ms);
@@ -218,6 +252,6 @@ public class ZThread implements Runnable {
 
     @Override
     public String toString() {
-        return "ZThread(thread=" + thread + ")";
+        return "Transceiver(thread=" + thread + ")";
     }
 }

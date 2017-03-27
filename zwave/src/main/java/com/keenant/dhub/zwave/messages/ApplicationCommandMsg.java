@@ -1,12 +1,12 @@
 package com.keenant.dhub.zwave.messages;
 
+import com.keenant.dhub.core.util.ByteList;
+import com.keenant.dhub.zwave.IncomingCmd;
 import com.keenant.dhub.zwave.IncomingMessage;
-import com.keenant.dhub.zwave.ZController;
-import com.keenant.dhub.zwave.Cmd;
+import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.event.IncomingMessageEvent;
 import com.keenant.dhub.zwave.event.message.ApplicationCommandEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
-import com.keenant.dhub.core.util.ByteList;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -17,9 +17,9 @@ public class ApplicationCommandMsg implements IncomingMessage {
 
     private final byte status;
     private final int nodeId;
-    private final Cmd command;
+    private final IncomingCmd command;
 
-    public ApplicationCommandMsg(byte status, int nodeId, Cmd command) {
+    public ApplicationCommandMsg(byte status, int nodeId, IncomingCmd command) {
         this.status = status;
         this.nodeId = nodeId;
         this.command = command;
@@ -29,7 +29,7 @@ public class ApplicationCommandMsg implements IncomingMessage {
         return nodeId;
     }
 
-    public Optional<Cmd> getCommand() {
+    public Optional<IncomingCmd> getCmd() {
         return Optional.ofNullable(command);
     }
 
@@ -39,7 +39,7 @@ public class ApplicationCommandMsg implements IncomingMessage {
     }
 
     @Override
-    public IncomingMessageEvent createEvent(ZController controller) {
+    public IncomingMessageEvent createEvent(Controller controller) {
         return new ApplicationCommandEvent(controller, this);
     }
 
@@ -57,7 +57,7 @@ public class ApplicationCommandMsg implements IncomingMessage {
         int length = data.get(3);
 
         ByteList cmdData = data.subList(4, 4 + length);
-        Cmd cmd = Cmd.parse(cmdData).orElse(null);
+        IncomingCmd cmd = IncomingCmd.parse(cmdData).orElse(null);
 
         return Optional.of(new ApplicationCommandMsg(status, nodeId, cmd));
     }

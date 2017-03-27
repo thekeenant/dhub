@@ -1,14 +1,16 @@
 package com.keenant.dhub.zwave.messages;
 
+import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Byteable;
 import com.keenant.dhub.core.util.Priority;
+import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
-import com.keenant.dhub.zwave.ZController;
+import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.event.message.SendDataEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
-import com.keenant.dhub.zwave.frame.IncomingDataFrame;
-import com.keenant.dhub.zwave.transaction.ReqResTransaction;
-import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Response;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -63,7 +65,7 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(ZController controller, Priority priority) {
+    public ReqResTransaction<Response> createTransaction(Controller controller, Priority priority) {
         return new ReqResTransaction<>(controller, this, priority);
     }
 
@@ -85,23 +87,31 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     }
 
     @ToString
-    public static class Response extends IncomingDataFrame {
+    public static class Response implements IncomingMessage {
         private final boolean value;
         private final Byte funcId;
         private final Byte txStatus;
 
         private Response(ByteList data, boolean value) {
-            super(data);
             this.value = value;
             this.funcId = null;
             this.txStatus = null;
         }
 
         private Response(ByteList data, boolean value, byte funcId, byte txStatus) {
-            super(data);
             this.value = value;
             this.funcId = funcId;
             this.txStatus = txStatus;
+        }
+
+        @Override
+        public DataFrameType getType() {
+            return DataFrameType.RES;
+        }
+
+        @Override
+        public IncomingMessageEvent createEvent(Controller controller) {
+            return new SendDataEvent(controller, this);
         }
     }
 }

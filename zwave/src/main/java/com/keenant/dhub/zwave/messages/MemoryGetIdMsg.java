@@ -1,13 +1,15 @@
 package com.keenant.dhub.zwave.messages;
 
-import com.keenant.dhub.core.util.Priority;
-import com.keenant.dhub.zwave.ResponsiveMessage;
-import com.keenant.dhub.zwave.ZController;
-import com.keenant.dhub.zwave.frame.DataFrameType;
-import com.keenant.dhub.zwave.frame.IncomingDataFrame;
-import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import com.keenant.dhub.core.util.ByteList;
+import com.keenant.dhub.core.util.Priority;
+import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.IncomingMessage;
+import com.keenant.dhub.zwave.ResponsiveMessage;
+import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.event.message.MemoryGetIdEvent;
+import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg.Response;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -27,7 +29,7 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(ZController controller, Priority priority) {
+    public ReqResTransaction<Response> createTransaction(Controller controller, Priority priority) {
         return new ReqResTransaction<>(controller, this, priority);
     }
 
@@ -46,16 +48,15 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
 
         int nodeId = data.get(5) & 0xFF;
 
-        return Optional.of(new Response(data, homeId, nodeId));
+        return Optional.of(new Response(homeId, nodeId));
     }
 
     @ToString
-    public static class Response extends IncomingDataFrame {
+    public static class Response implements IncomingMessage {
         private final long homeId;
         private final int nodeId;
 
-        public Response(ByteList data, long homeId, int nodeId) {
-            super(data);
+        public Response(long homeId, int nodeId) {
             this.homeId = homeId;
             this.nodeId = nodeId;
         }
@@ -66,6 +67,16 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
 
         public int getNodeId() {
             return nodeId;
+        }
+
+        @Override
+        public DataFrameType getType() {
+            return DataFrameType.RES;
+        }
+
+        @Override
+        public IncomingMessageEvent createEvent(Controller controller) {
+            return new MemoryGetIdEvent(controller, this);
         }
     }
 }

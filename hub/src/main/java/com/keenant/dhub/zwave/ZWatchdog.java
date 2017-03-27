@@ -23,7 +23,7 @@ public class ZWatchdog extends Thread {
         while (true) {
             // Todo: Scan for more?
 
-            for (ZController controller : server.getControllers()) {
+            for (Controller controller : server.getControllers()) {
                 if (!controller.isAlive()) {
                     // Todo: Try to revive?
                     continue;

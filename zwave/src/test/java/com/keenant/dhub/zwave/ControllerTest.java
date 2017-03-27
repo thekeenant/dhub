@@ -8,14 +8,14 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ZControllerTest {
-    private ZController createController() {
-        return new ZController(SerialPort.getCommPort(null));
+public class ControllerTest {
+    private Controller createController() {
+        return new Controller(SerialPort.getCommPort(null));
     }
 
     @Test
     public void startStop() {
-        ZController control = createController();
+        Controller control = createController();
         assertFalse(control.isAlive());
 
         control.start();
@@ -27,7 +27,7 @@ public class ZControllerTest {
 
     @Test
     public void currentTxn() {
-        ZController control = createController();
+        Controller control = createController();
         assertFalse(control.updateCurrent().isPresent());
 
         control.queue(new ReqTransaction(null, new MemoryGetIdMsg()));

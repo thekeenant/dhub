@@ -1,23 +1,24 @@
 package com.keenant.dhub.zwave.transaction;
 
 import com.keenant.dhub.core.util.Priority;
-import com.keenant.dhub.zwave.ZController;
+import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.frame.Frame;
-import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.zwave.frame.Status;
+import com.keenant.dhub.zwave.frame.UnknownDataFrame;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
 
 public abstract class Transaction {
-    private final ZController controller;
+    private final Controller controller;
     private final Priority priority;
     private final Queue<Frame> outgoing;
     private final long creationTimeNanos;
     private long startTimeNanos;
     private long completionTimeNanos;
 
-    public Transaction(ZController controller, Priority priority) {
+    public Transaction(Controller controller, Priority priority) {
         this.controller = controller;
         this.priority = priority;
         this.outgoing = new ArrayDeque<>();
@@ -55,7 +56,7 @@ public abstract class Transaction {
 
     public abstract boolean isFinished();
 
-    public abstract IncomingDataFrame handle(IncomingDataFrame frame);
+    public abstract IncomingMessage handle(UnknownDataFrame frame);
 
     public abstract void handle(Status status);
 
@@ -67,7 +68,7 @@ public abstract class Transaction {
         return priority;
     }
 
-    public ZController getController() {
+    public Controller getController() {
         return controller;
     }
 
