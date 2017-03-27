@@ -49,4 +49,9 @@ public interface IncomingCmd extends Byteable {
      * @return The new command event.
      */
     CmdEvent createEvent(Controller controller, int nodeId);
+
+    @Override
+    default ByteList toBytes() {
+        throw new UnsupportedOperationException("Incoming command can't be converted back to bytes.");
+    }
 }

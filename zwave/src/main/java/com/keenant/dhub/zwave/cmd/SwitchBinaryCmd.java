@@ -98,11 +98,6 @@ public class SwitchBinaryCmd {
         }
 
         @Override
-        public ByteList toBytes() {
-            return new ByteList(ID, REPORT);
-        }
-
-        @Override
         public CmdEvent createEvent(Controller controller, int nodeId) {
             return new SwitchBinaryReportEvent(controller, nodeId, this);
         }

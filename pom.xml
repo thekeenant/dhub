@@ -26,6 +26,7 @@
         <module>hub</module>
         <module>core</module>
         <module>zwave</module>
+        <module>examples</module>
     </modules>
 
     <dependencies>

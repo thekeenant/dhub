@@ -1,7 +1,10 @@
 package com.keenant.dhub.core.util;
 
+import lombok.ToString;
+
 import java.util.Comparator;
 
+@ToString
 public class PrioritizedObject<T> {
     public static final Comparator<PrioritizedObject<?>> ASCENDING = Comparator.comparing(PrioritizedObject::getPriority);
     public static final Comparator<PrioritizedObject<?>> DESCENDING = ASCENDING.reversed();
