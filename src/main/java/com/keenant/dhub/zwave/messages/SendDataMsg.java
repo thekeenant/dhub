@@ -2,15 +2,17 @@ package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.util.ByteList;
 import com.keenant.dhub.util.Byteable;
+import com.keenant.dhub.util.Priority;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Response;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class SendDataMsg implements Message<Response> {
+public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
     public static final byte TRANSMIT_OPTION_ACK = 0x01;
     public static final byte TRANSMIT_OPTION_AUTO_ROUTE = 0x04;
     public static final byte TRANSMIT_OPTION_EXPLORE = (byte) 0x20;
@@ -23,25 +25,19 @@ public class SendDataMsg implements Message<Response> {
     private final Byteable data;
     private final byte callbackId;
     private final byte transmitOptions;
+    private final boolean responseExpected;
 
-    public SendDataMsg(byte nodeId, Byteable data, byte transmitOptions) {
+    public SendDataMsg(byte nodeId, Byteable data, boolean responseExpected, byte transmitOptions) {
         this.nodeId = nodeId;
         this.data = data;
         this.callbackId = nextCallbackId;
         nextCallbackId += (byte) 0x01;
+        this.responseExpected = responseExpected;
         this.transmitOptions = transmitOptions;
     }
 
-    public SendDataMsg(byte nodeId, Byteable data) {
-        this(nodeId, data, (byte) 0);
-    }
-
-    public SendDataMsg(int nodeId, Byteable data, byte transmitOptions) {
-        this((byte) nodeId, data, transmitOptions);
-    }
-
-    public SendDataMsg(int nodeId, Byteable data) {
-        this(nodeId, data, (byte) 0);
+    public SendDataMsg(byte nodeId, Byteable data, boolean responseExpected) {
+        this(nodeId, data, responseExpected, (byte) 0x00);
     }
 
     @Override
@@ -65,10 +61,17 @@ public class SendDataMsg implements Message<Response> {
     }
 
     @Override
+    public ReqResTransaction<Response> createTransaction(Priority priority) {
+        return new ReqResTransaction<>(this, priority);
+    }
+
+    @Override
     public Optional<Response> parseResponse(ByteList data) {
         if (data.get(0) != ID) {
             return Optional.empty();
         }
+
+        System.out.println(data);
 
         boolean value = data.get(1) == 0x01;
 

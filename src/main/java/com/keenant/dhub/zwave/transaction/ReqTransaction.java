@@ -5,19 +5,17 @@ import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.zwave.frame.Status;
 import com.keenant.dhub.zwave.messages.Message;
 
-import java.util.Optional;
-
-public class ReqTransaction<Res extends IncomingDataFrame> extends Transaction {
-    private final Message<Res> message;
+public class ReqTransaction extends Transaction {
+    private final Message message;
     private boolean done;
 
-    public ReqTransaction(Message<Res> message, Priority priority) {
+    public ReqTransaction(Message message, Priority priority) {
         super(priority);
         this.message = message;
     }
 
-    public ReqTransaction(Message<Res> message) {
-        this(message, Priority.MEDIUM);
+    public ReqTransaction(Message message) {
+        this(message, Priority.DEFAULT);
     }
 
     @Override

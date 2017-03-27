@@ -136,7 +136,7 @@ public class ZStick implements Runnable {
                     IncomingDataFrame frame = new IncomingDataFrame(data, type);
                     IncomingDataFrame resolved = txn.handle(frame);
 
-                    log.log(Level.DEBUG, "Reading... " + data);
+                    log.log(Level.DEBUG, "Reading... " + data + "(" + type + ")");
                     log.log(Level.DEV, "Reading... " + resolved);
 
                     txn = updateTransaction(txn);
@@ -147,8 +147,8 @@ public class ZStick implements Runnable {
                     DataFrameType type = DataFrameType.valueOf(data.remove(0));
 
                     // Todo: Deal with this later...
-                    log.log(Level.DEBUG, "Reading... " + data + " (Ignored)");
-                    log.log(Level.DEBUG, "Reading... Unknown");
+                    log.log(Level.DEBUG, "Reading... " + data + " (" + type + ")");
+                    log.log(Level.DEV, "Reading... "  + data + " (" + type + ")");
 
                     write(Status.ACK);
                 }

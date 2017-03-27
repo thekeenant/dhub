@@ -1,15 +1,18 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.util.ByteList;
+import com.keenant.dhub.util.Priority;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.zwave.messages.InitDataMsg.Response;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
+import com.keenant.dhub.zwave.transaction.Transaction;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class InitDataMsg implements Message<Response> {
+public class InitDataMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
     private static final byte ID = (byte) 0x02;
 
     @Override
@@ -20,6 +23,11 @@ public class InitDataMsg implements Message<Response> {
     @Override
     public DataFrameType getType() {
         return DataFrameType.REQ;
+    }
+
+    @Override
+    public ReqResTransaction<Response> createTransaction(Priority priority) {
+        return new ReqResTransaction<>(this, priority);
     }
 
     @Override
