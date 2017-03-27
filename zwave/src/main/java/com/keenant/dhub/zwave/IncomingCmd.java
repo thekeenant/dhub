@@ -4,6 +4,7 @@ import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Byteable;
 import com.keenant.dhub.zwave.cmd.BasicCmd;
 import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd;
+import com.keenant.dhub.zwave.cmd.SwitchMultilevelCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 
 import java.util.Arrays;
@@ -23,7 +24,8 @@ public interface IncomingCmd extends Byteable {
      */
     List<Function<ByteList, Optional<? extends IncomingCmd>>> CMD_PARSERS = Arrays.asList(
             BasicCmd::parseReport,
-            SwitchBinaryCmd::parseReport
+            SwitchBinaryCmd::parseReport,
+            SwitchMultilevelCmd::parseReport
     );
 
     /**

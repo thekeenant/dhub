@@ -2,6 +2,8 @@ package com.keenant.dhub.core.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public class ByteList extends ArrayList<Byte> implements Byteable {
     /**
@@ -54,6 +56,20 @@ public class ByteList extends ArrayList<Byte> implements Byteable {
         for (int i = 0; i < bytes.length; i++)
             bytes[i] = get(i);
         return bytes;
+    }
+
+    /**
+     * Get a byte safely! No index out of range possible.
+     * @param index The index.
+     * @return Th
+     */
+    public Optional<Byte> getSafely(int index) {
+        if (index < 0 || index >= size()) {
+            return Optional.empty();
+        }
+        else {
+            return Optional.of(get(index));
+        }
     }
 
     @Override
