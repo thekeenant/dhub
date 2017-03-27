@@ -3,6 +3,7 @@ package com.keenant.dhub.zwave.messages;
 import com.keenant.dhub.util.ByteList;
 import com.keenant.dhub.util.Byteable;
 import com.keenant.dhub.util.Priority;
+import com.keenant.dhub.zwave.ZController;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Response;
@@ -21,13 +22,13 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     private static final byte ID = (byte) 0x13;
     private static byte nextCallbackId = 0x01;
 
-    private final byte nodeId;
+    private final int nodeId;
     private final Byteable data;
     private final byte callbackId;
     private final byte transmitOptions;
     private final boolean responseExpected;
 
-    public SendDataMsg(byte nodeId, Byteable data, boolean responseExpected, byte transmitOptions) {
+    public SendDataMsg(int nodeId, Byteable data, boolean responseExpected, byte transmitOptions) {
         this.nodeId = nodeId;
         this.data = data;
         this.callbackId = nextCallbackId;
@@ -36,7 +37,7 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
         this.transmitOptions = transmitOptions;
     }
 
-    public SendDataMsg(byte nodeId, Byteable data, boolean responseExpected) {
+    public SendDataMsg(int nodeId, Byteable data, boolean responseExpected) {
         this(nodeId, data, responseExpected, (byte) 0x00);
     }
 
@@ -46,7 +47,7 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
 
         ByteList bites = new ByteList();
         bites.add(ID);
-        bites.add(nodeId);
+        bites.add((byte) nodeId);
         bites.add((byte) data.size());
         bites.addAll(data);
         bites.add(nextCallbackId);
@@ -61,8 +62,8 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(Priority priority) {
-        return new ReqResTransaction<>(this, priority);
+    public ReqResTransaction<Response> createTransaction(ZController controller, Priority priority) {
+        return new ReqResTransaction<>(controller, this, priority);
     }
 
     @Override
@@ -70,8 +71,6 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
         if (data.get(0) != ID) {
             return Optional.empty();
         }
-
-        System.out.println(data);
 
         boolean value = data.get(1) == 0x01;
 

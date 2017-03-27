@@ -1,7 +1,6 @@
 package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.util.ByteList;
-import com.keenant.dhub.zwave.cmd.BasicCmd.Report;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -39,7 +38,7 @@ public class SwitchBinaryCmd {
     }
 
     @ToString
-    public static class Set implements Cmd {
+    public static class Set implements OutgoingCmd {
         private final boolean value;
 
         private Set(boolean value) {
@@ -48,7 +47,7 @@ public class SwitchBinaryCmd {
 
         @Override
         public ByteList toBytes() {
-            return new ByteList(ID, SET, value ? 0x01 : 0x00);
+            return new ByteList(ID, SET, value ? 1 : 0);
         }
 
         @Override
@@ -58,7 +57,7 @@ public class SwitchBinaryCmd {
     }
 
     @ToString
-    public static class Get implements Cmd {
+    public static class Get implements OutgoingCmd {
         private Get() {
 
         }
@@ -75,7 +74,7 @@ public class SwitchBinaryCmd {
     }
 
     @ToString
-    public static class Report implements Cmd {
+    public static class Report implements IncomingCmd {
         private final boolean value;
 
         private Report(boolean value) {
@@ -89,11 +88,6 @@ public class SwitchBinaryCmd {
         @Override
         public ByteList toBytes() {
             return new ByteList(ID, REPORT);
-        }
-
-        @Override
-        public boolean isResponseExpected() {
-            return false;
         }
     }
 }

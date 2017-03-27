@@ -9,7 +9,11 @@ public class Logging {
     static {
         consoleHandler = new ConsoleHandler();
         consoleHandler.setFormatter(new ConsoleFormatter());
-        consoleHandler.setLevel(Level.DEV);
+        consoleHandler.setLevel(Level.INFO);
+    }
+
+    public static void setLevel(Level level) {
+        consoleHandler.setLevel(level);
     }
 
     public static Logger getLogger(String name) {

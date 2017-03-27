@@ -2,6 +2,7 @@ package com.keenant.dhub.zwave.transaction;
 
 import com.keenant.dhub.util.ByteList;
 import com.keenant.dhub.util.Priority;
+import com.keenant.dhub.zwave.ZController;
 import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.zwave.frame.Status;
 import com.keenant.dhub.zwave.messages.ResponsiveMessage;
@@ -22,15 +23,15 @@ public class ReqResTransaction<Res extends IncomingDataFrame> extends Transactio
         FAILED
     }
 
-    public ReqResTransaction(ResponsiveMessage<ReqResTransaction<Res>, Res> message, Priority priority) {
-        super(priority);
+    public ReqResTransaction(ZController controller, ResponsiveMessage<ReqResTransaction<Res>, Res> message, Priority priority) {
+        super(controller, priority);
         this.message = message;
         this.state = null;
         this.response = null;
     }
 
-    public ReqResTransaction(ResponsiveMessage<ReqResTransaction<Res>, Res> message) {
-        this(message, Priority.DEFAULT);
+    public ReqResTransaction(ZController controller, ResponsiveMessage<ReqResTransaction<Res>, Res> message) {
+        this(controller, message, Priority.DEFAULT);
     }
 
     public Optional<Res> getResponse() {
