@@ -3,9 +3,9 @@ package com.keenant.dhub.zwave.messages;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Byteable;
 import com.keenant.dhub.core.util.Priority;
+import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
-import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.event.IncomingMessageEvent;
 import com.keenant.dhub.zwave.event.message.SendDataEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
@@ -29,19 +29,17 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     private final Byteable data;
     private final byte callbackId;
     private final byte transmitOptions;
-    private final boolean responseExpected;
 
-    public SendDataMsg(int nodeId, Byteable data, boolean responseExpected, byte transmitOptions) {
+    public SendDataMsg(int nodeId, Byteable data, byte transmitOptions) {
         this.nodeId = nodeId;
         this.data = data;
         this.callbackId = nextCallbackId;
         nextCallbackId += (byte) 0x01;
-        this.responseExpected = responseExpected;
         this.transmitOptions = transmitOptions;
     }
 
-    public SendDataMsg(int nodeId, Byteable data, boolean responseExpected) {
-        this(nodeId, data, responseExpected, (byte) 0x00);
+    public SendDataMsg(int nodeId, Byteable data) {
+        this(nodeId, data, (byte) 0x00);
     }
 
     @Override

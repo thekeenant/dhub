@@ -1,9 +1,9 @@
 package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
+import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.IncomingCmd;
-import com.keenant.dhub.zwave.OutgoingCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchBinaryReportEvent;
 import lombok.ToString;
@@ -43,7 +43,7 @@ public class SwitchBinaryCmd {
     }
 
     @ToString
-    public static class Set implements OutgoingCmd {
+    public static class Set implements Cmd {
         private final boolean value;
 
         private Set(boolean value) {
@@ -55,15 +55,10 @@ public class SwitchBinaryCmd {
             // Todo: Final byte is duration
             return new ByteList(ID, SET, value ? (byte) 0xFF : (byte) 0x00, 0x00);
         }
-
-        @Override
-        public boolean isResponseExpected() {
-            return false;
-        }
     }
 
     @ToString
-    public static class Get implements OutgoingCmd {
+    public static class Get implements Cmd {
         private Get() {
 
         }
@@ -71,11 +66,6 @@ public class SwitchBinaryCmd {
         @Override
         public ByteList toBytes() {
             return new ByteList(ID, GET);
-        }
-
-        @Override
-        public boolean isResponseExpected() {
-            return true;
         }
     }
 
