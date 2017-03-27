@@ -4,6 +4,7 @@ import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.event.IncomingMessageEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
+import com.keenant.dhub.zwave.messages.ApplicationUpdateMsg;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +17,8 @@ public interface IncomingMessage {
      * and return an {@link Optional<IncomingMessage>}.
      */
     List<BiFunction<ByteList, DataFrameType, Optional<? extends IncomingMessage>>> MSG_PARSERS = Arrays.asList(
-            ApplicationCommandMsg::parse
+            ApplicationCommandMsg::parse,
+            ApplicationUpdateMsg::parse
     );
 
     /**
