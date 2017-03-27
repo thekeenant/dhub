@@ -41,10 +41,10 @@ public class Controller {
     }
 
     /**
-     * Called when a new message that is outside of a transaction is received from the controller.
+     * Called when a new message is received from the controller.
      * @param msg The incoming message.
      */
-    void onReceive(IncomingMessage msg) {
+    public void onReceive(IncomingMessage msg) {
         if (msg instanceof ApplicationCommandMsg) {
             ApplicationCommandMsg appMsg = (ApplicationCommandMsg) msg;
             IncomingCmd cmd = appMsg.getCmd().orElse(null);

@@ -14,12 +14,12 @@ public class ZNode {
         this.id = id;
     }
 
-    public ReqResTransaction<Response> queueCmd(OutgoingCmd cmd) {
+    public ReqResTransaction<Response> queueCmd(Cmd cmd) {
         return queueCmd(cmd, Priority.DEFAULT);
     }
 
-    public ReqResTransaction<Response> queueCmd(OutgoingCmd cmd, Priority priority) {
-        SendDataMsg msg = new SendDataMsg((byte) id, cmd, cmd.isResponseExpected());
+    public ReqResTransaction<Response> queueCmd(Cmd cmd, Priority priority) {
+        SendDataMsg msg = new SendDataMsg((byte) id, cmd);
         return queueData(msg, priority);
     }
 
