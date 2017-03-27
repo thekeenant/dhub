@@ -1,7 +1,6 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
@@ -29,8 +28,8 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(Controller controller, Priority priority) {
-        return new ReqResTransaction<>(controller, this, priority);
+    public ReqResTransaction<Response> createTransaction(Controller controller) {
+        return new ReqResTransaction<>(controller, this);
     }
 
     @Override
@@ -39,6 +38,7 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
             return Optional.empty();
         }
 
+        // Todo: Is this right?
         // 4 bytes to represent homeId
         byte[] homeIdBytes = data.subList(1, 5).toByteArray();
         long homeId = homeIdBytes[0] & 0xFF;

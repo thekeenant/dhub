@@ -35,7 +35,7 @@ public class ZWatchdog extends Thread {
                     continue;
                 }
 
-                long ms = TimeUnit.MILLISECONDS.convert(curr.getNanosAlive(), TimeUnit.NANOSECONDS);
+                long ms = TimeUnit.MILLISECONDS.convert(curr.nanosAlive(), TimeUnit.NANOSECONDS);
 
                 if (ms > 10000) {
                     log.severe("Disabling unresponsive controller: " + controller);

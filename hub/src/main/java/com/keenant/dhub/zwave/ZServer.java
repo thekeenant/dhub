@@ -2,12 +2,12 @@ package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.google.common.eventbus.Subscribe;
-import com.keenant.dhub.core.util.Listener;
-import com.keenant.dhub.hub.Server;
-import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
-import com.keenant.dhub.zwave.messages.InitDataMsg;
 import com.keenant.dhub.core.logging.Logging;
+import com.keenant.dhub.core.util.Listener;
+import com.keenant.dhub.Server;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
+import com.keenant.dhub.zwave.event.message.MemoryGetIdEvent;
+import com.keenant.dhub.zwave.messages.InitDataMsg;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
 import com.keenant.dhub.zwave.messages.VersionMsg;
 import lombok.ToString;
@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 @ToString
-public class ZServer implements Server, Listener {
+public class ZServer implements Server {
     private static final Logger log = Logging.getLogger("ZServer");
 
     private List<Controller> controllers;
@@ -27,7 +27,7 @@ public class ZServer implements Server, Listener {
 
     }
 
-    public Optional<Controller> getByName(String name) {
+    public Optional<Controller> getByName(String name) throws NullPointerException {
         if (name == null) {
             throw new NullPointerException("Name cannot be null.");
         }
@@ -77,22 +77,12 @@ public class ZServer implements Server, Listener {
 
         controllers.forEach(controller -> {
             controller.start();
-            controller.register(this);
+            controller.register(new ZServerListener());
 
             controller.queue(new VersionMsg());
             controller.queue(new MemoryGetIdMsg());
             controller.queue(new InitDataMsg());
         });
-    }
-
-    @Subscribe
-    public void onTransactionComplete(TransactionCompleteEvent event) {
-        log.info(event + " Complete");
-    }
-
-    @Subscribe
-    public void onIncomingMessage(BasicReportEvent event) {
-        log.info(event + " Received");
     }
 
     @Override
@@ -103,5 +93,22 @@ public class ZServer implements Server, Listener {
 
     public List<Controller> getControllers() {
         return controllers;
+    }
+
+    private final class ZServerListener implements Listener {
+        @Subscribe
+        public void onTransactionComplete(TransactionCompleteEvent event) {
+            log.info(event + " Complete");
+        }
+
+        @Subscribe
+        public void onMemoryGetIdEvent(MemoryGetIdEvent event) {
+            long homeId = event.getMessage().getHomeId();
+            int nodeId = event.getMessage().getNodeId();
+
+            log.info("---" + event.getController() + "---");
+            log.info("Home ID: " + homeId);
+            log.info("Node ID: " + nodeId);
+        }
     }
 }

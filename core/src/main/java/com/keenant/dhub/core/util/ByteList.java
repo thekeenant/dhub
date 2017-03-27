@@ -4,26 +4,38 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class ByteList extends ArrayList<Byte> implements Byteable {
+    /**
+     * Copy an existing collection of bytes.
+     * @param bytes Existing byte collection.
+     */
     public ByteList(Collection<Byte> bytes) {
         super(bytes);
     }
 
+    /**
+     * Constructor.
+     * @param bytes Initial population of bytes.
+     */
     public ByteList(byte... bytes) {
         for (byte bite : bytes)
             add(bite);
     }
 
+    /**
+     * Constructor.
+     * @param bytes Initial population of bytes.
+     */
     public ByteList(int... bytes) {
         for (int bite : bytes)
             add((byte) bite);
     }
 
-    public ByteList(byte bite) {
-        add(bite);
-    }
-
-    public ByteList(Byte bite) {
-        add(bite);
+    /**
+     * Copy this list to a new list object.
+     * @return The new list.
+     */
+    public ByteList cpy() {
+        return new ByteList(this);
     }
 
     @Override
@@ -36,10 +48,7 @@ public class ByteList extends ArrayList<Byte> implements Byteable {
         return this;
     }
 
-    /**
-     * Converts this list to an array of bytes.
-     * @return The newly created array of bytes.
-     */
+    @Override
     public byte[] toByteArray() {
         byte[] bytes = new byte[size()];
         for (int i = 0; i < bytes.length; i++)
@@ -57,13 +66,5 @@ public class ByteList extends ArrayList<Byte> implements Byteable {
             builder.append(String.format("0x%02X", get(size() - 1)));
         builder.append("}");
         return builder.toString();
-    }
-
-    /**
-     * Copy this list to a new list object.
-     * @return The new list.
-     */
-    public ByteList cpy() {
-        return new ByteList(this);
     }
 }

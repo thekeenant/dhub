@@ -1,33 +1,34 @@
 package com.keenant.dhub.zwave.transaction;
 
-import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.Message;
 import com.keenant.dhub.zwave.frame.Status;
 import com.keenant.dhub.zwave.frame.UnknownDataFrame;
 
+/**
+ * PC -> ZW: Request
+ * ZW -> PC: ACK
+ * ZW -> PC: Response
+ * PC -> ZW: ACK
+ */
 public class ReqTransaction extends Transaction {
     private final Message message;
     private boolean done;
 
-    public ReqTransaction(Controller controller, Message message, Priority priority) {
-        super(controller, priority);
-        this.message = message;
-    }
-
     public ReqTransaction(Controller controller, Message message) {
-        this(controller, message, Priority.DEFAULT);
+        super(controller);
+        this.message = message;
     }
 
     @Override
     public void start() {
-        queue(message);
+        addToOutgoingQueue(message);
     }
 
     @Override
     public boolean isFinished() {
-        return getOutgoing().isEmpty() && done;
+        return getOutgoingQueue().isEmpty() && done;
     }
 
     @Override

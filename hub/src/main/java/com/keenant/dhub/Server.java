@@ -1,6 +1,4 @@
-package com.keenant.dhub.hub;
-
-import java.util.List;
+package com.keenant.dhub;
 
 public interface Server {
     void init();

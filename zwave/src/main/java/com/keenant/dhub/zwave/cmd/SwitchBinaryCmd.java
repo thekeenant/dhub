@@ -10,6 +10,9 @@ import lombok.ToString;
 
 import java.util.Optional;
 
+/**
+ * The binary switch command class.
+ */
 @ToString
 public class SwitchBinaryCmd {
     private static final byte ID = (byte) 0x25;
@@ -19,15 +22,28 @@ public class SwitchBinaryCmd {
 
     private static final Get GET_INSTANCE = new Get();
 
+    /**
+     * Create a new binary switch set command.
+     * @param value True for on, false for off.
+     * @return The new command.
+     */
     public static Set set(boolean value) {
         return new Set(value);
     }
 
+    /**
+     * @return The get command.
+     */
     public static Get get() {
         return GET_INSTANCE;
     }
 
-    public static Optional<IncomingCmd> parse(ByteList data) {
+    /**
+     * Attempt to parse an incoming switch binary report command.
+     * @param data The raw data.
+     * @return The report command, empty if the data didn't match.
+     */
+    public static Optional<Report> parseReport(ByteList data) {
         if (ID != data.get(0)) {
             return Optional.empty();
         }

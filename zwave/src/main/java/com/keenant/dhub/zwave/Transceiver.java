@@ -117,8 +117,8 @@ public class Transceiver implements Runnable {
             txn = controller.updateCurrent().orElse(null);
         }
 
-        while (txn != null && !txn.getOutgoing().isEmpty()) {
-            write(txn.getOutgoing().poll());
+        while (txn != null && !txn.getOutgoingQueue().isEmpty()) {
+            write(txn.getOutgoingQueue().poll());
             sleep(10);
         }
 
