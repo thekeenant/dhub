@@ -6,6 +6,7 @@
 
     <groupId>com.keenant</groupId>
     <artifactId>dhub</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
     <build>
@@ -21,6 +22,12 @@
         </plugins>
     </build>
 
+    <modules>
+        <module>hub</module>
+        <module>core</module>
+        <module>zwave</module>
+    </modules>
+
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -31,11 +38,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.16.14</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fazecast</groupId>
-            <artifactId>jSerialComm</artifactId>
-            <version>1.3.11</version>
         </dependency>
         <dependency>
             <groupId>jline</groupId>
