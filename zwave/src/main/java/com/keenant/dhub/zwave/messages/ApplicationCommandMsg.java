@@ -43,7 +43,7 @@ public class ApplicationCommandMsg implements IncomingMessage {
         return new ApplicationCommandEvent(controller, this);
     }
 
-    public static Optional<ApplicationCommandMsg> parse(ByteList data, DataFrameType type) {
+    public static Optional<ApplicationCommandMsg> parse(ByteList data, DataFrameType type) throws IllegalArgumentException {
         if (ID != data.get(0)) {
             return Optional.empty();
         }
@@ -52,13 +52,17 @@ public class ApplicationCommandMsg implements IncomingMessage {
             throw new IllegalArgumentException("Expected REQ frame type.");
         }
 
-        byte status = data.get(1);
-        byte nodeId = data.get(2);
-        int length = data.get(3);
+        try {
+            byte status = data.get(1);
+            byte nodeId = data.get(2);
+            int length = data.get(3);
 
-        ByteList cmdData = data.subList(4, 4 + length);
-        IncomingCmd cmd = IncomingCmd.parse(cmdData).orElse(null);
+            ByteList cmdData = data.subList(4, 4 + length);
+            IncomingCmd cmd = IncomingCmd.parse(cmdData).orElse(null);
 
-        return Optional.of(new ApplicationCommandMsg(status, nodeId, cmd));
+            return Optional.of(new ApplicationCommandMsg(status, nodeId, cmd));
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

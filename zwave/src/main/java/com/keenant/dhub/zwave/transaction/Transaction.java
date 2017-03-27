@@ -1,6 +1,5 @@
 package com.keenant.dhub.zwave.transaction;
 
-import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.frame.Frame;
@@ -12,17 +11,26 @@ import java.util.Queue;
 
 public abstract class Transaction {
     private final Controller controller;
-    private final Priority priority;
     private final Queue<Frame> outgoing;
-    private final long creationTimeNanos;
+    private long queuedTimeNanos;
     private long startTimeNanos;
     private long completionTimeNanos;
 
-    public Transaction(Controller controller, Priority priority) {
+    public Transaction(Controller controller) {
         this.controller = controller;
-        this.priority = priority;
         this.outgoing = new ArrayDeque<>();
-        this.creationTimeNanos = System.nanoTime();
+    }
+
+    public abstract void start();
+
+    public abstract boolean isFinished();
+
+    public abstract IncomingMessage handle(UnknownDataFrame frame);
+
+    public abstract void handle(Status status);
+
+    public boolean isStarted() {
+        return startTimeNanos > 0;
     }
 
     public void await() {
@@ -48,43 +56,12 @@ public abstract class Transaction {
         return true;
     }
 
-    public Queue<Frame> getOutgoing() {
-        return outgoing;
-    }
-
-    public abstract void start();
-
-    public abstract boolean isFinished();
-
-    public abstract IncomingMessage handle(UnknownDataFrame frame);
-
-    public abstract void handle(Status status);
-
-    public void queue(Frame frame) {
-        outgoing.add(frame);
-    }
-
-    public Priority getPriority() {
-        return priority;
-    }
-
-    public Controller getController() {
-        return controller;
-    }
-
-    public long getCreationTimeNanos() {
-        return creationTimeNanos;
-    }
-
-    public long getCompletionTimeNanos() {
-        return completionTimeNanos;
-    }
-
-    public void setCompletionTimeNanos(long completionTimeNanos) {
-        this.completionTimeNanos = completionTimeNanos;
-    }
-
-    public long getNanosAlive() {
+    /**
+     * @return The time in nanoseconds from when the transaction started to when it ended.
+     *         If it is in progress, it is the time up until present time.
+     * @throws UnsupportedOperationException If the transaction hasn't started.
+     */
+    public long nanosAlive() throws UnsupportedOperationException {
         if (startTimeNanos <= 0) {
             throw new UnsupportedOperationException("Transaction has not started yet.");
         }
@@ -98,11 +75,39 @@ public abstract class Transaction {
         return end - startTimeNanos;
     }
 
+    protected void addToOutgoingQueue(Frame frame) {
+        outgoing.add(frame);
+    }
+
+    public Queue<Frame> getOutgoingQueue() {
+        return outgoing;
+    }
+
+    public Controller getController() {
+        return controller;
+    }
+
+    public long getCompletionTimeNanos() {
+        return completionTimeNanos;
+    }
+
     public long getStartTimeNanos() {
         return startTimeNanos;
     }
 
+    public long getQueuedTimeNanos() {
+        return queuedTimeNanos;
+    }
+
+    public void setCompletionTimeNanos(long completionTimeNanos) {
+        this.completionTimeNanos = completionTimeNanos;
+    }
+
     public void setStartTimeNanos(long startTimeNanos) {
         this.startTimeNanos = startTimeNanos;
+    }
+
+    public void setQueuedTimeNanos(long queuedTimeNanos) {
+        this.queuedTimeNanos = queuedTimeNanos;
     }
 }

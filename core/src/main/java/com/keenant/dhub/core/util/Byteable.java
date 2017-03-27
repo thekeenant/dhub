@@ -1,18 +1,18 @@
 package com.keenant.dhub.core.util;
 
 /**
- * Things that can be converted to a ByteList.
+ * Something that can be represented as an array or list of bytes.
  */
 public interface Byteable {
     /**
-     * Gets the bytes that represent this object.
-     * @return The bytes.
+     * Converts this object to it's byte representation.
+     * @return The byte representation.
      */
     ByteList toBytes();
 
     /**
-     * Convenience method to convert this object to a byte array.
-     * @return
+     * Convert this object it's byte array representation.
+     * @return The byte array representation.
      */
     default byte[] toByteArray() {
         return toBytes().toByteArray();

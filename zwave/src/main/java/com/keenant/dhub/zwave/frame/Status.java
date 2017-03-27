@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A status frame.
+ */
 public final class Status implements Frame {
     /**
      * Acknowledge

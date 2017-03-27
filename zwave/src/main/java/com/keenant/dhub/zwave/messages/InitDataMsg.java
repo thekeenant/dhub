@@ -1,7 +1,6 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
@@ -29,8 +28,8 @@ public class InitDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(Controller controller, Priority priority) {
-        return new ReqResTransaction<>(controller, this, priority);
+    public ReqResTransaction<Response> createTransaction(Controller controller) {
+        return new ReqResTransaction<>(controller, this);
     }
 
     @Override

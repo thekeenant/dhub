@@ -63,8 +63,8 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(Controller controller, Priority priority) {
-        return new ReqResTransaction<>(controller, this, priority);
+    public ReqResTransaction<Response> createTransaction(Controller controller) {
+        return new ReqResTransaction<>(controller, this);
     }
 
     @Override

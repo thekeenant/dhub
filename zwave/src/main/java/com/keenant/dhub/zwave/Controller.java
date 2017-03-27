@@ -5,6 +5,7 @@ import com.google.common.eventbus.EventBus;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.Listener;
+import com.keenant.dhub.core.util.PrioritizedObject;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.IncomingMessageEvent;
@@ -12,31 +13,47 @@ import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
 import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import com.keenant.dhub.zwave.transaction.Transaction;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
-import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
 public class Controller {
+    /**
+     * Sorts the transaction queue.
+     */
+    private static final Comparator<PrioritizedObject<Transaction>> TXN_SORTER = (o1, o2) -> {
+        int priority = PrioritizedObject.DESCENDING.compare(o1, o2);
+
+        // Prioritize priorities
+        if (priority != 0) {
+            return priority;
+        }
+
+        // Otherwise order by the time they were queued
+        return Long.compare(o1.getObject().getQueuedTimeNanos(), o2.getObject().getQueuedTimeNanos());
+    };
+
     private final SerialPort port;
     private final EventBus eventBus;
-    private final PriorityQueue<Transaction> transactions;
+    private final List<PrioritizedObject<Transaction>> transactions;
     private final Logger log;
     private Transceiver transceiver;
     private Transaction current;
 
-    public Controller(SerialPort port) {
+    /**
+     * Constructor.
+     * @param port The serial port for this controller.
+     * @throws NullPointerException If the port is null.
+     */
+    public Controller(SerialPort port) throws NullPointerException {
         if (port == null) {
             throw new NullPointerException("Port cannot be null.");
         }
         this.port = port;
         this.eventBus = new EventBus();
-        this.transactions = new PriorityQueue<>((o1, o2) -> {
-            int val = o2.getPriority().compareTo(o1.getPriority());
-            if (val != 0) {
-                return val;
-            }
-            return Long.compare(o1.getCreationTimeNanos(), o2.getCreationTimeNanos());
-        });
+        this.transactions = new ArrayList<>();
         this.log = Logging.getLogger(getName());
     }
 
@@ -60,7 +77,7 @@ public class Controller {
     }
 
     /**
-     * Updates the transaction queue by moving the earliest in the queue
+     * Updates the transaction addToOutgoingQueue by moving the earliest in the addToOutgoingQueue
      * to the current, if the current is finished.
      *
      * It will perform transaction start and transaction complete logs and events.
@@ -91,8 +108,8 @@ public class Controller {
             return Optional.empty();
         }
         else {
-            // Move front of the queue to current, return that.
-            Transaction txn = transactions.poll();
+            // Move front of the addToOutgoingQueue to current, return that.
+            Transaction txn = transactions.remove(0).getObject();
             current = txn;
             txn.start();
 
@@ -129,14 +146,52 @@ public class Controller {
     /**
      * Prepares the controller to start a transaction.
      *
+     * @param txn The transaction.
+     * @throws IllegalStateException If the transaction was already started.
+     * @throws IllegalArgumentException If the transaction is in the current queue already.
+     */
+    public void queue(Transaction txn, Priority priority) throws IllegalStateException, IllegalArgumentException {
+        // Can't be started already.
+        if (txn.isStarted()) {
+            throw new IllegalStateException("Transaction already started, cannot be queued.");
+        }
+
+        // Can't be queued already.
+        for (PrioritizedObject<Transaction> curr : transactions) {
+            if (curr.getObject().equals(txn)) {
+                throw new IllegalArgumentException("Transaction already queued.");
+            }
+        }
+
+        // Set the time this transaction was queued.
+        txn.setQueuedTimeNanos(System.nanoTime());
+
+        // Add to list and sort
+        transactions.add(new PrioritizedObject<>(txn, priority));
+        transactions.sort(TXN_SORTER);
+    }
+
+    /**
+     * Prepares the controller to start a transaction (default priority).
+     * @param txn The transaction.
+     * @throws IllegalStateException If the transaction was already started.
+     * @throws IllegalArgumentException If the transaction is in the current queue already.
+     */
+    public void queue(Transaction txn) throws IllegalStateException, IllegalArgumentException {
+        queue(txn, Priority.DEFAULT);
+    }
+
+    /**
+     * Prepares the controller to start a transaction.
+     *
      * @param message The message to send.
-     * @param priority The priority. Higher priority means earlier in the queue.
+     * @param priority The priority. Higher priority means earlier in the addToOutgoingQueue.
      * @param <T> The transaction type.
-     * @return The new transaction, which is now added to the queue..
+     * @return The new transaction, which is now added to the addToOutgoingQueue..
      */
     public <T extends Transaction> T queue(Message<T> message, Priority priority) {
-        T txn = message.createTransaction(this, priority);
-        queue(txn);
+        T txn = message.createTransaction(this);
+        queue(txn, priority);
         return txn;
     }
 
@@ -145,19 +200,10 @@ public class Controller {
      *
      * @param message The message to send.
      * @param <T> The transaction type.
-     * @return The new transaction, which is now added to the queue..
+     * @return The new transaction, which is now added to the addToOutgoingQueue..
      */
     public <T extends Transaction> T queue(Message<T> message) {
         return queue(message, Priority.DEFAULT);
-    }
-
-    /**
-     * Prepares the controller to start a transaction.
-     *
-     * @param txn The transaction.
-     */
-    public void queue(Transaction txn) {
-        transactions.add(txn);
     }
 
     /**
@@ -175,7 +221,7 @@ public class Controller {
     /**
      * Open the serial port and start writing and reading on a separate transceiver.
      *
-     * Trashes any current transaction. The transaction queue is unaffected.
+     * Trashes any current transaction. The transaction addToOutgoingQueue is unaffected.
      *
      * @throws UnsupportedOperationException If the controller is already started.
      */
@@ -192,7 +238,7 @@ public class Controller {
     /**
      * Closes the serial port, stops writing and reading.
      *
-     * Trashes any current transaction. The transaction queue is unaffected.
+     * Trashes any current transaction. The transaction addToOutgoingQueue is unaffected.
      */
     public void stop() {
         if (!isAlive()) {

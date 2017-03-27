@@ -5,6 +5,9 @@ import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.event.IncomingMessageEvent;
 
+/**
+ * A data frame that is not (yet) known.
+ */
 public class UnknownDataFrame implements DataFrame, IncomingMessage {
     private final ByteList data;
     private final DataFrameType type;

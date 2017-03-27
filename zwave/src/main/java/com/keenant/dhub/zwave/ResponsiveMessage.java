@@ -12,7 +12,7 @@ import java.util.Optional;
  */
 public interface ResponsiveMessage<Txn extends Transaction, Res extends IncomingMessage> extends Message<Txn> {
     /**
-     * Attempt to parse a response for this message.
+     * Attempt to parseReport a response for this message.
      *
      * @param data The raw data, not including the data frame type.
      * @return Empty if the data does not correspond to this message.

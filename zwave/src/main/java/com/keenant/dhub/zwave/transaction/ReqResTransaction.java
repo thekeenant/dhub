@@ -1,7 +1,6 @@
 package com.keenant.dhub.zwave.transaction;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.IncomingMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
@@ -11,6 +10,14 @@ import lombok.ToString;
 
 import java.util.Optional;
 
+/**
+ * PC -> ZW: Request
+ * ZW -> PC: ACK
+ * ZW -> PC: Response
+ * PC -> ZW: ACK
+ *
+ * @param <Res>
+ */
 @ToString
 public class ReqResTransaction<Res extends IncomingMessage> extends Transaction {
     private final ResponsiveMessage<ReqResTransaction<Res>, Res> message;
@@ -24,8 +31,8 @@ public class ReqResTransaction<Res extends IncomingMessage> extends Transaction 
         FAILED
     }
 
-    public ReqResTransaction(Controller controller, ResponsiveMessage<ReqResTransaction<Res>, Res> message, Priority priority) {
-        super(controller, priority);
+    public ReqResTransaction(Controller controller, ResponsiveMessage<ReqResTransaction<Res>, Res> message) {
+        super(controller);
         this.message = message;
         this.state = null;
         this.response = null;
@@ -37,13 +44,13 @@ public class ReqResTransaction<Res extends IncomingMessage> extends Transaction 
 
     @Override
     public void start() {
-        queue(message);
+        addToOutgoingQueue(message);
         state = State.SENT;
     }
 
     @Override
     public boolean isFinished() {
-        if (!getOutgoing().isEmpty()) {
+        if (!getOutgoingQueue().isEmpty()) {
             return false;
         }
 
@@ -77,11 +84,11 @@ public class ReqResTransaction<Res extends IncomingMessage> extends Transaction 
                 }
 
                 response = res;
-                queue(Status.ACK);
+                addToOutgoingQueue(Status.ACK);
                 state = State.DONE;
                 return res;
             default:
-                queue(Status.CAN);
+                addToOutgoingQueue(Status.CAN);
                 state = State.FAILED;
                 break;
         }
