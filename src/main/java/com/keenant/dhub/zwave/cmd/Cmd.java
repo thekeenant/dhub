@@ -2,6 +2,8 @@ package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.util.ByteList;
 import com.keenant.dhub.util.Byteable;
+import com.keenant.dhub.zwave.ZController;
+import com.keenant.dhub.zwave.event.CmdEvent;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,8 +18,6 @@ public interface Cmd extends Byteable {
             BasicCmd::parse,
             SwitchBinaryCmd::parse
     );
-
-    boolean isResponseExpected();
 
     static Optional<Cmd> parse(ByteList data) {
         for (Function<ByteList, Optional<Cmd>> parser : CMD_PARSERS) {

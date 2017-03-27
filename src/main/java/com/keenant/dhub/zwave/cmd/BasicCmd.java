@@ -14,12 +14,8 @@ public class BasicCmd {
 
     private static final Get GET_INSTANCE = new Get();
 
-    public static Set set(byte value) {
-        return new Set(value);
-    }
-
     public static Set set(int value) {
-        return set((byte) value);
+        return new Set(value);
     }
 
     public static Get get() {
@@ -34,7 +30,7 @@ public class BasicCmd {
         byte type = data.get(1);
 
         if (type == REPORT) {
-            byte value = data.get(2);
+            int value = data.get(2) & 0xFF;
             return Optional.of(new Report(value));
         }
 
@@ -42,10 +38,10 @@ public class BasicCmd {
     }
 
     @ToString
-    public static class Set implements Cmd {
-        private final byte value;
+    public static class Set implements OutgoingCmd {
+        private final int value;
 
-        private Set(byte value) {
+        private Set(int value) {
             this.value = value;
         }
 
@@ -61,7 +57,7 @@ public class BasicCmd {
     }
 
     @ToString
-    public static class Get implements Cmd {
+    public static class Get implements OutgoingCmd {
         private Get() {
 
         }
@@ -78,25 +74,20 @@ public class BasicCmd {
     }
 
     @ToString
-    public static class Report implements Cmd {
-        private final byte value;
+    public static class Report implements IncomingCmd {
+        private final int value;
 
-        private Report(byte value) {
+        private Report(int value) {
             this.value = value;
         }
 
-        public byte getValue() {
+        public int getValue() {
             return value;
         }
 
         @Override
         public ByteList toBytes() {
             return new ByteList(ID, REPORT);
-        }
-
-        @Override
-        public boolean isResponseExpected() {
-            return false;
         }
     }
 }

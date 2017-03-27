@@ -2,6 +2,7 @@ package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.util.ByteList;
 import com.keenant.dhub.util.Priority;
+import com.keenant.dhub.zwave.ZController;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.zwave.messages.VersionMsg.Response;
@@ -25,8 +26,8 @@ public class VersionMsg implements ResponsiveMessage<ReqResTransaction<Response>
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(Priority priority) {
-        return new ReqResTransaction<>(this, priority);
+    public ReqResTransaction<Response> createTransaction(ZController controller, Priority priority) {
+        return new ReqResTransaction<>(controller, this, priority);
     }
 
     @Override
