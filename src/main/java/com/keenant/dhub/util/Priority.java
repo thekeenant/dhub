@@ -3,7 +3,7 @@ package com.keenant.dhub.util;
 public class Priority implements Comparable<Priority> {
     public static final Priority HIGHEST = of(100);
     public static final Priority HIGH = of(75);
-    public static final Priority MEDIUM = of(50);
+    public static final Priority DEFAULT = of(50);
     public static final Priority LOW = of(25);
     public static final Priority LOWEST = of(0);
 

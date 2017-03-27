@@ -5,7 +5,6 @@ import com.keenant.dhub.zwave.ZServer;
 public class Hub {
     private ZServer zserver;
 
-
     public Hub() {
         zserver = new ZServer();
     }

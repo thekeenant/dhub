@@ -4,14 +4,14 @@ import com.keenant.dhub.util.ByteList;
 import com.keenant.dhub.util.Priority;
 import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.zwave.frame.Status;
-import com.keenant.dhub.zwave.messages.Message;
+import com.keenant.dhub.zwave.messages.ResponsiveMessage;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
 public class ReqResTransaction<Res extends IncomingDataFrame> extends Transaction {
-    private final Message<Res> message;
+    private final ResponsiveMessage<ReqResTransaction<Res>, Res> message;
     private State state;
     private Res response;
 
@@ -22,15 +22,15 @@ public class ReqResTransaction<Res extends IncomingDataFrame> extends Transactio
         FAILED
     }
 
-    public ReqResTransaction(Message<Res> message, Priority priority) {
+    public ReqResTransaction(ResponsiveMessage<ReqResTransaction<Res>, Res> message, Priority priority) {
         super(priority);
         this.message = message;
         this.state = null;
         this.response = null;
     }
 
-    public ReqResTransaction(Message<Res> message) {
-        this(message, Priority.MEDIUM);
+    public ReqResTransaction(ResponsiveMessage<ReqResTransaction<Res>, Res> message) {
+        this(message, Priority.DEFAULT);
     }
 
     public Optional<Res> getResponse() {
@@ -80,7 +80,6 @@ public class ReqResTransaction<Res extends IncomingDataFrame> extends Transactio
                 state = State.DONE;
                 return res;
             default:
-                System.out.println(state);
                 queue(Status.CAN);
                 state = State.FAILED;
                 break;

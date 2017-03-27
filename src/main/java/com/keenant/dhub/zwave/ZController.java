@@ -14,12 +14,18 @@ public class ZController extends Controller {
     private final SerialPort port;
     private ZStick stick;
 
-    private final List<Transaction> transactions;
+    private final PriorityQueue<Transaction> transactions;
     private Transaction current;
 
     public ZController(SerialPort port) {
         this.port = port;
-        transactions = new ArrayList<>();
+        transactions = new PriorityQueue<>((o1, o2) -> {
+            int val = o2.getPriority().compareTo(o1.getPriority());
+            if (val != 0) {
+                return val;
+            }
+            return o1.getCreationTime().compareTo(o2.getCreationTime());
+        });
     }
 
     public ZStick getStick() {
@@ -48,7 +54,7 @@ public class ZController extends Controller {
         }
         else {
             // Move front of the queue to current, return that.
-            Transaction txn = transactions.remove(0);
+            Transaction txn = transactions.poll();
             current = txn;
             txn.start();
             return Optional.of(txn);
@@ -58,14 +64,6 @@ public class ZController extends Controller {
     public void start() {
         stick = new ZStick(this, port);
         stick.start();
-
-        Transaction vers = new ReqResTransaction<>(new VersionMsg());
-        Transaction mem = new ReqResTransaction<>(new MemoryGetIdMsg());
-        Transaction init = new ReqResTransaction<>(new InitDataMsg());
-
-        queue(vers);
-        queue(mem);
-        queue(init);
     }
 
     public void stop() {

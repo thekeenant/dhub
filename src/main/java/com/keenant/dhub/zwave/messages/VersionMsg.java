@@ -1,15 +1,17 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.util.ByteList;
+import com.keenant.dhub.util.Priority;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.frame.IncomingDataFrame;
 import com.keenant.dhub.zwave.messages.VersionMsg.Response;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class VersionMsg implements Message<Response> {
+public class VersionMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
     private static final byte ID = (byte) 0x15;
 
     @Override
@@ -20,6 +22,11 @@ public class VersionMsg implements Message<Response> {
     @Override
     public DataFrameType getType() {
         return DataFrameType.REQ;
+    }
+
+    @Override
+    public ReqResTransaction<Response> createTransaction(Priority priority) {
+        return new ReqResTransaction<>(this, priority);
     }
 
     @Override
