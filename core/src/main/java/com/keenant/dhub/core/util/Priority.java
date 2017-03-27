@@ -1,5 +1,8 @@
 package com.keenant.dhub.core.util;
 
+import lombok.ToString;
+
+@ToString
 public class Priority implements Comparable<Priority> {
     public static final Priority HIGHEST = of(100);
     public static final Priority HIGH = of(75);

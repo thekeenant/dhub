@@ -1,6 +1,7 @@
 package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
@@ -55,6 +56,14 @@ public class Controller {
         this.eventBus = new EventBus();
         this.transactions = new ArrayList<>();
         this.log = Logging.getLogger(getName());
+    }
+
+    /**
+     * Constructor.
+     * @param portName The serial port name for this controller (ex. ttyACM0, s0, ...).
+     */
+    public Controller(String portName) {
+        this(SerialPort.getCommPort(portName));
     }
 
     /**
