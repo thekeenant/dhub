@@ -44,6 +44,10 @@ public class ApplicationUpdateMsg implements InboundMessage {
         this.nodeId = nodeId;
     }
 
+    public Status getStatus() {
+        return status;
+    }
+
     public int getNodeId() {
         return nodeId;
     }
