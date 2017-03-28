@@ -8,7 +8,6 @@ import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.cmd.BasicCmd;
 import com.keenant.dhub.zwave.cmd.MultiChannelCmd;
 import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd;
-import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
 import com.keenant.dhub.zwave.messages.SendDataMsg;
@@ -17,7 +16,6 @@ import net.engio.mbassy.listener.Handler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 /**
  * Some Z-Wave library examples.
@@ -29,31 +27,24 @@ public class ZWaveExamples {
     private static Controller controller;
 
     public static void main(String[] args) throws Exception {
-        Logging.setLevel(Level.INFO);
+        Logging.setLevel(Level.DEV);
 
         controller = new Controller("ttyACM0");
         controller.start();
 
-        System.out.println("basicSetTest start");
-        basicSetTest(NODE_ID);
-        System.out.println("basicSetTest done");
-        System.out.println();
+        controller.queue(new SendDataMsg(NODE_ID, BasicCmd.setPercent(0.2)));
 
-
-        System.out.println("basicGetReportTest start");
-        basicGetReportTest(NODE_ID);
-        System.out.println("basicGetReportTest done");
-        System.out.println();
-
-        System.out.println("multiChannelTest start");
-        multiChannelTest(MC_NODE_ID);
-        System.out.println("multiChannelTest done");
+//        basicSetTest(NODE_ID);
+//        basicGetReportTest(NODE_ID);
+//        multiChannelTest(MC_NODE_ID);
     }
 
     /**
      * Basic set demos
      */
     private static void basicSetTest(int nodeId) {
+        System.out.println("basicSetTest start");
+
         // Set to 50%.
         controller.queue(new SendDataMsg(nodeId, BasicCmd.setPercent(0.5)));
 
@@ -77,12 +68,15 @@ public class ZWaveExamples {
 
         // Wait until the last transaction is done before the other tests start.
         last.await(10000);
+
+        System.out.println("done\n");
     }
 
     /**
      * Basic get/report demos.
      */
     private static void basicGetReportTest(int nodeId) throws Exception {
+        System.out.println("basicGetReportTest start");
         System.out.println("  Thread: " + Thread.currentThread());
 
         // Here we make a listener. 99% of the time it shouldn't be anonymous, like it is here.
@@ -125,12 +119,16 @@ public class ZWaveExamples {
         System.out.println("  Queueing basic set command (back to off)...");
         Transaction last = controller.queue(new SendDataMsg(nodeId, BasicCmd.setOff()));
         last.await();
+
+        System.out.println("done\n");
     }
 
     /**
      * Test multi channel node.
      */
     private static void multiChannelTest(int nodeId) throws InterruptedException {
+        System.out.println("multiChannelTest start");
+
         // Count will be set to the number of endpoints.
         AtomicInteger count = new AtomicInteger();
         AtomicBoolean await = new AtomicBoolean(true);
@@ -178,5 +176,7 @@ public class ZWaveExamples {
             }
             System.out.println();
         }
+
+        System.out.println("done\n");
     }
 }

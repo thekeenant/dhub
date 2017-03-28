@@ -32,7 +32,7 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     public SendDataMsg(int nodeId, Byteable data, byte transmitOptions) {
         this.nodeId = nodeId;
         this.data = data;
-        this.callbackId = nextCallbackId;
+        this.callbackId = 0x00;
         nextCallbackId += (byte) 0x01;
         this.transmitOptions = transmitOptions;
     }
