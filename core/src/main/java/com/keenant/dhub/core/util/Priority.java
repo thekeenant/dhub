@@ -10,11 +10,11 @@ public class Priority implements Comparable<Priority> {
     public static final Priority LOW = of(25);
     public static final Priority LOWEST = of(0);
 
+    private int value;
+
     public static Priority of(int value) {
         return new Priority(value);
     }
-
-    private int value;
 
     private Priority(int value) {
         if (value < 0 || value > 100) {

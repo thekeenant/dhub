@@ -23,10 +23,6 @@ public class ZServer implements Server {
     private List<Controller> controllers;
     private boolean started;
 
-    public ZServer() {
-
-    }
-
     public Optional<Controller> getByName(String name) throws NullPointerException {
         if (name == null) {
             throw new NullPointerException("Name cannot be null.");

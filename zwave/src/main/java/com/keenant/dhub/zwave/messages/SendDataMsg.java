@@ -25,6 +25,11 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
 
     private static byte nextCallbackId = 0x01;
 
+    private final int nodeId;
+    private final Byteable data;
+    private final byte callbackId;
+    private final byte transmitOptions;
+
     public static SendDataMsg get(int nodeId, Byteable data, byte transmitOptions) {
         return new SendDataMsg(nodeId, data, transmitOptions);
     }
@@ -34,15 +39,10 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
         return get(nodeId, data, (byte) 0);
     }
 
-    private final int nodeId;
-    private final Byteable data;
-    private final byte callbackId;
-    private final byte transmitOptions;
-
     private SendDataMsg(int nodeId, Byteable data, byte transmitOptions) {
         this.nodeId = nodeId;
         this.data = data;
-        this.callbackId = 0x00;
+        this.callbackId = nextCallbackId;
         nextCallbackId += (byte) 0x01;
         this.transmitOptions = transmitOptions;
     }
@@ -56,7 +56,7 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
         bites.add((byte) nodeId);
         bites.add((byte) data.size());
         bites.addAll(data);
-        bites.add(nextCallbackId);
+        bites.add(callbackId);
         bites.add(transmitOptions);
 
         return bites;

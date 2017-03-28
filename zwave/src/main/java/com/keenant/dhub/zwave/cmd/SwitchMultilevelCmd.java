@@ -53,14 +53,18 @@ public class SwitchMultilevelCmd {
      * @return The set command.
      */
     public static Set setPercent(double percent) {
+        double bounded;
         if (percent > 1) {
-            percent = 1;
+            bounded = 1;
         }
         else if (percent < 0) {
-            percent = 0;
+            bounded = 0;
+        }
+        else {
+            bounded = percent;
         }
 
-        int value = (int) Math.floor((double) (MAX_VALUE - 1) * percent);
+        int value = (int) Math.floor((double) (MAX_VALUE - 1) * bounded);
         return set(value);
     }
 
