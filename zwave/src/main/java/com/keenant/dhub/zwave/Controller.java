@@ -47,11 +47,11 @@ public class Controller {
     /**
      * Constructor.
      * @param port The serial port for this controller.
-     * @throws NullPointerException If the port is null.
+     * @throws IllegalArgumentException If the port is null.
      */
-    public Controller(SerialPort port) throws NullPointerException {
+    public Controller(SerialPort port) throws IllegalArgumentException {
         if (port == null) {
-            throw new NullPointerException("Port cannot be null.");
+            throw new IllegalArgumentException("Port cannot be null.");
         }
         this.port = port;
         this.bus = new MBassador<>(new ConsoleLogger(true));

@@ -23,9 +23,9 @@ public class ZServer implements Server {
     private List<Controller> controllers;
     private boolean started;
 
-    public Optional<Controller> getByName(String name) throws NullPointerException {
+    public Optional<Controller> getByName(String name) throws IllegalArgumentException {
         if (name == null) {
-            throw new NullPointerException("Name cannot be null.");
+            throw new IllegalArgumentException("Name cannot be null.");
         }
         return controllers.stream().filter(c -> c.getName().equals(name)).findAny();
     }
