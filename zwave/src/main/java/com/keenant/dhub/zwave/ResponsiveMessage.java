@@ -10,7 +10,7 @@ import java.util.Optional;
  * @param <Txn> The transaction type this message should create.
  * @param <Res> The response type.
  */
-public interface ResponsiveMessage<Txn extends Transaction, Res extends IncomingMessage> extends Message<Txn> {
+public interface ResponsiveMessage<Txn extends Transaction, Res extends InboundMessage> extends Message<Txn> {
     /**
      * Attempt to parseReport a response for this message.
      *

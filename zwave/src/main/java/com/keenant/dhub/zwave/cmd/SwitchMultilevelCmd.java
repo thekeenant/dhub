@@ -4,7 +4,7 @@ import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Cast;
 import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingCmd;
+import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchMultilevelReport;
 import lombok.ToString;
@@ -98,7 +98,7 @@ public class SwitchMultilevelCmd {
     }
 
     /**
-     * Attempt to parse an incoming basic report command.
+     * Attempt to parse an inbound basic report command.
      * @param data The raw data.
      * @return The report command, empty if the data didn't match.
      */
@@ -148,7 +148,7 @@ public class SwitchMultilevelCmd {
     }
 
     @ToString
-    public static class Report implements IncomingCmd {
+    public static class Report implements InboundCmd {
         private final int current;
         private final Integer target;
         private final Integer duration;

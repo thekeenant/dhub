@@ -1,16 +1,16 @@
 package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.google.common.eventbus.Subscribe;
+import com.keenant.dhub.Server;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.Listener;
-import com.keenant.dhub.Server;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
 import com.keenant.dhub.zwave.event.message.MemoryGetIdEvent;
 import com.keenant.dhub.zwave.messages.InitDataMsg;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
 import com.keenant.dhub.zwave.messages.VersionMsg;
 import lombok.ToString;
+import net.engio.mbassy.listener.Handler;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -77,7 +77,7 @@ public class ZServer implements Server {
 
         controllers.forEach(controller -> {
             controller.start();
-            controller.register(new ZServerListener());
+            controller.subscribe(new ZServerListener());
 
             controller.queue(new VersionMsg());
             controller.queue(new MemoryGetIdMsg());
@@ -96,12 +96,12 @@ public class ZServer implements Server {
     }
 
     private final class ZServerListener implements Listener {
-        @Subscribe
+        @Handler
         public void onTransactionComplete(TransactionCompleteEvent event) {
             log.info(event + " Complete");
         }
 
-        @Subscribe
+        @Handler
         public void onMemoryGetIdEvent(MemoryGetIdEvent event) {
             long homeId = event.getMessage().getHomeId();
             int nodeId = event.getMessage().getNodeId();

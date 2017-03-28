@@ -8,7 +8,6 @@ import com.keenant.dhub.core.util.Byteable;
 import com.keenant.dhub.zwave.frame.DataFrame;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.frame.Status;
-import com.keenant.dhub.zwave.frame.UnknownDataFrame;
 import com.keenant.dhub.zwave.transaction.Transaction;
 
 import java.util.Optional;
@@ -108,7 +107,7 @@ public class Transceiver implements Runnable {
 
     /**
      * Grab the current transaction from the device and write any
-     * outgoing frames that the transaction has queued to send.
+     * outbound frames that the transaction has queued to send.
      * @param txn T The last acquired transaction by the transceiver.
      * @return The current transaction, acquired from controller.
      */
@@ -117,8 +116,8 @@ public class Transceiver implements Runnable {
             txn = controller.updateCurrent().orElse(null);
         }
 
-        while (txn != null && !txn.getOutgoingQueue().isEmpty()) {
-            write(txn.getOutgoingQueue().poll());
+        while (txn != null && !txn.getOutboundQueue().isEmpty()) {
+            write(txn.getOutboundQueue().poll());
             sleep(10);
         }
 
@@ -194,8 +193,8 @@ public class Transceiver implements Runnable {
                     ByteList data = buffer.subList(1, length);
                     DataFrameType type = DataFrameType.valueOf(data.remove(0));
 
-                    UnknownDataFrame frame = new UnknownDataFrame(data, type);
-                    IncomingMessage resolved = txn.handle(frame);
+                    UnknownMessage frame = new UnknownMessage(data, type);
+                    InboundMessage resolved = txn.handle(frame);
 
                     log.log(Level.DEBUG, "Reading... " + data + "(" + type + ")");
                     log.log(Level.DEV, "Reading... " + resolved);
@@ -207,7 +206,7 @@ public class Transceiver implements Runnable {
                     ByteList data = buffer.subList(1, length + 1);
                     DataFrameType type = DataFrameType.valueOf(data.remove(0));
 
-                    IncomingMessage msg = IncomingMessage.parse(data, type).orElse(null);
+                    InboundMessage msg = InboundMessage.parse(data, type).orElse(null);
 
                     if (msg != null) {
                         controller.onReceive(msg);

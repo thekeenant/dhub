@@ -1,31 +1,31 @@
 package com.keenant.dhub.zwave.transaction;
 
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingMessage;
+import com.keenant.dhub.zwave.InboundMessage;
+import com.keenant.dhub.zwave.UnknownMessage;
 import com.keenant.dhub.zwave.frame.Frame;
 import com.keenant.dhub.zwave.frame.Status;
-import com.keenant.dhub.zwave.frame.UnknownDataFrame;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
 
 public abstract class Transaction {
     private final Controller controller;
-    private final Queue<Frame> outgoing;
+    private final Queue<Frame> outbound;
     private long queuedTimeNanos;
     private long startTimeNanos;
     private long completionTimeNanos;
 
     public Transaction(Controller controller) {
         this.controller = controller;
-        this.outgoing = new ArrayDeque<>();
+        this.outbound = new ArrayDeque<>();
     }
 
     public abstract void start();
 
     public abstract boolean isFinished();
 
-    public abstract IncomingMessage handle(UnknownDataFrame frame);
+    public abstract InboundMessage handle(UnknownMessage frame);
 
     public abstract void handle(Status status);
 
@@ -42,12 +42,16 @@ public abstract class Transaction {
         while (!isFinished()) {
             long now = System.currentTimeMillis();
 
-            if (timeout > 0 && (!controller.isAlive() || now - start > timeout)) {
+            if (!controller.isAlive()) {
+                return false;
+            }
+
+            if (timeout > 0 && now - start > timeout) {
                 return false;
             }
 
             try {
-                Thread.sleep(10);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
 
             }
@@ -75,12 +79,12 @@ public abstract class Transaction {
         return end - startTimeNanos;
     }
 
-    protected void addToOutgoingQueue(Frame frame) {
-        outgoing.add(frame);
+    protected void addToOutboundQueue(Frame frame) {
+        outbound.add(frame);
     }
 
-    public Queue<Frame> getOutgoingQueue() {
-        return outgoing;
+    public Queue<Frame> getOutboundQueue() {
+        return outbound;
     }
 
     public Controller getController() {

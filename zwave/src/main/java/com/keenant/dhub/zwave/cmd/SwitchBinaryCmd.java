@@ -3,7 +3,7 @@ package com.keenant.dhub.zwave.cmd;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingCmd;
+import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchBinaryReportEvent;
 import lombok.ToString;
@@ -36,6 +36,20 @@ public class SwitchBinaryCmd {
     }
 
     /**
+     * @return Binary switch on command
+     */
+    public static Set setOn() {
+        return SET_ON;
+    }
+
+    /**
+     * @return Binary switch off command
+     */
+    public static Set setOff() {
+        return SET_OFF;
+    }
+
+    /**
      * @return The get command.
      */
     public static Get get() {
@@ -43,7 +57,7 @@ public class SwitchBinaryCmd {
     }
 
     /**
-     * Attempt to parse an incoming switch binary report command.
+     * Attempt to parse an inbound switch binary report command.
      * @param data The raw data.
      * @return The report command, empty if the data didn't match.
      */
@@ -91,7 +105,7 @@ public class SwitchBinaryCmd {
     }
 
     @ToString
-    public static class Report implements IncomingCmd {
+    public static class Report implements InboundCmd {
         private final boolean value;
 
         private Report(boolean value) {

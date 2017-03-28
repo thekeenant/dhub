@@ -1,23 +1,18 @@
 package com.keenant.dhub.zwave.event;
 
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingCmd;
+import com.keenant.dhub.zwave.InboundCmd;
 import lombok.ToString;
 
 @ToString
-public class CmdEvent<T extends IncomingCmd> {
-    private final Controller controller;
+public class CmdEvent<T extends InboundCmd> extends ControllerEvent {
     private final int nodeId;
     private final T cmd;
 
     public CmdEvent(Controller controller, int nodeId, T cmd) {
-        this.controller = controller;
+        super(controller);
         this.nodeId = nodeId;
         this.cmd = cmd;
-    }
-
-    public Controller getController() {
-        return controller;
     }
 
     public int getNodeId() {

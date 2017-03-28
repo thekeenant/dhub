@@ -2,9 +2,9 @@ package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingMessage;
+import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
-import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.MemoryGetIdEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg.Response;
@@ -52,7 +52,7 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
     }
 
     @ToString
-    public static class Response implements IncomingMessage {
+    public static class Response implements InboundMessage {
         private final long homeId;
         private final int nodeId;
 
@@ -75,7 +75,7 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
         }
 
         @Override
-        public IncomingMessageEvent createEvent(Controller controller) {
+        public InboundMessageEvent createEvent(Controller controller) {
             return new MemoryGetIdEvent(controller, this);
         }
     }

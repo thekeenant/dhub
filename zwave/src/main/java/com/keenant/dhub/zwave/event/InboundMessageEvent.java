@@ -1,14 +1,14 @@
 package com.keenant.dhub.zwave.event;
 
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingMessage;
+import com.keenant.dhub.zwave.InboundMessage;
 import lombok.ToString;
 
 @ToString
-public abstract class IncomingMessageEvent<T extends IncomingMessage> extends ControllerEvent {
+public abstract class InboundMessageEvent<T extends InboundMessage> extends ControllerEvent {
     private final T message;
 
-    protected IncomingMessageEvent(Controller controller, T message) {
+    protected InboundMessageEvent(Controller controller, T message) {
         super(controller);
         this.message = message;
     }

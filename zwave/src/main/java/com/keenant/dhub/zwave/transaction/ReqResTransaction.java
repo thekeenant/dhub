@@ -2,10 +2,10 @@ package com.keenant.dhub.zwave.transaction;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingMessage;
+import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
+import com.keenant.dhub.zwave.UnknownMessage;
 import com.keenant.dhub.zwave.frame.Status;
-import com.keenant.dhub.zwave.frame.UnknownDataFrame;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -19,7 +19,7 @@ import java.util.Optional;
  * @param <Res>
  */
 @ToString
-public class ReqResTransaction<Res extends IncomingMessage> extends Transaction {
+public class ReqResTransaction<Res extends InboundMessage> extends Transaction {
     private final ResponsiveMessage<ReqResTransaction<Res>, Res> message;
     private State state;
     private Res response;
@@ -44,13 +44,13 @@ public class ReqResTransaction<Res extends IncomingMessage> extends Transaction 
 
     @Override
     public void start() {
-        addToOutgoingQueue(message);
+        addToOutboundQueue(message);
         state = State.SENT;
     }
 
     @Override
     public boolean isFinished() {
-        if (!getOutgoingQueue().isEmpty()) {
+        if (!getOutboundQueue().isEmpty()) {
             return false;
         }
 
@@ -70,10 +70,10 @@ public class ReqResTransaction<Res extends IncomingMessage> extends Transaction 
     }
 
     @Override
-    public IncomingMessage handle(UnknownDataFrame frame) {
+    public InboundMessage handle(UnknownMessage frame) {
         switch (state) {
             case WAITING:
-                ByteList data = frame.toDataBytes();
+                ByteList data = frame.getDataBytes();
                 Res res = message.parseResponse(data).orElse(null);
                 if (res == null) {
                     state = State.FAILED;
@@ -84,11 +84,11 @@ public class ReqResTransaction<Res extends IncomingMessage> extends Transaction 
                 }
 
                 response = res;
-                addToOutgoingQueue(Status.ACK);
+                addToOutboundQueue(Status.ACK);
                 state = State.DONE;
                 return res;
             default:
-                addToOutgoingQueue(Status.CAN);
+                addToOutboundQueue(Status.CAN);
                 state = State.FAILED;
                 break;
         }
