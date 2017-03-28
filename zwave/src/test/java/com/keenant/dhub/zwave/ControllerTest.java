@@ -30,7 +30,7 @@ public class ControllerTest {
         Controller control = createController();
         assertFalse(control.updateCurrent().isPresent());
 
-        control.send(new ReqTransaction(null, new MemoryGetIdMsg()));
+        control.send(MemoryGetIdMsg.get());
         assertTrue(control.updateCurrent().isPresent());
     }
 }
