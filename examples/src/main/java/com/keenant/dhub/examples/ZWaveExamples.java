@@ -32,11 +32,9 @@ public class ZWaveExamples {
         controller = new Controller("ttyACM0");
         controller.start();
 
-        controller.send(SendDataMsg.get(NODE_ID, BasicCmd.setPercent(0.2)));
-
-//        basicSetTest(NODE_ID);
-//        basicGetReportTest(NODE_ID);
-//        multiChannelTest(MC_NODE_ID);
+        basicSetTest(NODE_ID);
+        basicGetReportTest(NODE_ID);
+        multiChannelTest(MC_NODE_ID);
     }
 
     /**

@@ -12,6 +12,10 @@ public class UnknownCmd implements InboundCmd {
         this.data = data;
     }
 
+    public ByteList getData() {
+        return data;
+    }
+
     @Override
     public CmdEvent<?> createEvent(Controller controller, int nodeId) {
         return new CmdEvent<>(controller, nodeId, this);

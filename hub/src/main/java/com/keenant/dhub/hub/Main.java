@@ -12,9 +12,9 @@ public class Main {
         ConsoleReader console = new ConsoleReader();
         console.setPrompt("> ");
 
-        String line = null;
+        String line;
         while ((line = console.readLine()) != null) {
-            // ...
+            System.out.println("got " + line);
         }
     }
 }
