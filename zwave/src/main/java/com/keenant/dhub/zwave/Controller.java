@@ -6,10 +6,7 @@ import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.Listener;
 import com.keenant.dhub.core.util.PrioritizedObject;
 import com.keenant.dhub.core.util.Priority;
-import com.keenant.dhub.zwave.event.CmdEvent;
-import com.keenant.dhub.zwave.event.Event;
-import com.keenant.dhub.zwave.event.InboundMessageEvent;
-import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
+import com.keenant.dhub.zwave.event.*;
 import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import com.keenant.dhub.zwave.transaction.Transaction;
 import net.engio.mbassy.bus.MBassador;
@@ -125,6 +122,10 @@ public class Controller {
 
             log.log(Level.DEV, "Transaction started: " + current);
             txn.setStartTimeNanos(System.nanoTime());
+
+            // Transaction start event
+            TransactionStartEvent event = new TransactionStartEvent(this, current);
+            bus.post(event).asynchronously();
 
             return Optional.of(txn);
         }
