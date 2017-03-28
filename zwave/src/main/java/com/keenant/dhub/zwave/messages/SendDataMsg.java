@@ -16,29 +16,35 @@ import java.util.Optional;
 
 @ToString
 public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
+    private static final byte ID = (byte) 0x13;
+
     public static final byte TRANSMIT_OPTION_ACK = 0x01;
     public static final byte TRANSMIT_OPTION_AUTO_ROUTE = 0x04;
     public static final byte TRANSMIT_OPTION_EXPLORE = (byte) 0x20;
     public static final byte TRANSMIT_OPTIONS_ALL = TRANSMIT_OPTION_ACK | TRANSMIT_OPTION_AUTO_ROUTE | TRANSMIT_OPTION_EXPLORE;
 
-    private static final byte ID = (byte) 0x13;
     private static byte nextCallbackId = 0x01;
+
+    public static SendDataMsg get(int nodeId, Byteable data, byte transmitOptions) {
+        return new SendDataMsg(nodeId, data, transmitOptions);
+    }
+
+    public static SendDataMsg get(int nodeId, Byteable data) {
+        // Todo: transmit opt default?
+        return get(nodeId, data, (byte) 0);
+    }
 
     private final int nodeId;
     private final Byteable data;
     private final byte callbackId;
     private final byte transmitOptions;
 
-    public SendDataMsg(int nodeId, Byteable data, byte transmitOptions) {
+    private SendDataMsg(int nodeId, Byteable data, byte transmitOptions) {
         this.nodeId = nodeId;
         this.data = data;
         this.callbackId = nextCallbackId;
         nextCallbackId += (byte) 0x01;
         this.transmitOptions = transmitOptions;
-    }
-
-    public SendDataMsg(int nodeId, Byteable data) {
-        this(nodeId, data, (byte) 0x00);
     }
 
     @Override

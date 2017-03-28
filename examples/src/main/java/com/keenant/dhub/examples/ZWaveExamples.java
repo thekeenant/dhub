@@ -8,7 +8,6 @@ import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.cmd.BasicCmd;
 import com.keenant.dhub.zwave.cmd.MultiChannelCmd;
 import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd;
-import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
 import com.keenant.dhub.zwave.messages.SendDataMsg;
@@ -17,7 +16,6 @@ import net.engio.mbassy.listener.Handler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 /**
  * Some Z-Wave library examples.
@@ -55,19 +53,19 @@ public class ZWaveExamples {
      */
     private static void basicSetTest(int nodeId) {
         // Set to 50%.
-        controller.queue(new SendDataMsg(nodeId, BasicCmd.setPercent(0.5)));
+        controller.send(new SendDataMsg(nodeId, BasicCmd.setPercent(0.5)));
 
         // Turn off.
-        controller.queue(new SendDataMsg(nodeId, BasicCmd.set(0)));
+        controller.send(new SendDataMsg(nodeId, BasicCmd.set(0)));
 
         // Then turn it back to 50% via basic on command, equivalent to BasicCmd.set(255).
-        controller.queue(new SendDataMsg(nodeId, BasicCmd.setOn()));
+        controller.send(new SendDataMsg(nodeId, BasicCmd.setOn()));
 
         // Turn to value 25 (out of 99).
-        controller.queue(new SendDataMsg(nodeId, BasicCmd.set(25)));
+        controller.send(new SendDataMsg(nodeId, BasicCmd.set(25)));
 
         // Another way to turn off
-        Transaction last = controller.queue(new SendDataMsg(nodeId, BasicCmd.setOff()));
+        Transaction last = controller.send(new SendDataMsg(nodeId, BasicCmd.setOff()));
 
         System.out.print("  ");
         while (!last.await(500)) {
@@ -107,7 +105,7 @@ public class ZWaveExamples {
 
         // Let's set it to 25% first.
         System.out.println("  Queueing basic set command...");
-        Transaction txn = controller.queue(new SendDataMsg(nodeId, BasicCmd.setPercent(0.25)));
+        Transaction txn = controller.send(new SendDataMsg(nodeId, BasicCmd.setPercent(0.25)));
 
         // We force the previous transaction to finish.
         System.out.print("  .");
@@ -118,12 +116,12 @@ public class ZWaveExamples {
 
         // Tell a device to send us a report!
         System.out.println("  Queueing basic get command...");
-        Transaction await = controller.queue(new SendDataMsg(nodeId, BasicCmd.get()));
+        Transaction await = controller.send(new SendDataMsg(nodeId, BasicCmd.get()));
         await.await();
 
         // Turn back off
         System.out.println("  Queueing basic set command (back to off)...");
-        Transaction last = controller.queue(new SendDataMsg(nodeId, BasicCmd.setOff()));
+        Transaction last = controller.send(new SendDataMsg(nodeId, BasicCmd.setOff()));
         last.await();
     }
 
@@ -150,7 +148,7 @@ public class ZWaveExamples {
         });
 
         // Queue the get message, so we get a report message back.
-        controller.queue(new SendDataMsg(nodeId, MultiChannelCmd.endPointGet()));
+        controller.send(new SendDataMsg(nodeId, MultiChannelCmd.endPointGet()));
 
         // Wait until we know how many endpoints there are...
         while (await.get()) {
@@ -163,11 +161,11 @@ public class ZWaveExamples {
         for (int i = 1; i < count.get() + 1; i++) {
             // On
             Cmd cmd = MultiChannelCmd.encap(i, SwitchBinaryCmd.set(true));
-            controller.queue(new SendDataMsg(nodeId, cmd));
+            controller.send(new SendDataMsg(nodeId, cmd));
 
             // Off
             cmd = MultiChannelCmd.encap(i, SwitchBinaryCmd.set(false));
-            last = controller.queue(new SendDataMsg(nodeId, cmd));
+            last = controller.send(new SendDataMsg(nodeId, cmd));
         }
 
         // Wait until last is done

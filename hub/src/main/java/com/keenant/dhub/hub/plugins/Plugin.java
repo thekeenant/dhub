@@ -1,4 +1,4 @@
-package com.keenant.dhub.plugins;
+package com.keenant.dhub.hub.plugins;
 
 /**
  * A dhub plugin.

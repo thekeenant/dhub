@@ -17,6 +17,16 @@ import java.util.Optional;
 public class VersionMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
     private static final byte ID = (byte) 0x15;
 
+    private static final VersionMsg INSTANCE = new VersionMsg();
+
+    public static VersionMsg get() {
+        return INSTANCE;
+    }
+
+    private VersionMsg() {
+
+    }
+
     @Override
     public ByteList toDataBytes() {
         return new ByteList(ID);

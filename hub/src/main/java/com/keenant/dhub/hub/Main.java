@@ -1,4 +1,4 @@
-package com.keenant.dhub;
+package com.keenant.dhub.hub;
 
 import jline.console.ConsoleReader;
 
