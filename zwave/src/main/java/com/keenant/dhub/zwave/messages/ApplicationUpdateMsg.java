@@ -5,6 +5,8 @@ import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.ApplicationUpdateEvent;
+import com.keenant.dhub.zwave.exception.DataFrameException;
+import com.keenant.dhub.zwave.exception.IllegalDataFrameTypeException;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import lombok.ToString;
 
@@ -56,13 +58,13 @@ public class ApplicationUpdateMsg implements InboundMessage {
         return new ApplicationUpdateEvent(controller, this);
     }
 
-    public static Optional<ApplicationUpdateMsg> parse(ByteList data, DataFrameType type) throws IllegalArgumentException {
+    public static Optional<ApplicationUpdateMsg> parse(ByteList data, DataFrameType type) throws DataFrameException {
         if (ID != data.get(0)) {
             return Optional.empty();
         }
 
         if (type != DataFrameType.REQ) {
-            throw new IllegalArgumentException("Expected REQ frame type.");
+            throw new IllegalDataFrameTypeException(type);
         }
 
         try {

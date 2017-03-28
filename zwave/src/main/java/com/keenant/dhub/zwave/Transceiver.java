@@ -16,7 +16,6 @@ import java.util.logging.Logger;
 /**
  * This does the talking with the USB controllers.
  *
- * Fun facts:
  * - It runs on its own thread and reads/writes to the serial port.
  * - Grabs the latest queued transactions from the controller, sends data frames as necessary.
  * - Listens to the port to find new status frames or data frames.
@@ -45,11 +44,11 @@ public class Transceiver implements Runnable {
 
     /**
      * Open the serial port and start the thread to write/read.
-     * @throws UnsupportedOperationException If we are already running.
+     * @throws IllegalStateException If we are already running.
      */
-    public void start() throws UnsupportedOperationException {
+    public void start() throws IllegalStateException {
         if (isAlive()) {
-            throw new UnsupportedOperationException("Transceiver already started.");
+            throw new IllegalStateException("Transceiver already started.");
         }
 
         // Setup the port properly...

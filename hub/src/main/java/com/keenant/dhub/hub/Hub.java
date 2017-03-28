@@ -1,6 +1,6 @@
-package com.keenant.dhub;
+package com.keenant.dhub.hub;
 
-import com.keenant.dhub.zwave.ZServer;
+import com.keenant.dhub.hub.zwave.ZServer;
 
 public class Hub {
     private ZServer zserver;

@@ -1,9 +1,10 @@
-package com.keenant.dhub.zwave;
+package com.keenant.dhub.hub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.Server;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.Listener;
+import com.keenant.dhub.hub.Server;
+import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
 import com.keenant.dhub.zwave.event.message.MemoryGetIdEvent;
 import com.keenant.dhub.zwave.messages.InitDataMsg;
@@ -20,7 +21,6 @@ public class ZServer implements Server {
     private static final Logger log = Logging.getLogger("ZServer");
 
     private List<Controller> controllers;
-    private ZWatchdog watchdog;
     private boolean started;
 
     public ZServer() {
@@ -49,14 +49,14 @@ public class ZServer implements Server {
     /**
      * Initializes this server with specific controllers.
      * @param controllers The controllers this server should manage.
+     * @throws IllegalStateException If the server is already started.
      */
-    public void init(Collection<Controller> controllers) {
+    public void init(Collection<Controller> controllers) throws IllegalStateException {
         if (started) {
-            throw new UnsupportedOperationException("Server already started.");
+            throw new IllegalStateException("Server already started.");
         }
         this.controllers = new ArrayList<>();
         this.controllers.addAll(controllers);
-        watchdog = new ZWatchdog(this);
     }
 
     public void init(Controller... controllers) {
@@ -66,22 +66,20 @@ public class ZServer implements Server {
     @Override
     public void start() {
         if (controllers == null) {
-            throw new UnsupportedOperationException("Server not initialized.");
+            throw new IllegalStateException("Server not initialized.");
         }
         else if (started) {
-            throw new UnsupportedOperationException("Server already started.");
+            throw new IllegalStateException("Server already started.");
         }
         started = true;
-
-        watchdog.start();
 
         controllers.forEach(controller -> {
             controller.start();
             controller.subscribe(new ZServerListener());
 
-            controller.queue(new VersionMsg());
-            controller.queue(new MemoryGetIdMsg());
-            controller.queue(new InitDataMsg());
+            controller.send(VersionMsg.get());
+            controller.send(MemoryGetIdMsg.get());
+            controller.send(InitDataMsg.get());
         });
     }
 

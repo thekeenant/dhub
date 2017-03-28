@@ -7,6 +7,8 @@ import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.UnknownCmd;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.ApplicationCommandEvent;
+import com.keenant.dhub.zwave.exception.DataFrameException;
+import com.keenant.dhub.zwave.exception.IllegalDataFrameTypeException;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import lombok.ToString;
 
@@ -44,13 +46,13 @@ public class ApplicationCommandMsg implements InboundMessage {
         return new ApplicationCommandEvent(controller, this);
     }
 
-    public static Optional<ApplicationCommandMsg> parse(ByteList data, DataFrameType type) throws IllegalArgumentException {
+    public static Optional<ApplicationCommandMsg> parse(ByteList data, DataFrameType type) throws DataFrameException {
         if (ID != data.get(0)) {
             return Optional.empty();
         }
 
         if (type != DataFrameType.REQ) {
-            throw new IllegalArgumentException("Expected REQ frame type.");
+            throw new IllegalDataFrameTypeException(type);
         }
 
         try {
@@ -67,7 +69,7 @@ public class ApplicationCommandMsg implements InboundMessage {
 
             return Optional.of(new ApplicationCommandMsg(status, nodeId, cmd));
         } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            throw new DataFrameException();
         }
     }
 }

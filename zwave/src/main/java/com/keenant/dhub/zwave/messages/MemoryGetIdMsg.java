@@ -17,6 +17,16 @@ import java.util.Optional;
 public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
     private static final byte ID = (byte) 0x20;
 
+    private static final MemoryGetIdMsg INSTANCE = new MemoryGetIdMsg();
+
+    public static final MemoryGetIdMsg get() {
+        return INSTANCE;
+    }
+
+    private MemoryGetIdMsg() {
+
+    }
+
     @Override
     public ByteList toDataBytes() {
         return new ByteList(ID);
