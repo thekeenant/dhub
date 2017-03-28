@@ -123,19 +123,29 @@ public class Transceiver implements Runnable {
         return Optional.ofNullable(txn);
     }
 
+    /**
+     * Read and ignore any and all available data from the port.
+     */
+    private void dump() {
+        while (true) {
+            read();
+
+            if (port.bytesAvailable() > 0) {
+                sleep(100);
+            }
+            else {
+                break;
+            }
+        }
+    }
+
     @Override
     public void run() {
         sleep(1500);
+        dump();
 
-        // Dump out any pre-existing data
-        while (port.bytesAvailable() > 0) {
-            read();
-            sleep(10);
-        }
-
+        // We continually add to the end of this list and read from the start. It's a buffer!
         ByteList buffer = new ByteList();
-
-        boolean dataframe = false;
 
         while (true) {
             if (notifyStop) {
@@ -147,31 +157,40 @@ public class Transceiver implements Runnable {
             // Add new data to buffer
             buffer.addAll(read());
 
-            Transaction txn = updateTransaction(null).orElse(null);
+            // Process the buffer
+            process(buffer);
 
-            while (!buffer.isEmpty()) {
-                byte first = buffer.get(0);
+            sleep(10);
+        }
+    }
 
-                if (!dataframe) {
-                    Status status = Status.fromByte(first).orElse(null);
-                    if (status != null) {
-                        log.log(Level.DEBUG, "Reading... " + new ByteList(first));
-                        log.log(Level.DEV, "Reading... " + status);
-                        if (txn != null) {
-                            txn.handle(status);
-                            txn = updateTransaction(txn).orElse(null);
-                        }
-                        buffer.remove(0);
-                    }
+    /**
+     * Process data from the port.
+     * @param buffer The data buffer.
+     */
+    private void process(ByteList buffer) {
+        Transaction txn = updateTransaction(null).orElse(null);
+
+        while (!buffer.isEmpty()) {
+            byte first = buffer.get(0);
+
+            // Check if the next byte is a status
+            Status status = Status.fromByte(first).orElse(null);
+            if (status != null) {
+                log.log(Level.DEBUG, "Reading... " + new ByteList(first));
+                log.log(Level.DEV, "Reading... " + status);
+                if (txn != null) {
+                    txn.handle(status);
+                    txn = updateTransaction(txn).orElse(null);
                 }
-
+                buffer.remove(0);
+            }
+            else {
                 // Expecting SOF at this point, not found?
                 if (first != DataFrame.SOF) {
                     buffer.clear();
                     break;
                 }
-
-                dataframe = true;
 
                 // Length hasn't arrived yet.
                 if (buffer.size() == 1) {
@@ -215,8 +234,7 @@ public class Transceiver implements Runnable {
 
                     if (msg == null) {
                         log.log(Level.DEV, "Reading... Unknown message: " + data + " (" + type + ")");
-                    }
-                    else {
+                    } else {
                         log.log(Level.DEV, "Reading... " + msg + " (" + type + ")");
                     }
 
@@ -225,11 +243,7 @@ public class Transceiver implements Runnable {
 
                 for (int i = 0; i < length + 1; ++i)
                     buffer.remove(0);
-
-                dataframe = false;
             }
-
-            sleep(10);
         }
     }
 
