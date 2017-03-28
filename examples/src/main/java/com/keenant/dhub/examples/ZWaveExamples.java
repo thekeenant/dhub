@@ -32,7 +32,7 @@ public class ZWaveExamples {
         controller = new Controller("ttyACM0");
         controller.start();
 
-        controller.queue(new SendDataMsg(NODE_ID, BasicCmd.setPercent(0.2)));
+        controller.send(SendDataMsg.get(NODE_ID, BasicCmd.setPercent(0.2)));
 
 //        basicSetTest(NODE_ID);
 //        basicGetReportTest(NODE_ID);
@@ -46,19 +46,19 @@ public class ZWaveExamples {
         System.out.println("basicSetTest start");
 
         // Set to 50%.
-        controller.send(new SendDataMsg(nodeId, BasicCmd.setPercent(0.5)));
+        controller.send(SendDataMsg.get(nodeId, BasicCmd.setPercent(0.5)));
 
         // Turn off.
-        controller.send(new SendDataMsg(nodeId, BasicCmd.set(0)));
+        controller.send(SendDataMsg.get(nodeId, BasicCmd.set(0)));
 
         // Then turn it back to 50% via basic on command, equivalent to BasicCmd.set(255).
-        controller.send(new SendDataMsg(nodeId, BasicCmd.setOn()));
+        controller.send(SendDataMsg.get(nodeId, BasicCmd.setOn()));
 
         // Turn to value 25 (out of 99).
-        controller.send(new SendDataMsg(nodeId, BasicCmd.set(25)));
+        controller.send(SendDataMsg.get(nodeId, BasicCmd.set(25)));
 
         // Another way to turn off
-        Transaction last = controller.send(new SendDataMsg(nodeId, BasicCmd.setOff()));
+        Transaction last = controller.send(SendDataMsg.get(nodeId, BasicCmd.setOff()));
 
         System.out.print("  ");
         while (!last.await(500)) {
@@ -101,7 +101,7 @@ public class ZWaveExamples {
 
         // Let's set it to 25% first.
         System.out.println("  Queueing basic set command...");
-        Transaction txn = controller.send(new SendDataMsg(nodeId, BasicCmd.setPercent(0.25)));
+        Transaction txn = controller.send(SendDataMsg.get(nodeId, BasicCmd.setPercent(0.25)));
 
         // We force the previous transaction to finish.
         System.out.print("  .");
@@ -112,12 +112,12 @@ public class ZWaveExamples {
 
         // Tell a device to send us a report!
         System.out.println("  Queueing basic get command...");
-        Transaction await = controller.send(new SendDataMsg(nodeId, BasicCmd.get()));
+        Transaction await = controller.send(SendDataMsg.get(nodeId, BasicCmd.get()));
         await.await();
 
         // Turn back off
         System.out.println("  Queueing basic set command (back to off)...");
-        Transaction last = controller.send(new SendDataMsg(nodeId, BasicCmd.setOff()));
+        Transaction last = controller.send(SendDataMsg.get(nodeId, BasicCmd.setOff()));
         last.await();
 
         System.out.println("done\n");
@@ -148,7 +148,7 @@ public class ZWaveExamples {
         });
 
         // Queue the get message, so we get a report message back.
-        controller.send(new SendDataMsg(nodeId, MultiChannelCmd.endPointGet()));
+        controller.send(SendDataMsg.get(nodeId, MultiChannelCmd.endPointGet()));
 
         // Wait until we know how many endpoints there are...
         while (await.get()) {
@@ -161,11 +161,11 @@ public class ZWaveExamples {
         for (int i = 1; i < count.get() + 1; i++) {
             // On
             Cmd cmd = MultiChannelCmd.encap(i, SwitchBinaryCmd.set(true));
-            controller.send(new SendDataMsg(nodeId, cmd));
+            controller.send(SendDataMsg.get(nodeId, cmd));
 
             // Off
             cmd = MultiChannelCmd.encap(i, SwitchBinaryCmd.set(false));
-            last = controller.send(new SendDataMsg(nodeId, cmd));
+            last = controller.send(SendDataMsg.get(nodeId, cmd));
         }
 
         // Wait until last is done
