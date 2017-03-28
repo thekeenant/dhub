@@ -8,7 +8,7 @@ import lombok.ToString;
 public abstract class InboundMessageEvent<T extends InboundMessage> extends ControllerEvent {
     private final T message;
 
-    protected InboundMessageEvent(Controller controller, T message) {
+    public InboundMessageEvent(Controller controller, T message) {
         super(controller);
         this.message = message;
     }
