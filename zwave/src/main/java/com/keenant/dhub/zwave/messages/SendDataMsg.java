@@ -10,6 +10,7 @@ import com.keenant.dhub.zwave.event.message.SendDataEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Response;
 import com.keenant.dhub.zwave.transaction.ReqResTransaction;
+import com.keenant.dhub.zwave.util.ByteBuilder;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -18,33 +19,32 @@ import java.util.Optional;
 public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
     private static final byte ID = (byte) 0x13;
 
-    public static final byte TRANSMIT_OPTION_ACK = 0x01;
-    public static final byte TRANSMIT_OPTION_AUTO_ROUTE = 0x04;
-    public static final byte TRANSMIT_OPTION_EXPLORE = (byte) 0x20;
-    public static final byte TRANSMIT_OPTIONS_ALL = TRANSMIT_OPTION_ACK | TRANSMIT_OPTION_AUTO_ROUTE | TRANSMIT_OPTION_EXPLORE;
+    private static final byte ID_TX_ACK = 0x01;
+    private static final byte ID_TX_AUTO_ROUTE = 0x04;
+    private static final byte ID_TX_EXPLORE = (byte) 0x20;
 
+    private static final TxOptions TX_ALL = new TxOptions().all();
     private static byte nextCallbackId = 0x01;
 
     private final int nodeId;
     private final Byteable data;
     private final byte callbackId;
-    private final byte transmitOptions;
+    private final TxOptions txOptions;
 
-    public static SendDataMsg get(int nodeId, Byteable data, byte transmitOptions) {
-        return new SendDataMsg(nodeId, data, transmitOptions);
+    public static SendDataMsg get(int nodeId, Byteable data, TxOptions txOptions) {
+        return new SendDataMsg(nodeId, data, txOptions);
     }
 
     public static SendDataMsg get(int nodeId, Byteable data) {
-        // Todo: transmit opt default?
-        return get(nodeId, data, (byte) 0);
+        return get(nodeId, data, TX_ALL);
     }
 
-    private SendDataMsg(int nodeId, Byteable data, byte transmitOptions) {
+    private SendDataMsg(int nodeId, Byteable data, TxOptions txOptions) {
         this.nodeId = nodeId;
         this.data = data;
         this.callbackId = nextCallbackId;
         nextCallbackId += (byte) 0x01;
-        this.transmitOptions = transmitOptions;
+        this.txOptions = txOptions;
     }
 
     @Override
@@ -57,7 +57,7 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
         bites.add((byte) data.size());
         bites.addAll(data);
         bites.add(callbackId);
-        bites.add(transmitOptions);
+        bites.add(txOptions.get());
 
         return bites;
     }
@@ -115,6 +115,30 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
         @Override
         public InboundMessageEvent createEvent(Controller controller) {
             return new SendDataEvent(controller, this);
+        }
+    }
+
+    public static class TxOptions extends ByteBuilder {
+        public TxOptions ack() {
+            with(ID_TX_ACK);
+            return this;
+        }
+
+        public TxOptions autoRoute() {
+            with(ID_TX_AUTO_ROUTE);
+            return this;
+        }
+
+        public TxOptions explore() {
+            with(ID_TX_EXPLORE);
+            return this;
+        }
+
+        public TxOptions all() {
+            reset();
+            ack();
+            autoRoute();
+            return explore();
         }
     }
 }

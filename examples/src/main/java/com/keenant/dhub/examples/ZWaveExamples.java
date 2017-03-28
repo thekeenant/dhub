@@ -8,14 +8,20 @@ import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.cmd.BasicCmd;
 import com.keenant.dhub.zwave.cmd.MultiChannelCmd;
 import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd;
+import com.keenant.dhub.zwave.event.TransactionStartEvent;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
+import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
+import com.keenant.dhub.zwave.messages.NodeListMsg;
+import com.keenant.dhub.zwave.messages.NodeListMsg.Response;
 import com.keenant.dhub.zwave.messages.SendDataMsg;
-import com.keenant.dhub.zwave.transaction.Transaction;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import net.engio.mbassy.listener.Handler;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Some Z-Wave library examples.
@@ -31,7 +37,6 @@ public class ZWaveExamples {
 
         controller = new Controller("ttyACM0");
         controller.start();
-        sleep(1000);
 
         basicSetTest(NODE_ID);
         basicGetReportTest(NODE_ID);
