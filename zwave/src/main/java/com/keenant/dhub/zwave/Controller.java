@@ -87,7 +87,7 @@ public class Controller {
     }
 
     /**
-     * Updates the transaction addToOutboundQueue by moving the earliest in the addToOutboundQueue
+     * Updates the transaction queue by moving the earliest in the queue
      * to the current, if the current is finished.
      *
      * It will perform transaction start and transaction complete logs and events.
@@ -118,7 +118,7 @@ public class Controller {
             return Optional.empty();
         }
         else {
-            // Move front of the addToOutboundQueue to current, return that.
+            // Move front of the queue to current, return that.
             Transaction txn = transactions.remove(0).getObject();
             current = txn;
             txn.start();
@@ -157,11 +157,10 @@ public class Controller {
      * Prepares the controller to start a transaction.
      *
      * @param txn The transaction.
-     * @throws IllegalStateException If the transaction was already started.
-     * @throws IllegalArgumentException If the transaction is in the current queue already.
+     * @throws IllegalStateException If the transaction was already queued or started.
      */
-    public void queue(Transaction txn, Priority priority) throws IllegalStateException, IllegalArgumentException {
-        // Can't be started already.
+    public void send(Transaction txn, Priority priority) throws IllegalStateException, IllegalArgumentException {
+        // Can't be started already
         if (txn.isStarted()) {
             throw new IllegalStateException("Transaction already started, cannot be queued.");
         }
@@ -169,7 +168,7 @@ public class Controller {
         // Can't be queued already.
         for (PrioritizedObject<Transaction> curr : transactions) {
             if (curr.getObject().equals(txn)) {
-                throw new IllegalArgumentException("Transaction already queued.");
+                throw new IllegalStateException("Transaction is currently queued.");
             }
         }
 
@@ -187,21 +186,21 @@ public class Controller {
      * @throws IllegalStateException If the transaction was already started.
      * @throws IllegalArgumentException If the transaction is in the current queue already.
      */
-    public void queue(Transaction txn) throws IllegalStateException, IllegalArgumentException {
-        queue(txn, Priority.DEFAULT);
+    public void send(Transaction txn) throws IllegalStateException, IllegalArgumentException {
+        send(txn, Priority.DEFAULT);
     }
 
     /**
      * Prepares the controller to start a transaction.
      *
      * @param message The message to send.
-     * @param priority The priority. Higher priority means earlier in the addToOutboundQueue.
+     * @param priority The priority. Higher priority means earlier in the queue.
      * @param <T> The transaction type.
-     * @return The new transaction, which is now added to the addToOutboundQueue..
+     * @return The new transaction, which is now added to the queue..
      */
-    public <T extends Transaction> T queue(Message<T> message, Priority priority) {
+    public <T extends Transaction> T send(Message<T> message, Priority priority) {
         T txn = message.createTransaction(this);
-        queue(txn, priority);
+        send(txn, priority);
         return txn;
     }
 
@@ -210,10 +209,10 @@ public class Controller {
      *
      * @param message The message to send.
      * @param <T> The transaction type.
-     * @return The new transaction, which is now added to the addToOutboundQueue..
+     * @return The new transaction, which is now added to the queue..
      */
-    public <T extends Transaction> T queue(Message<T> message) {
-        return queue(message, Priority.DEFAULT);
+    public <T extends Transaction> T send(Message<T> message) {
+        return send(message, Priority.DEFAULT);
     }
 
     /**
@@ -231,13 +230,13 @@ public class Controller {
     /**
      * Open the serial port and start writing and reading on a separate transceiver.
      *
-     * Trashes any current transaction. The transaction addToOutboundQueue is unaffected.
+     * Trashes any current transaction. The transaction queue is unaffected.
      *
-     * @throws UnsupportedOperationException If the controller is already started.
+     * @throws IllegalStateException If the controller is already started.
      */
-    public void start() throws UnsupportedOperationException {
+    public void start() throws IllegalStateException {
         if (isAlive()) {
-            throw new UnsupportedOperationException("Controller already started.");
+            throw new IllegalStateException("Controller already started.");
         }
 
         current = null;
@@ -248,7 +247,7 @@ public class Controller {
     /**
      * Closes the serial port, stops writing and reading.
      *
-     * Trashes any current transaction. The transaction addToOutboundQueue is unaffected.
+     * Trashes any current transaction. The transaction queue is unaffected.
      */
     public void stop() {
         if (!isAlive()) {
@@ -265,6 +264,13 @@ public class Controller {
      */
     public Optional<Transceiver> getTransceiver() {
         return Optional.ofNullable(transceiver);
+    }
+
+    /**
+     * @return The transaction currently being transmitted/received.
+     */
+    public Optional<Transaction> getCurrent() {
+        return Optional.ofNullable(current);
     }
 
     /**

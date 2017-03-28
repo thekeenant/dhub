@@ -5,25 +5,25 @@ import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
-import com.keenant.dhub.zwave.event.message.InitDataEvent;
+import com.keenant.dhub.zwave.event.message.NodeListEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
-import com.keenant.dhub.zwave.messages.InitDataMsg.Response;
+import com.keenant.dhub.zwave.messages.NodeListMsg.Response;
 import com.keenant.dhub.zwave.transaction.ReqResTransaction;
-import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-@ToString
-public class InitDataMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
-    private static final byte ID = (byte) 0x02;
+public class NodeListMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
+    public static final byte ID = (byte) 0x04;
 
-    private static final InitDataMsg INSTANCE = new InitDataMsg();
+    private static final NodeListMsg INSTANCE = new NodeListMsg();
 
-    public static InitDataMsg get() {
+    public static NodeListMsg get() {
         return INSTANCE;
     }
 
-    private InitDataMsg() {
+    private NodeListMsg() {
 
     }
 
@@ -48,11 +48,23 @@ public class InitDataMsg implements ResponsiveMessage<ReqResTransaction<Response
             return Optional.empty();
         }
 
-        return Optional.of(new Response());
+        byte version = data.get(1);
+        byte capabilities = data.get(2);
+        byte nodeCount = data.get(3);
+        List<Integer> nodeIds = new ArrayList<>();
+        for (int i = 4; i < 4 + nodeCount; i++) {
+            nodeIds.add((int) data.get(i));
+        }
+        byte chipType = data.get(3 + nodeCount + 1);
+        byte chipVersion = data.get(4 + nodeCount + 1);
+
+        // Todo...
+
+        return Optional.empty();
     }
 
-    @ToString
     public static class Response implements InboundMessage {
+
         @Override
         public DataFrameType getType() {
             return DataFrameType.RES;
@@ -60,7 +72,7 @@ public class InitDataMsg implements ResponsiveMessage<ReqResTransaction<Response
 
         @Override
         public InboundMessageEvent createEvent(Controller controller) {
-            return new InitDataEvent(controller, this);
+            return new NodeListEvent(controller, this);
         }
     }
 }
