@@ -3,7 +3,7 @@ package com.keenant.dhub.zwave.cmd;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingCmd;
+import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import lombok.ToString;
@@ -112,7 +112,7 @@ public class BasicCmd {
     }
 
     /**
-     * Attempt to parse an incoming basic report command.
+     * Attempt to parse an inbound basic report command.
      * @param data The raw data.
      * @return The report command, empty if the data didn't match.
      */
@@ -158,7 +158,7 @@ public class BasicCmd {
     }
 
     @ToString
-    public static class Report implements IncomingCmd {
+    public static class Report implements InboundCmd {
         private final int value;
 
         private Report(int value) {

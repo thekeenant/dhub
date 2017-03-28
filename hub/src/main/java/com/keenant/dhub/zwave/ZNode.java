@@ -1,9 +1,9 @@
 package com.keenant.dhub.zwave;
 
 import com.keenant.dhub.core.util.Priority;
-import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 import com.keenant.dhub.zwave.messages.SendDataMsg;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Response;
+import com.keenant.dhub.zwave.transaction.ReqResTransaction;
 
 public class ZNode {
     private final Controller controller;

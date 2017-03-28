@@ -1,10 +1,10 @@
 package com.keenant.dhub.zwave.transaction;
 
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingMessage;
+import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.Message;
+import com.keenant.dhub.zwave.UnknownMessage;
 import com.keenant.dhub.zwave.frame.Status;
-import com.keenant.dhub.zwave.frame.UnknownDataFrame;
 
 /**
  * PC -> ZW: Request
@@ -23,12 +23,12 @@ public class ReqTransaction extends Transaction {
 
     @Override
     public void start() {
-        addToOutgoingQueue(message);
+        addToOutboundQueue(message);
     }
 
     @Override
     public boolean isFinished() {
-        return getOutgoingQueue().isEmpty() && done;
+        return getOutboundQueue().isEmpty() && done;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ReqTransaction extends Transaction {
     }
 
     @Override
-    public IncomingMessage handle(UnknownDataFrame frame) {
+    public InboundMessage handle(UnknownMessage frame) {
         return frame;
     }
 }

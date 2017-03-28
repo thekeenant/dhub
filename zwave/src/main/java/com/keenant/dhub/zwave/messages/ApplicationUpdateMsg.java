@@ -2,8 +2,8 @@ package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingMessage;
-import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.InboundMessage;
+import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.ApplicationUpdateEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import lombok.ToString;
@@ -11,7 +11,7 @@ import lombok.ToString;
 import java.util.Optional;
 
 @ToString
-public class ApplicationUpdateMsg implements IncomingMessage {
+public class ApplicationUpdateMsg implements InboundMessage {
     private static final byte ID = (byte) 0x49;
 
     public enum Status {
@@ -52,7 +52,7 @@ public class ApplicationUpdateMsg implements IncomingMessage {
     }
 
     @Override
-    public IncomingMessageEvent createEvent(Controller controller) {
+    public InboundMessageEvent createEvent(Controller controller) {
         return new ApplicationUpdateEvent(controller, this);
     }
 

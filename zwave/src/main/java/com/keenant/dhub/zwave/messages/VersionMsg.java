@@ -1,11 +1,10 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingMessage;
+import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
-import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.VersionEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.VersionMsg.Response;
@@ -42,14 +41,14 @@ public class VersionMsg implements ResponsiveMessage<ReqResTransaction<Response>
         return Optional.of(new Response());
     }
 
-    public static class Response implements IncomingMessage {
+    public static class Response implements InboundMessage {
         @Override
         public DataFrameType getType() {
             return DataFrameType.RES;
         }
 
         @Override
-        public IncomingMessageEvent createEvent(Controller controller) {
+        public InboundMessageEvent createEvent(Controller controller) {
             return new VersionEvent(controller, this);
         }
     }

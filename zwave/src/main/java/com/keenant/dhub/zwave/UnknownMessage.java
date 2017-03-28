@@ -1,24 +1,22 @@
-package com.keenant.dhub.zwave.frame;
+package com.keenant.dhub.zwave;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingMessage;
-import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.event.InboundMessageEvent;
+import com.keenant.dhub.zwave.frame.DataFrameType;
 
 /**
  * A data frame that is not (yet) known.
  */
-public class UnknownDataFrame implements DataFrame, IncomingMessage {
+public class UnknownMessage implements InboundMessage {
     private final ByteList data;
     private final DataFrameType type;
 
-    public UnknownDataFrame(ByteList data, DataFrameType type) {
+    public UnknownMessage(ByteList data, DataFrameType type) {
         this.data = data;
         this.type = type;
     }
 
-    @Override
-    public ByteList toDataBytes() {
+    public ByteList getDataBytes() {
         return data;
     }
 
@@ -28,7 +26,7 @@ public class UnknownDataFrame implements DataFrame, IncomingMessage {
     }
 
     @Override
-    public IncomingMessageEvent createEvent(Controller controller) {
+    public InboundMessageEvent createEvent(Controller controller) {
         throw new UnsupportedOperationException("Unknown data frame has no message event.");
     }
 }

@@ -2,11 +2,10 @@ package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Byteable;
-import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.IncomingMessage;
+import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.ResponsiveMessage;
-import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.SendDataEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Response;
@@ -78,25 +77,25 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
         if (data.size() > 3) {
             byte funcId = data.get(2);
             byte txStatus = data.get(3);
-            return Optional.of(new Response(data, value, funcId, txStatus));
+            return Optional.of(new Response(value, funcId, txStatus));
         }
 
-        return Optional.of(new Response(data, value));
+        return Optional.of(new Response(value));
     }
 
     @ToString
-    public static class Response implements IncomingMessage {
+    public static class Response implements InboundMessage {
         private final boolean value;
         private final Byte funcId;
         private final Byte txStatus;
 
-        private Response(ByteList data, boolean value) {
+        private Response(boolean value) {
             this.value = value;
             this.funcId = null;
             this.txStatus = null;
         }
 
-        private Response(ByteList data, boolean value, byte funcId, byte txStatus) {
+        private Response(boolean value, byte funcId, byte txStatus) {
             this.value = value;
             this.funcId = funcId;
             this.txStatus = txStatus;
@@ -108,7 +107,7 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
         }
 
         @Override
-        public IncomingMessageEvent createEvent(Controller controller) {
+        public InboundMessageEvent createEvent(Controller controller) {
             return new SendDataEvent(controller, this);
         }
     }

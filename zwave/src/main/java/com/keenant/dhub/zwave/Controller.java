@@ -1,18 +1,19 @@
 package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.google.common.collect.ImmutableList;
-import com.google.common.eventbus.EventBus;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.Listener;
 import com.keenant.dhub.core.util.PrioritizedObject;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.event.CmdEvent;
-import com.keenant.dhub.zwave.event.IncomingMessageEvent;
+import com.keenant.dhub.zwave.event.Event;
+import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
 import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import com.keenant.dhub.zwave.transaction.Transaction;
+import net.engio.mbassy.bus.MBassador;
+import net.engio.mbassy.bus.error.IPublicationErrorHandler.ConsoleLogger;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -37,7 +38,7 @@ public class Controller {
     };
 
     private final SerialPort port;
-    private final EventBus eventBus;
+    private final MBassador<Event> bus;
     private final List<PrioritizedObject<Transaction>> transactions;
     private final Logger log;
     private Transceiver transceiver;
@@ -53,7 +54,7 @@ public class Controller {
             throw new NullPointerException("Port cannot be null.");
         }
         this.port = port;
-        this.eventBus = new EventBus();
+        this.bus = new MBassador<>(new ConsoleLogger(true));
         this.transactions = new ArrayList<>();
         this.log = Logging.getLogger(getName());
     }
@@ -68,30 +69,30 @@ public class Controller {
 
     /**
      * Called when a new message is received from the controller.
-     * @param msg The incoming message.
+     * @param msg The inbound message.
      */
-    public void onReceive(IncomingMessage msg) {
+    public void onReceive(InboundMessage msg) {
         if (msg instanceof ApplicationCommandMsg) {
             ApplicationCommandMsg appMsg = (ApplicationCommandMsg) msg;
-            IncomingCmd cmd = appMsg.getCmd().orElse(null);
+            InboundCmd cmd = appMsg.getCmd().orElse(null);
 
             if (cmd != null) {
                 CmdEvent event = cmd.createEvent(this, appMsg.getNodeId());
-                eventBus.post(event);
+                bus.post(event).asynchronously();
             }
         }
 
-        IncomingMessageEvent event = msg.createEvent(this);
-        eventBus.post(event);
+        InboundMessageEvent event = msg.createEvent(this);
+        bus.post(event).asynchronously();
     }
 
     /**
-     * Updates the transaction addToOutgoingQueue by moving the earliest in the addToOutgoingQueue
+     * Updates the transaction addToOutboundQueue by moving the earliest in the addToOutboundQueue
      * to the current, if the current is finished.
      *
      * It will perform transaction start and transaction complete logs and events.
      *
-     * @return The new current transaction. Empty if there isn't an ongoing transaction.
+     * @return The new current transaction. Empty if there isn't an outbound transaction.
      */
     Optional<Transaction> updateCurrent() {
         if (current != null) {
@@ -101,7 +102,7 @@ public class Controller {
 
                 // Transaction finished event
                 TransactionCompleteEvent event = new TransactionCompleteEvent(this, current);
-                eventBus.post(event);
+                bus.post(event).asynchronously();
 
                 // Clear current if it is finished.
                 current = null;
@@ -117,7 +118,7 @@ public class Controller {
             return Optional.empty();
         }
         else {
-            // Move front of the addToOutgoingQueue to current, return that.
+            // Move front of the addToOutboundQueue to current, return that.
             Transaction txn = transactions.remove(0).getObject();
             current = txn;
             txn.start();
@@ -130,19 +131,19 @@ public class Controller {
     }
 
     /**
-     * Register a listener to this controller's events.
+     * Subscribe a listener to this controller's events.
      * @param listener The listener that contains various event subscriptions.
      */
-    public void register(Listener listener) {
-        eventBus.register(listener);
+    public void subscribe(Listener listener) {
+        bus.subscribe(listener);
     }
 
     /**
-     * Unregister an already registered listener from this controller's events.
+     * Unsubscribe an already registered listener from this controller's events.
      * @param listener The listener.
      */
-    public void unregister(Listener listener) {
-        eventBus.unregister(listener);
+    public void unsubscribe(Listener listener) {
+        bus.unsubscribe(listener);
     }
 
     /**
@@ -194,9 +195,9 @@ public class Controller {
      * Prepares the controller to start a transaction.
      *
      * @param message The message to send.
-     * @param priority The priority. Higher priority means earlier in the addToOutgoingQueue.
+     * @param priority The priority. Higher priority means earlier in the addToOutboundQueue.
      * @param <T> The transaction type.
-     * @return The new transaction, which is now added to the addToOutgoingQueue..
+     * @return The new transaction, which is now added to the addToOutboundQueue..
      */
     public <T extends Transaction> T queue(Message<T> message, Priority priority) {
         T txn = message.createTransaction(this);
@@ -209,7 +210,7 @@ public class Controller {
      *
      * @param message The message to send.
      * @param <T> The transaction type.
-     * @return The new transaction, which is now added to the addToOutgoingQueue..
+     * @return The new transaction, which is now added to the addToOutboundQueue..
      */
     public <T extends Transaction> T queue(Message<T> message) {
         return queue(message, Priority.DEFAULT);
@@ -230,7 +231,7 @@ public class Controller {
     /**
      * Open the serial port and start writing and reading on a separate transceiver.
      *
-     * Trashes any current transaction. The transaction addToOutgoingQueue is unaffected.
+     * Trashes any current transaction. The transaction addToOutboundQueue is unaffected.
      *
      * @throws UnsupportedOperationException If the controller is already started.
      */
@@ -247,7 +248,7 @@ public class Controller {
     /**
      * Closes the serial port, stops writing and reading.
      *
-     * Trashes any current transaction. The transaction addToOutgoingQueue is unaffected.
+     * Trashes any current transaction. The transaction addToOutboundQueue is unaffected.
      */
     public void stop() {
         if (!isAlive()) {

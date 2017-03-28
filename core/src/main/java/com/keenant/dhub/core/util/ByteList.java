@@ -3,7 +3,6 @@ package com.keenant.dhub.core.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class ByteList extends ArrayList<Byte> implements Byteable {
     /**

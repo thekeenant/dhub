@@ -1,7 +1,7 @@
 package com.keenant.dhub.zwave;
 
-import com.keenant.dhub.zwave.transaction.Transaction;
 import com.keenant.dhub.core.logging.Logging;
+import com.keenant.dhub.zwave.transaction.Transaction;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;

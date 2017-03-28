@@ -9,7 +9,7 @@ import com.keenant.dhub.zwave.transaction.Transaction;
  */
 public interface Message<Txn extends Transaction> extends DataFrame {
     /**
-     * Create a new transaction that starts with this outgoing data frame.
+     * Create a new transaction that starts with this outbound data frame.
      * @param controller The controller this message will be dispatched.
      * @return The new transaction.
      */
