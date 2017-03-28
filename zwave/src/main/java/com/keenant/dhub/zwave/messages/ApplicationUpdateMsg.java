@@ -16,6 +16,9 @@ import java.util.Optional;
 public class ApplicationUpdateMsg implements InboundMessage {
     private static final byte ID = (byte) 0x49;
 
+    private final Status status;
+    private final int nodeId;
+
     public enum Status {
         NODE_INFO_RECEIVED((byte) 0x84);
 
@@ -36,10 +39,7 @@ public class ApplicationUpdateMsg implements InboundMessage {
         }
     }
 
-    private final Status status;
-    private final int nodeId;
-
-    public ApplicationUpdateMsg(Status status, int nodeId) {
+    private ApplicationUpdateMsg(Status status, int nodeId) {
         this.status = status;
         this.nodeId = nodeId;
     }
