@@ -15,7 +15,6 @@ import java.util.Optional;
  */
 public class MultiChannelCmd {
     private static final byte ID = (byte) 0x60;
-    private static final byte ID_GET = (byte) 0x06;
 
     private static final byte ID_END_POINT_GET = (byte) 0x07;
     private static final byte ID_END_POINT_REPORT = (byte) 0x08;

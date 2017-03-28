@@ -2,7 +2,6 @@ package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
-import com.keenant.dhub.zwave.transaction.ReqTransaction;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
