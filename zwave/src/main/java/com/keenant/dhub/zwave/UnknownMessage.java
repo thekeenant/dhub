@@ -3,10 +3,12 @@ package com.keenant.dhub.zwave;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
+import lombok.ToString;
 
 /**
  * A data frame that is not (yet) known.
  */
+@ToString
 public class UnknownMessage implements InboundMessage {
     private final ByteList data;
     private final DataFrameType type;

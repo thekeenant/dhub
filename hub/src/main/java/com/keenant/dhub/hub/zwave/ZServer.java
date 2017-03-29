@@ -6,9 +6,9 @@ import com.keenant.dhub.core.util.Listener;
 import com.keenant.dhub.hub.Server;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
-import com.keenant.dhub.zwave.event.message.MemoryGetIdEvent;
-import com.keenant.dhub.zwave.messages.InitDataMsg;
+import com.keenant.dhub.zwave.event.message.MemoryGetIdReplyEvent;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
+import com.keenant.dhub.zwave.messages.NodeListMsg;
 import com.keenant.dhub.zwave.messages.VersionMsg;
 import lombok.ToString;
 import net.engio.mbassy.listener.Handler;
@@ -75,7 +75,7 @@ public class ZServer implements Server {
 
             controller.send(VersionMsg.get());
             controller.send(MemoryGetIdMsg.get());
-            controller.send(InitDataMsg.get());
+            controller.send(NodeListMsg.get());
         });
     }
 
@@ -96,7 +96,7 @@ public class ZServer implements Server {
         }
 
         @Handler
-        public void onMemoryGetIdEvent(MemoryGetIdEvent event) {
+        public void onMemoryGetIdEvent(MemoryGetIdReplyEvent event) {
             long homeId = event.getMessage().getHomeId();
             int nodeId = event.getMessage().getNodeId();
 

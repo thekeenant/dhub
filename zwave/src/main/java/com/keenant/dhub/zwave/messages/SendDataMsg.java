@@ -4,19 +4,22 @@ import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Byteable;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundMessage;
-import com.keenant.dhub.zwave.ResponsiveMessage;
+import com.keenant.dhub.zwave.Message;
+import com.keenant.dhub.zwave.UnknownMessage;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
-import com.keenant.dhub.zwave.event.message.SendDataEvent;
+import com.keenant.dhub.zwave.event.message.SendDataCallbackEvent;
+import com.keenant.dhub.zwave.event.message.SendDataReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
-import com.keenant.dhub.zwave.messages.SendDataMsg.Response;
-import com.keenant.dhub.zwave.transaction.ReqResTransaction;
+import com.keenant.dhub.zwave.transaction.ReplyCallbackTransaction;
+import com.keenant.dhub.zwave.transaction.ReplyTransaction;
+import com.keenant.dhub.zwave.transaction.Transaction;
 import com.keenant.dhub.zwave.util.ByteBuilder;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
+public class SendDataMsg implements Message<Transaction> {
     private static final byte ID = (byte) 0x13;
 
     private static final byte ID_TX_ACK = 0x01;
@@ -31,12 +34,12 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     private final byte callbackId;
     private final TxOptions txOptions;
 
-    public static SendDataMsg get(int nodeId, Byteable data, TxOptions txOptions) {
+    public static SendDataMsg of(int nodeId, Byteable data, TxOptions txOptions) {
         return new SendDataMsg(nodeId, data, txOptions);
     }
 
-    public static SendDataMsg get(int nodeId, Byteable data) {
-        return get(nodeId, data, TX_ALL);
+    public static SendDataMsg of(int nodeId, Byteable data) {
+        return of(nodeId, data, TX_ALL);
     }
 
     private SendDataMsg(int nodeId, Byteable data, TxOptions txOptions) {
@@ -68,12 +71,18 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(Controller controller) {
-        return new ReqResTransaction<>(controller, this);
+    public Transaction createTransaction(Controller controller) {
+        if (txOptions.get() != 0x00) {
+            return new ReplyCallbackTransaction<>(controller, this, this::parseReply, this::parseCallback);
+        }
+        else {
+            return new ReplyTransaction<>(controller, this, this::parseReply);
+        }
     }
 
-    @Override
-    public Optional<Response> parseResponse(ByteList data) {
+    private Optional<Reply> parseReply(UnknownMessage msg) {
+        ByteList data = msg.getDataBytes();
+
         if (data.get(0) != ID) {
             return Optional.empty();
         }
@@ -83,25 +92,29 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
         if (data.size() > 3) {
             byte funcId = data.get(2);
             byte txStatus = data.get(3);
-            return Optional.of(new Response(value, funcId, txStatus));
+            return Optional.of(new Reply(value, funcId, txStatus));
         }
 
-        return Optional.of(new Response(value));
+        return Optional.of(new Reply(value));
+    }
+
+    private Optional<Callback> parseCallback(UnknownMessage msg) {
+        return Optional.of(new Callback());
     }
 
     @ToString
-    public static class Response implements InboundMessage {
+    public static class Reply implements InboundMessage {
         private final boolean value;
         private final Byte funcId;
         private final Byte txStatus;
 
-        private Response(boolean value) {
+        private Reply(boolean value) {
             this.value = value;
             this.funcId = null;
             this.txStatus = null;
         }
 
-        private Response(boolean value, byte funcId, byte txStatus) {
+        private Reply(boolean value, byte funcId, byte txStatus) {
             this.value = value;
             this.funcId = funcId;
             this.txStatus = txStatus;
@@ -114,7 +127,20 @@ public class SendDataMsg implements ResponsiveMessage<ReqResTransaction<Response
 
         @Override
         public InboundMessageEvent createEvent(Controller controller) {
-            return new SendDataEvent(controller, this);
+            return new SendDataReplyEvent(controller, this);
+        }
+    }
+
+    @ToString
+    public static class Callback implements InboundMessage {
+        @Override
+        public DataFrameType getType() {
+            return DataFrameType.REQ;
+        }
+
+        @Override
+        public InboundMessageEvent createEvent(Controller controller) {
+            return new SendDataCallbackEvent(controller, this);
         }
     }
 

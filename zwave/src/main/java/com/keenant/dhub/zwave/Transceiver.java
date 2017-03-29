@@ -171,6 +171,10 @@ public class Transceiver implements Runnable {
     private void process(ByteList buffer) {
         Transaction txn = updateTransaction(null).orElse(null);
 
+        if (!buffer.isEmpty()) {
+            log.log(Level.DEBUG, "Buffer: " + buffer);
+        }
+
         while (!buffer.isEmpty()) {
             byte first = buffer.get(0);
 
@@ -206,43 +210,39 @@ public class Transceiver implements Runnable {
                     break;
                 }
 
-                // Existing transaction in progress...
-                if (txn != null) {
-                    ByteList data = buffer.subList(1, length);
-                    DataFrameType type = DataFrameType.valueOf(data.remove(0));
+                ByteList data = buffer.subList(1, length + 1);
+                DataFrameType type = DataFrameType.valueOf(data.remove(0));
 
-                    UnknownMessage frame = new UnknownMessage(data, type);
-                    InboundMessage resolved = txn.handle(frame);
+                UnknownMessage unknown = new UnknownMessage(data, type);
+                InboundMessage msg;
 
-                    log.log(Level.DEBUG, "Reading... " + data + "(" + type + ")");
-                    log.log(Level.DEV, "Reading... " + resolved);
-
-                    txn = updateTransaction(txn).orElse(null);
-                }
-                // Something unexpected came?
-                else {
-                    ByteList data = buffer.subList(1, length + 1);
-                    DataFrameType type = DataFrameType.valueOf(data.remove(0));
-
-                    InboundMessage msg = InboundMessage.parse(data, type).orElse(null);
-
-                    if (msg != null) {
-                        controller.onReceive(msg);
-                    }
-
-                    log.log(Level.DEBUG, "Reading... " + data + " (" + type + ")");
-
-                    if (msg == null) {
-                        log.log(Level.DEV, "Reading... Unknown message: " + data + " (" + type + ")");
-                    } else {
-                        log.log(Level.DEV, "Reading... " + msg + " (" + type + ")");
-                    }
-
-                    write(Status.ACK);
-                }
-
+                // Todo: change this to buffer = sublist
                 for (int i = 0; i < length + 1; ++i)
                     buffer.remove(0);
+
+                // Existing transaction in progress...
+                if (txn != null) {
+                    msg = txn.handle(unknown);
+                    txn = updateTransaction(txn).orElse(null);
+                }
+                else {
+                    msg = InboundMessage.parse(unknown).orElse(null);
+                }
+
+                // Notify controller of message
+                if (msg != null && !msg.equals(unknown)) {
+                    controller.onReceive(msg);
+                }
+
+                log.log(Level.DEBUG, "Reading... " + data + " (" + type + ")");
+                if (msg == null) {
+                    log.log(Level.DEV, "Reading... " + unknown);
+                }
+                else {
+                    log.log(Level.DEV, "Reading... " + msg);
+                }
+
+                write(Status.ACK);
             }
         }
     }

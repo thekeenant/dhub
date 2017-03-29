@@ -5,32 +5,32 @@ import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import com.keenant.dhub.zwave.messages.ApplicationUpdateMsg;
+import com.keenant.dhub.zwave.messages.RemoveNodeMsg;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
 
 public interface InboundMessage {
     /**
      * List of parsers. They all take two arguments, a {@link ByteList} and a {@link DataFrameType},
      * and return an {@link Optional< InboundMessage >}.
      */
-    List<BiFunction<ByteList, DataFrameType, Optional<? extends InboundMessage>>> MSG_PARSERS = Arrays.asList(
+    List<MessageParser> MSG_PARSERS = Arrays.asList(
             ApplicationCommandMsg::parse,
             ApplicationUpdateMsg::parse
     );
 
     /**
      * Parse incoming data to an object.
-     * @param data The raw data.
-     * @param type The data frame type.
+     * @param msg The inbound unknown message.
      * @return The parsed message, or empty if we don't understand it.
      */
-    static Optional<InboundMessage> parse(ByteList data, DataFrameType type) {
-        for (BiFunction<ByteList, DataFrameType, Optional<? extends InboundMessage>> parser : MSG_PARSERS) {
+    @SuppressWarnings("unchecked")
+    static Optional<InboundMessage> parse(UnknownMessage msg) {
+        for (MessageParser parser : MSG_PARSERS) {
             try {
-                Optional<? extends InboundMessage> opt = parser.apply(data, type);
+                Optional<? extends InboundMessage> opt = parser.parseMessage(msg);
                 if (opt.isPresent()) {
                     // Optional<? extends IncomingMessage> to Optional<IncomingMessage>
                     return Optional.of(opt.get());
