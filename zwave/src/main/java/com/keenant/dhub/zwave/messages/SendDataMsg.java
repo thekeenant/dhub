@@ -39,7 +39,7 @@ public class SendDataMsg implements Message<Transaction> {
     }
 
     public static SendDataMsg of(int nodeId, Byteable data) {
-        return of(nodeId, data, TX_ALL);
+        return of(nodeId, data, new TxOptions());
     }
 
     private SendDataMsg(int nodeId, Byteable data, TxOptions txOptions) {
