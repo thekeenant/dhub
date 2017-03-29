@@ -10,7 +10,13 @@ import com.keenant.dhub.zwave.cmd.MultiChannelCmd;
 import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
+import com.keenant.dhub.zwave.messages.AddNodeMsg;
+import com.keenant.dhub.zwave.messages.NodeListMsg;
+import com.keenant.dhub.zwave.messages.RemoveNodeMsg;
 import com.keenant.dhub.zwave.messages.SendDataMsg;
+import com.keenant.dhub.zwave.transaction.AddNodeTransaction;
+import com.keenant.dhub.zwave.transaction.RemoveNodeTransaction;
+import com.keenant.dhub.zwave.transaction.ReplyTransaction;
 import net.engio.mbassy.listener.Handler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,17 +26,28 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Some Z-Wave library examples.
  */
 public class ZWaveExamples {
-    private static final int NODE_ID = 37; // arbitrary, pick one that is your device
-    private static final int MC_NODE_ID = 38; // some multi channel node id
+    private static final int NODE_ID = 43; // arbitrary, pick one that is your device
+    private static final int MC_NODE_ID = 41; // some multi channel node id
 
     private static Controller controller;
 
     public static void main(String[] args) throws Exception {
-        Logging.setLevel(Level.DEV);
+        Logging.setLevel(Level.INFO);
 
         controller = new Controller("ttyACM0");
         controller.start();
 
+        ReplyTransaction<NodeListMsg.Reply> txn = controller.send(NodeListMsg.get());
+        txn.await();
+        if (txn.getReply().isPresent()) {
+            System.out.println("Nodes on network: " + txn.getReply().get().getNodeIds());
+        }
+        else {
+            System.out.println("Unable to get nodes on network...");
+            return;
+        }
+
+        addRemoveNodeTest();
         basicSetTest(NODE_ID);
         basicGetReportTest(NODE_ID);
         multiChannelTest(MC_NODE_ID);
@@ -161,6 +178,33 @@ public class ZWaveExamples {
             cmd = MultiChannelCmd.encap(i, SwitchBinaryCmd.set(false));
             controller.send(SendDataMsg.of(nodeId, cmd));
             sleep(100);
+        }
+
+        System.out.println("done\n");
+    }
+
+    /**
+     * Test add/remove node.
+     */
+    private static void addRemoveNodeTest() {
+        System.out.println("addRemoveNodeTest start");
+
+        System.out.println("  Press a button on a device to add it...");
+        // This will automatically timeout after sometime.
+        AddNodeTransaction txn1 = controller.send(AddNodeMsg.start());
+
+        // But we're going to force stop it before the timeout...
+        sleep(5000);
+        if (!txn1.isFinished()) {
+            txn1.stop();
+        }
+
+        System.out.println("  Press a button on a device to remove it...");
+        // This times out too
+        RemoveNodeTransaction txn2 = controller.send(RemoveNodeMsg.start());
+        sleep(5000);
+        if (!txn2.isFinished()) {
+            txn2.stop();
         }
 
         System.out.println("done\n");
