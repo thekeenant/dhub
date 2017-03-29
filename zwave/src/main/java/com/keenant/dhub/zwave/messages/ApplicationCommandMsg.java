@@ -1,10 +1,7 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.InboundCmd;
-import com.keenant.dhub.zwave.InboundMessage;
-import com.keenant.dhub.zwave.UnknownCmd;
+import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.ApplicationCommandEvent;
 import com.keenant.dhub.zwave.exception.DataFrameException;
@@ -22,31 +19,10 @@ public class ApplicationCommandMsg implements InboundMessage {
     private final int nodeId;
     private final InboundCmd command;
 
-    public ApplicationCommandMsg(byte status, int nodeId, InboundCmd command) {
-        this.status = status;
-        this.nodeId = nodeId;
-        this.command = command;
-    }
+    public static Optional<ApplicationCommandMsg> parse(UnknownMessage msg) throws DataFrameException {
+        ByteList data = msg.getDataBytes();
+        DataFrameType type = msg.getType();
 
-    public int getNodeId() {
-        return nodeId;
-    }
-
-    public Optional<InboundCmd> getCmd() {
-        return Optional.ofNullable(command);
-    }
-
-    @Override
-    public DataFrameType getType() {
-        return DataFrameType.REQ;
-    }
-
-    @Override
-    public InboundMessageEvent createEvent(Controller controller) {
-        return new ApplicationCommandEvent(controller, this);
-    }
-
-    public static Optional<ApplicationCommandMsg> parse(ByteList data, DataFrameType type) throws DataFrameException {
         if (ID != data.get(0)) {
             return Optional.empty();
         }
@@ -71,5 +47,29 @@ public class ApplicationCommandMsg implements InboundMessage {
         } catch (Exception e) {
             throw new DataFrameException();
         }
+    }
+
+    private ApplicationCommandMsg(byte status, int nodeId, InboundCmd command) {
+        this.status = status;
+        this.nodeId = nodeId;
+        this.command = command;
+    }
+
+    public int getNodeId() {
+        return nodeId;
+    }
+
+    public Optional<InboundCmd> getCmd() {
+        return Optional.ofNullable(command);
+    }
+
+    @Override
+    public DataFrameType getType() {
+        return DataFrameType.REQ;
+    }
+
+    @Override
+    public InboundMessageEvent createEvent(Controller controller) {
+        return new ApplicationCommandEvent(controller, this);
     }
 }

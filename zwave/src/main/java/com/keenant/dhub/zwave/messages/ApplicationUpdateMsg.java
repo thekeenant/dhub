@@ -3,6 +3,7 @@ package com.keenant.dhub.zwave.messages;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundMessage;
+import com.keenant.dhub.zwave.UnknownMessage;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.ApplicationUpdateEvent;
 import com.keenant.dhub.zwave.exception.DataFrameException;
@@ -16,20 +17,20 @@ import java.util.Optional;
 public class ApplicationUpdateMsg implements InboundMessage {
     private static final byte ID = (byte) 0x49;
 
-    private final Status status;
+    private final State status;
     private final int nodeId;
 
-    public enum Status {
+    public enum State {
         NODE_INFO_RECEIVED((byte) 0x84);
 
         private byte value;
 
-        Status(byte value) {
+        State(byte value) {
             this.value = value;
         }
 
-        public static Optional<Status> valueOf(byte value) {
-            for (Status status : values()) {
+        public static Optional<State> valueOf(byte value) {
+            for (State status : values()) {
                 if (status.value == value) {
                     return Optional.of(status);
                 }
@@ -39,12 +40,12 @@ public class ApplicationUpdateMsg implements InboundMessage {
         }
     }
 
-    private ApplicationUpdateMsg(Status status, int nodeId) {
+    private ApplicationUpdateMsg(State status, int nodeId) {
         this.status = status;
         this.nodeId = nodeId;
     }
 
-    public Status getStatus() {
+    public State getStatus() {
         return status;
     }
 
@@ -62,7 +63,10 @@ public class ApplicationUpdateMsg implements InboundMessage {
         return new ApplicationUpdateEvent(controller, this);
     }
 
-    public static Optional<ApplicationUpdateMsg> parse(ByteList data, DataFrameType type) throws DataFrameException {
+    public static Optional<ApplicationUpdateMsg> parse(UnknownMessage msg) throws DataFrameException {
+        ByteList data = msg.getDataBytes();
+        DataFrameType type = msg.getType();
+        
         if (ID != data.get(0)) {
             return Optional.empty();
         }
@@ -72,7 +76,7 @@ public class ApplicationUpdateMsg implements InboundMessage {
         }
 
         try {
-            Status status = Status.valueOf(data.get(1)).orElse(null);
+            State status = State.valueOf(data.get(1)).orElse(null);
 
             if (status == null) {
                 // Todo: What should we do here?

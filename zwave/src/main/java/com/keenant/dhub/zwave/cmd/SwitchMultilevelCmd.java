@@ -111,8 +111,6 @@ public class SwitchMultilevelCmd {
             return Optional.empty();
         }
 
-        System.out.println(data);
-
         byte type = data.get(1);
 
         if (type == ID_REPORT) {

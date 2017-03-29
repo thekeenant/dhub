@@ -3,18 +3,19 @@ package com.keenant.dhub.zwave.messages;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundMessage;
-import com.keenant.dhub.zwave.ResponsiveMessage;
+import com.keenant.dhub.zwave.Message;
+import com.keenant.dhub.zwave.UnknownMessage;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
-import com.keenant.dhub.zwave.event.message.MemoryGetIdEvent;
+import com.keenant.dhub.zwave.event.message.MemoryGetIdReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
-import com.keenant.dhub.zwave.messages.MemoryGetIdMsg.Response;
-import com.keenant.dhub.zwave.transaction.ReqResTransaction;
+import com.keenant.dhub.zwave.messages.MemoryGetIdMsg.Reply;
+import com.keenant.dhub.zwave.transaction.ReplyTransaction;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Response>, Response> {
+public class MemoryGetIdMsg implements Message<ReplyTransaction<Reply>> {
     private static final byte ID = (byte) 0x20;
 
     private static final MemoryGetIdMsg INSTANCE = new MemoryGetIdMsg();
@@ -38,12 +39,13 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
     }
 
     @Override
-    public ReqResTransaction<Response> createTransaction(Controller controller) {
-        return new ReqResTransaction<>(controller, this);
+    public ReplyTransaction<Reply> createTransaction(Controller controller) {
+        return new ReplyTransaction<>(controller, this, this::parseReply);
     }
 
-    @Override
-    public Optional<Response> parseResponse(ByteList data) {
+    private Optional<Reply> parseReply(UnknownMessage msg) {
+        ByteList data = msg.getDataBytes();
+
         if (ID != data.get(0)) {
             return Optional.empty();
         }
@@ -58,15 +60,15 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
 
         int nodeId = data.get(5) & 0xFF;
 
-        return Optional.of(new Response(homeId, nodeId));
+        return Optional.of(new Reply(homeId, nodeId));
     }
 
     @ToString
-    public static class Response implements InboundMessage {
+    public static class Reply implements InboundMessage {
         private final long homeId;
         private final int nodeId;
 
-        public Response(long homeId, int nodeId) {
+        public Reply(long homeId, int nodeId) {
             this.homeId = homeId;
             this.nodeId = nodeId;
         }
@@ -86,7 +88,7 @@ public class MemoryGetIdMsg implements ResponsiveMessage<ReqResTransaction<Respo
 
         @Override
         public InboundMessageEvent createEvent(Controller controller) {
-            return new MemoryGetIdEvent(controller, this);
+            return new MemoryGetIdReplyEvent(controller, this);
         }
     }
 }

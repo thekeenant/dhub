@@ -14,6 +14,7 @@ public class Hub {
     }
 
     public void start() {
+        zserver.init();
         zserver.start();
     }
 

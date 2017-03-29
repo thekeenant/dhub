@@ -8,6 +8,7 @@ import com.keenant.dhub.zwave.frame.Status;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 public abstract class Transaction {
     private final Controller controller;
@@ -77,6 +78,16 @@ public abstract class Transaction {
         }
 
         return end - startTimeNanos;
+    }
+
+    /**
+     * @return The time in milliseconds from when the transaction started to when it ended.
+     *         If it is in progress, it is the time up until present time.
+     * @throws UnsupportedOperationException If the transaction hasn't started.
+     */
+    public long millisAlive() throws UnsupportedOperationException {
+        long nanos = nanosAlive();
+        return TimeUnit.MILLISECONDS.convert(nanos, TimeUnit.NANOSECONDS);
     }
 
     protected void addToOutboundQueue(Frame frame) {
