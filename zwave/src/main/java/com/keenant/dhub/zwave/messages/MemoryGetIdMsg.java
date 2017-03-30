@@ -20,7 +20,7 @@ public class MemoryGetIdMsg implements Message<ReplyTransaction<Reply>> {
 
     private static final MemoryGetIdMsg INSTANCE = new MemoryGetIdMsg();
 
-    public static final MemoryGetIdMsg get() {
+    public static MemoryGetIdMsg get() {
         return INSTANCE;
     }
 

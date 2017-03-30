@@ -14,7 +14,11 @@ public class Main {
 
         String line;
         while ((line = console.readLine()) != null) {
-            System.out.println("got " + line);
+            hub.onCommand(line.split(" "));
+        }
+
+        while (true) {
+
         }
     }
 }

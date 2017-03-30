@@ -1,6 +1,7 @@
 package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.Listener;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-public class Controller {
+public class Controller implements Lifecycle {
     /**
      * Sorts the transaction queue.
      */
@@ -235,6 +236,7 @@ public class Controller {
      *
      * @throws IllegalStateException If the controller is already started.
      */
+    @Override
     public void start() throws IllegalStateException {
         if (isAlive()) {
             throw new IllegalStateException("Controller already started.");
@@ -250,6 +252,7 @@ public class Controller {
      *
      * Trashes any current transaction. The transaction queue is unaffected.
      */
+    @Override
     public void stop() {
         if (!isAlive()) {
             return;
