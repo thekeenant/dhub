@@ -3,7 +3,7 @@ package com.keenant.dhub.hub.zwave;
 import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.Listener;
-import com.keenant.dhub.hub.plugins.Plugin;
+import com.keenant.dhub.hub.plugin.Plugin;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
 import com.keenant.dhub.zwave.event.message.MemoryGetIdReplyEvent;
 import io.airlift.airline.Cli.CliBuilder;
