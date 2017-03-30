@@ -1,4 +1,4 @@
-package com.keenant.dhub.hub.plugins;
+package com.keenant.dhub.hub.plugin;
 
 import com.keenant.dhub.core.Lifecycle;
 import io.airlift.airline.Cli.CliBuilder;

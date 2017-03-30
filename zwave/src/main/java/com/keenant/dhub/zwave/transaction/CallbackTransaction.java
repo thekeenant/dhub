@@ -34,6 +34,10 @@ public abstract class CallbackTransaction<C extends InboundMessage> extends Tran
 
     @Override
     public boolean isFinished() {
+        if (!isStarted()) {
+            return false;
+        }
+
         if (!getOutboundQueue().isEmpty()) {
             return false;
         }

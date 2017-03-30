@@ -1,5 +1,6 @@
 package com.keenant.dhub.examples;
 
+import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.Listener;
@@ -34,8 +35,10 @@ public class ZWaveExamples {
     public static void main(String[] args) throws Exception {
         Logging.setLevel(Level.INFO);
 
-        controller = new Controller("ttyACM0");
+        controller = new Controller(SerialPort.getCommPorts()[1]);
         controller.start();
+
+        System.out.println(controller);
 
         ReplyTransaction<NodeListMsg.Reply> txn = controller.send(NodeListMsg.get());
         txn.await();
@@ -172,12 +175,12 @@ public class ZWaveExamples {
             // On
             Cmd cmd = MultiChannelCmd.encap(i, SwitchBinaryCmd.set(true));
             controller.send(SendDataMsg.of(nodeId, cmd));
-            sleep(100);
+            sleep(200);
 
             // Off
             cmd = MultiChannelCmd.encap(i, SwitchBinaryCmd.set(false));
             controller.send(SendDataMsg.of(nodeId, cmd));
-            sleep(100);
+            sleep(200);
         }
 
         System.out.println("done\n");
@@ -198,6 +201,7 @@ public class ZWaveExamples {
         if (!txn1.isFinished()) {
             txn1.stop();
         }
+        txn1.await();
 
         System.out.println("  Press a button on a device to remove it...");
         // This times out too
@@ -206,6 +210,7 @@ public class ZWaveExamples {
         if (!txn2.isFinished()) {
             txn2.stop();
         }
+        txn2.await();
 
         System.out.println("done\n");
     }

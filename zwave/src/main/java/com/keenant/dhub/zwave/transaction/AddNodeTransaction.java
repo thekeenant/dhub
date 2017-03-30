@@ -54,19 +54,12 @@ public class AddNodeTransaction extends CallbackTransaction<Callback> {
 
     @Override
     protected boolean isFinished(Callback latestCallback) {
-        if (stopQueued) {
-            if (!stopAckReceived) {
-                return false;
-            }
-
-            if (latestCallback != null) {
-                State state = latestCallback.getState();
-                if (state == State.DONE || state == State.FAILED) {
-                    return true;
-                }
-            }
-
+        if (!isStarted()) {
             return false;
+        }
+
+        if (stopQueued) {
+            return stopAckReceived;
         }
 
         if (latestCallback != null) {

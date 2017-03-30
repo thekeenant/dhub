@@ -118,11 +118,11 @@ public class Controller implements Lifecycle {
         else {
             // Move front of the queue to current, return that.
             Transaction txn = transactions.remove(0).getObject();
+            txn.setStartTimeNanos(System.nanoTime());
             current = txn;
-            txn.start();
 
             log.log(Level.DEV, "Transaction started: " + current);
-            txn.setStartTimeNanos(System.nanoTime());
+            txn.start();
 
             // Transaction start event
             TransactionStartEvent event = new TransactionStartEvent(this, current);
