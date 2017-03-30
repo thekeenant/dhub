@@ -12,10 +12,7 @@ import com.keenant.dhub.zwave.messages.NodeListMsg.Reply;
 import com.keenant.dhub.zwave.transaction.ReplyTransaction;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @ToString
 public class NodeListMsg implements Message<ReplyTransaction<Reply>> {
@@ -58,7 +55,7 @@ public class NodeListMsg implements Message<ReplyTransaction<Reply>> {
         byte version = data.get(1);
         byte capabilities = data.get(2);
 
-        List<Integer> nodeIds = new ArrayList<>();
+        Set<Integer> nodeIds = new HashSet<>();
         if (NODE_BITMASK_SIZE == data.get(3)) {
             for (int i = 0; i < NODE_BITMASK_SIZE; i++) {
                 byte curr = data.get(i + 4);
@@ -70,7 +67,7 @@ public class NodeListMsg implements Message<ReplyTransaction<Reply>> {
                 }
             }
         }
-        nodeIds = Collections.unmodifiableList(nodeIds);
+        nodeIds = Collections.unmodifiableSet(nodeIds);
 
         byte chipType = data.get(data.size() - 2);
         byte chipVersion = data.get(data.size() - 1);
@@ -82,11 +79,11 @@ public class NodeListMsg implements Message<ReplyTransaction<Reply>> {
     public static class Reply implements InboundMessage {
         private final byte version;
         private final byte capabilities;
-        private final List<Integer> nodeIds;
+        private final Set<Integer> nodeIds;
         private final byte chipType;
         private final byte chipVersion;
 
-        public Reply(byte version, byte capabilities, List<Integer> nodeIds, byte chipType, byte chipVersion) {
+        public Reply(byte version, byte capabilities, Set<Integer> nodeIds, byte chipType, byte chipVersion) {
             this.version = version;
             this.capabilities = capabilities;
             this.nodeIds = nodeIds;
@@ -112,7 +109,7 @@ public class NodeListMsg implements Message<ReplyTransaction<Reply>> {
             return capabilities;
         }
 
-        public List<Integer> getNodeIds() {
+        public Set<Integer> getNodeIds() {
             return nodeIds;
         }
 
