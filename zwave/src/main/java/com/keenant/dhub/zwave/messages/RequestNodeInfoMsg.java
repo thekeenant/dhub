@@ -9,13 +9,13 @@ import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.RequestNodeInfoReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.RequestNodeInfoMsg.Reply;
-import com.keenant.dhub.zwave.transaction.ReplyTransaction;
+import com.keenant.dhub.zwave.transaction.ReplyCallbackTransaction;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class RequestNodeInfoMsg implements Message<ReplyTransaction<Reply>> {
+public class RequestNodeInfoMsg implements Message<ReplyCallbackTransaction<Reply, ApplicationUpdateMsg>> {
     private static final byte ID = (byte) 0x60;
 
     private final int nodeId;
@@ -39,8 +39,8 @@ public class RequestNodeInfoMsg implements Message<ReplyTransaction<Reply>> {
     }
 
     @Override
-    public ReplyTransaction<Reply> createTransaction(Controller controller) {
-        return new ReplyTransaction<>(controller, this, this::parseReply);
+    public ReplyCallbackTransaction<Reply, ApplicationUpdateMsg> createTransaction(Controller controller) {
+        return new ReplyCallbackTransaction<>(controller, this, this::parseReply, ApplicationUpdateMsg::parse);
     }
 
     private Optional<Reply> parseReply(UnknownMessage msg) {

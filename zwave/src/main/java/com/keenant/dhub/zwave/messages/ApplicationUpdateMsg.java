@@ -40,33 +40,10 @@ public class ApplicationUpdateMsg implements InboundMessage {
         }
     }
 
-    private ApplicationUpdateMsg(State status, int nodeId) {
-        this.status = status;
-        this.nodeId = nodeId;
-    }
-
-    public State getStatus() {
-        return status;
-    }
-
-    public int getNodeId() {
-        return nodeId;
-    }
-
-    @Override
-    public DataFrameType getType() {
-        return DataFrameType.REQ;
-    }
-
-    @Override
-    public InboundMessageEvent createEvent(Controller controller) {
-        return new ApplicationUpdateEvent(controller, this);
-    }
-
     public static Optional<ApplicationUpdateMsg> parse(UnknownMessage msg) throws DataFrameException {
         ByteList data = msg.getDataBytes();
         DataFrameType type = msg.getType();
-        
+
         if (ID != data.get(0)) {
             return Optional.empty();
         }
@@ -93,5 +70,28 @@ public class ApplicationUpdateMsg implements InboundMessage {
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    private ApplicationUpdateMsg(State status, int nodeId) {
+        this.status = status;
+        this.nodeId = nodeId;
+    }
+
+    public State getStatus() {
+        return status;
+    }
+
+    public int getNodeId() {
+        return nodeId;
+    }
+
+    @Override
+    public DataFrameType getType() {
+        return DataFrameType.REQ;
+    }
+
+    @Override
+    public InboundMessageEvent createEvent(Controller controller) {
+        return new ApplicationUpdateEvent(controller, this);
     }
 }

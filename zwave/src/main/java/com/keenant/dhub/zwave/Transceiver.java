@@ -96,7 +96,7 @@ public class Transceiver implements Runnable {
      * @param byteable The data to write to the port. It is converted
      *                 to bytes via #{@link Byteable#toBytes()}.
      */
-    public void write(Byteable byteable) {
+    private void write(Byteable byteable) {
         log.log(Level.DEBUG, "Writing... " + byteable.toBytes());
         log.log(Level.DEV, "Writing... " + byteable);
 
@@ -107,13 +107,15 @@ public class Transceiver implements Runnable {
     /**
      * Grab the current transaction from the device and write any
      * outbound frames that the transaction has queued to send.
-     * @param txn T The last acquired transaction by the transceiver.
+     *
      * @return The current transaction, acquired from controller.
      */
-    private Optional<Transaction> updateTransaction(Transaction txn) {
-        if (txn == null) {
-            txn = controller.updateCurrent().orElse(null);
+    private Optional<Transaction> updateTransaction(ByteList currentBuffer) {
+        if (!currentBuffer.isEmpty()) {
+            return controller.getCurrent();
         }
+
+        Transaction txn = controller.updateCurrent().orElse(null);
 
         while (txn != null && !txn.getOutboundQueue().isEmpty()) {
             write(txn.getOutboundQueue().poll());
@@ -169,12 +171,7 @@ public class Transceiver implements Runnable {
      * @param buffer The data buffer.
      */
     private void process(ByteList buffer) {
-        Transaction txn = updateTransaction(null).orElse(null);
-
-        if (!buffer.isEmpty()) {
-            System.out.println(buffer);
-            System.out.println(txn);
-        }
+        Transaction txn = updateTransaction(buffer).orElse(null);
 
         if (!buffer.isEmpty()) {
             log.log(Level.DEBUG, "Buffer: " + buffer);
@@ -186,13 +183,13 @@ public class Transceiver implements Runnable {
             // Check if the next byte is a status
             Status status = Status.fromByte(first).orElse(null);
             if (status != null) {
+                buffer.remove(0);
+
                 log.log(Level.DEBUG, "Reading... " + new ByteList(first));
                 log.log(Level.DEV, "Reading... " + status);
                 if (txn != null) {
                     txn.handle(status);
-                    txn = updateTransaction(txn).orElse(null);
                 }
-                buffer.remove(0);
             }
             else {
                 // Expecting SOF at this point, not found?
@@ -228,7 +225,6 @@ public class Transceiver implements Runnable {
                 // Existing transaction in progress...
                 if (txn != null) {
                     msg = txn.handle(unknown);
-                    txn = updateTransaction(txn).orElse(null);
                 }
                 else {
                     msg = InboundMessage.parse(unknown).orElse(null);
