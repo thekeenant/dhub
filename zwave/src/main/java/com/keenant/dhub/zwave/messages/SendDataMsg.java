@@ -2,10 +2,7 @@ package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Byteable;
-import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.InboundMessage;
-import com.keenant.dhub.zwave.Message;
-import com.keenant.dhub.zwave.UnknownMessage;
+import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.SendDataCallbackEvent;
 import com.keenant.dhub.zwave.event.message.SendDataReplyEvent;
@@ -36,11 +33,11 @@ public class SendDataMsg implements Message<ReplyCallbackTransaction<Reply, Call
     private final byte callbackId;
     private final TxOptions txOptions;
 
-    public SendDataMsg(int nodeId, Byteable data) {
-        this(nodeId, data, TX_ALL);
+    public SendDataMsg(int nodeId, Cmd cmd) {
+        this(nodeId, cmd, TX_ALL);
     }
 
-    public SendDataMsg(int nodeId, Byteable data, TxOptions txOptions) {
+    public SendDataMsg(int nodeId, Cmd data, TxOptions txOptions) {
         this.nodeId = nodeId;
         this.data = data;
         this.callbackId = nextCallbackId;

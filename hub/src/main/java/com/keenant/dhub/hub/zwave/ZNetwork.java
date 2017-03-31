@@ -1,7 +1,7 @@
 package com.keenant.dhub.hub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.core.util.Listener;
+import com.keenant.dhub.core.util.EventListener;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundCmd;
@@ -18,7 +18,7 @@ import net.engio.mbassy.listener.Handler;
 import java.util.*;
 
 @ToString
-public class ZNetwork extends Controller implements Listener {
+public class ZNetwork extends Controller implements EventListener {
     private final ZPlugin plugin;
     private final Map<Integer, ZNode> nodes;
 

@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
-import com.keenant.dhub.core.util.Listener;
+import com.keenant.dhub.core.util.EventListener;
 import com.keenant.dhub.core.util.PrioritizedObject;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.event.*;
@@ -12,6 +12,7 @@ import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import com.keenant.dhub.zwave.transaction.Transaction;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.error.IPublicationErrorHandler.ConsoleLogger;
+import net.engio.mbassy.listener.Handler;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -33,7 +34,7 @@ public class Controller implements Lifecycle {
     };
 
     private final SerialPort port;
-    private final MBassador<Event> bus;
+    private final MBassador<ControllerEvent> bus;
     private final List<PrioritizedObject<Transaction>> transactions;
     private final Logger log;
     private Transceiver transceiver;
@@ -72,11 +73,11 @@ public class Controller implements Lifecycle {
             InboundCmd cmd = appMsg.getCmd();
 
             CmdEvent event = cmd.createEvent(this, appMsg.getNodeId());
-            bus.post(event).asynchronously();
+            bus.publishAsync(event);
         }
 
         InboundMessageEvent event = msg.createEvent(this);
-        bus.post(event).asynchronously();
+        bus.publishAsync(event);
     }
 
     /**
@@ -95,7 +96,7 @@ public class Controller implements Lifecycle {
 
                 // Transaction finished event
                 TransactionCompleteEvent event = new TransactionCompleteEvent(this, current);
-                bus.post(event).asynchronously();
+                bus.publishAsync(event);
 
                 // Clear current if it is finished.
                 current = null;
@@ -121,17 +122,53 @@ public class Controller implements Lifecycle {
 
             // Transaction start event
             TransactionStartEvent event = new TransactionStartEvent(this, current);
-            bus.post(event).asynchronously();
+            bus.publishAsync(event);
 
             return Optional.of(txn);
         }
     }
 
     /**
+     * Listen to a single event on this controller.
+     *
+     * This is not really recommended for production usage, as it actually listens to all controller events,
+     * checking each one to see if it is of the type you provide. Best to listen to
+     * specific event via subscribing a listener, see {@link this#subscribe(EventListener)}.
+     *
+     * @param type The type of event to listen to. It can be as generic as a {@link ControllerEvent}, or
+     *             as specific as you wish.
+     * @param handler The handler, which will be called upon receiving the event.
+     * @param <T> The type of the event.
+     * @return The newly created listener (anonymous object). You can provide this object
+     *         to the #{@link this#unsubscribe(EventListener)} method to stop this handler from getting
+     *         events.
+     */
+    public <T extends ControllerEvent> EventListener listen(Class<T> type, EventHandler<T> handler) {
+        // Generic listener which handles all controller events.
+
+        EventListener listener = new EventListener() {
+            @Handler
+            @SuppressWarnings("unchecked")
+            public void onEvent(ControllerEvent event) {
+                if (!type.isInstance(event)) {
+                    return;
+                }
+
+                handler.handle(this, (T) event);
+            }
+        };
+
+        // Subscribe it
+        subscribe(listener);
+
+        return listener;
+    }
+
+    /**
      * Subscribe a listener to this controller's events.
      * @param listener The listener that contains various event subscriptions.
      */
-    public void subscribe(Listener listener) {
+    public void subscribe(EventListener listener) {
         bus.subscribe(listener);
     }
 
@@ -139,7 +176,7 @@ public class Controller implements Lifecycle {
      * Unsubscribe an already registered listener from this controller's events.
      * @param listener The listener.
      */
-    public void unsubscribe(Listener listener) {
+    public void unsubscribe(EventListener listener) {
         bus.unsubscribe(listener);
     }
 
