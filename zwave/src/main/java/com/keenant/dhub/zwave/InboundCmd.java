@@ -21,7 +21,7 @@ import java.util.function.Function;
 public interface InboundCmd extends Byteable {
     /**
      * The list of command parser functions. They all take a {@link ByteList} and
-     * return an {@link Optional< InboundCmd >}.
+     * return an {@link Optional<InboundCmd >}.
      */
     List<Function<ByteList, Optional<? extends InboundCmd>>> CMD_PARSERS = Arrays.asList(
             BasicCmd::parseReport,

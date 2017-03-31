@@ -33,7 +33,7 @@ public class ZWaveExamples {
     private static Controller controller;
 
     public static void main(String[] args) throws Exception {
-        Logging.setLevel(Level.INFO);
+        Logging.setLevel(Level.DEV);
 
         controller = new Controller(SerialPort.getCommPorts()[1]);
         controller.start();

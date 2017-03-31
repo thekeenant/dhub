@@ -1,11 +1,19 @@
 package com.keenant.dhub.hub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.google.gson.Gson;
+import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.Listener;
-import com.keenant.dhub.hub.plugin.Plugin;
+import com.keenant.dhub.hub.Plugin;
+import com.keenant.dhub.hub.web.WebPlugin;
+import com.keenant.dhub.hub.zwave.ZCommand.SendData;
+import com.keenant.dhub.zwave.cmd.BasicCmd;
+import com.keenant.dhub.zwave.cmd.BasicCmd.Report;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
 import com.keenant.dhub.zwave.event.message.MemoryGetIdReplyEvent;
+import com.keenant.dhub.zwave.messages.SendDataMsg;
+import com.keenant.dhub.zwave.transaction.ReplyCallbackTransaction;
 import io.airlift.airline.Cli.CliBuilder;
 import io.airlift.airline.Cli.GroupBuilder;
 import lombok.ToString;
@@ -15,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @ToString
 public class ZPlugin extends Plugin {
@@ -22,7 +31,7 @@ public class ZPlugin extends Plugin {
 
     private List<ZNetwork> networks;
 
-    public Optional<ZNetwork> getByName(String name) throws IllegalArgumentException {
+    public Optional<ZNetwork> getNetwork(String name) throws IllegalArgumentException {
         if (name == null) {
             throw new IllegalArgumentException("Name cannot be null.");
         }
@@ -34,6 +43,8 @@ public class ZPlugin extends Plugin {
      */
     @Override
     public void init(CliBuilder<Runnable> cli) {
+        Logging.setLevel(Level.DEV);
+
         GroupBuilder<Runnable> cmd = cli.withGroup("zserver");
         cmd.withDefaultCommand(ZCommand.class);
 
@@ -48,6 +59,59 @@ public class ZPlugin extends Plugin {
 
     @Override
     public void start() {
+        Gson gson = new Gson();
+
+        getHub().getPlugin(WebPlugin.class).ifPresent((plugin) -> {
+            plugin.api("/zwave", (http) -> {
+
+                http.path("/networks", () -> {
+                    http.get("", (req, res) -> {
+                        return networks.stream().map(ZNetwork::getName).collect(Collectors.toList());
+                    });
+
+                });
+
+                http.get("/networks/:network/nodes", (req, res) -> {
+                    Optional<ZNetwork> network = getNetwork(req.params("network"));
+                    return network.map(ZNetwork::getNodeIds);
+                });
+
+                http.get("/networks/:network/nodes/:id/basic/set/:level", (req, res) -> {
+                    String networkName = req.params("network");
+                    int id = Integer.parseInt(req.params("id"));
+                    int level = Integer.parseInt(req.params("level"));
+
+                    getNetwork(networkName).ifPresent((network) -> {
+                        network.getNode(id).ifPresent((node) -> {
+                            node.send(BasicCmd.set(level));
+                            node.send(BasicCmd.get());
+                        });
+                    });
+
+                    return "sent";
+                });
+
+                http.get("/networks/:network/nodes/:id/basic/get", (req, res) -> {
+                    String networkName = req.params("network");
+                    int id = Integer.parseInt(req.params("id"));
+
+                    ZNetwork network = getNetwork(networkName).orElse(null);
+
+                    if (network != null) {
+                        ZNode node = network.getNode(id).orElse(null);
+
+                        if (node != null) {
+                            node.send(BasicCmd.get());
+                            return node.latestCmd(BasicCmd.Report.class);
+                        }
+
+                    }
+
+                    return "sent";
+                });
+            });
+        });
+
         networks.forEach(ZNetwork::start);
     }
 
