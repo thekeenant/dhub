@@ -36,6 +36,18 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
         this.callbackParser = callbackParser;
     }
 
+    @Override
+    public SendDataTransaction<T, R> await() {
+        super.await();
+        return this;
+    }
+
+    @Override
+    public SendDataTransaction<T, R> await(int timeout) {
+        super.await(timeout);
+        return this;
+    }
+
     public Optional<Reply> getReply() {
         return Optional.ofNullable(reply);
     }

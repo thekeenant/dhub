@@ -34,21 +34,22 @@ public abstract class Transaction {
         return startTimeNanos > 0;
     }
 
-    public void await() {
+    public Transaction await() {
         await(-1);
+        return this;
     }
 
-    public boolean await(int timeout) {
+    public Transaction await(int timeout) {
         long start = System.currentTimeMillis();
         while (!isComplete()) {
             long now = System.currentTimeMillis();
 
             if (!controller.isAlive()) {
-                return false;
+                return this;
             }
 
             if (timeout > 0 && now - start > timeout) {
-                return false;
+                return this;
             }
 
             try {
@@ -58,7 +59,7 @@ public abstract class Transaction {
             }
         }
 
-        return true;
+        return this;
     }
 
     /**

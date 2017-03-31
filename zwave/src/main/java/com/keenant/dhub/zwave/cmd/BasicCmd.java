@@ -139,7 +139,7 @@ public class BasicCmd implements CmdClass<Report> {
     }
 
     @ToString
-    public static class Set implements Cmd {
+    public static class Set implements Cmd<InboundCmd> {
         private final int value;
 
         private Set(int value) {
@@ -152,7 +152,7 @@ public class BasicCmd implements CmdClass<Report> {
         }
 
         @Override
-        public Optional<MessageParser> getResponseParser() {
+        public Optional<CmdParser<InboundCmd>> getResponseParser() {
             return Optional.empty();
         }
     }

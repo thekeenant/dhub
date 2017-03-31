@@ -42,6 +42,18 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
         this.callbackParser = callbackParser;
     }
 
+    @Override
+    public ReplyCallbackTransaction<R, C> await() {
+        super.await();
+        return this;
+    }
+
+    @Override
+    public ReplyCallbackTransaction<R, C> await(int timeout) {
+        super.await(timeout);
+        return this;
+    }
+
     public Optional<R> getReply() {
         return Optional.ofNullable(reply);
     }

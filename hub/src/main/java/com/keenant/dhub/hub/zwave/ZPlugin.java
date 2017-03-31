@@ -9,8 +9,11 @@ import com.keenant.dhub.hub.Plugin;
 import com.keenant.dhub.hub.web.WebPlugin;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.cmd.BasicCmd;
+import com.keenant.dhub.zwave.cmd.BasicCmd.Get;
+import com.keenant.dhub.zwave.cmd.BasicCmd.Report;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
 import com.keenant.dhub.zwave.event.message.MemoryGetIdReplyEvent;
+import com.keenant.dhub.zwave.transaction.SendDataTransaction;
 import io.airlift.airline.Cli.CliBuilder;
 import io.airlift.airline.Cli.GroupBuilder;
 import lombok.ToString;
@@ -97,8 +100,7 @@ public class ZPlugin extends Plugin {
                         ZNode node = network.getNode(id).orElse(null);
 
                         if (node != null) {
-                            node.send(CmdClass.BASIC.get());
-                            return node.latestCmd(BasicCmd.Report.class);
+                            return node.send(CmdClass.BASIC.get()).await().getResponse();
                         }
 
                     }
