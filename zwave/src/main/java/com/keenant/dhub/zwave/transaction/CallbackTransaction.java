@@ -33,7 +33,7 @@ public abstract class CallbackTransaction<C extends InboundMessage> extends Tran
     }
 
     @Override
-    public boolean isFinished() {
+    public boolean isComplete() {
         if (!isStarted()) {
             return false;
         }
@@ -51,11 +51,11 @@ public abstract class CallbackTransaction<C extends InboundMessage> extends Tran
     }
 
     @Override
-    public InboundMessage handle(UnknownMessage frame) {
-        C callback = parser.parseMessage(frame).orElse(null);
+    public InboundMessage handle(UnknownMessage msg) {
+        C callback = parser.parseMessage(msg).orElse(null);
         if (callback == null) {
             failed = true;
-            return frame;
+            return msg;
         }
         else {
             callbacks.add(callback);

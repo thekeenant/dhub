@@ -60,11 +60,15 @@ public class ApplicationUpdateMsg implements InboundMessage {
                 return Optional.empty();
             }
 
-            byte nodeId = data.get(2);
+            int nodeId = data.get(2) & 0xFF;
             int length = data.get(3);
 
             // Todo
-            ByteList nodeData = data.subList(4, 4 + length);
+            byte basic = data.get(4);
+            byte generic = data.get(5);
+            byte specific = data.get(6);
+
+            ByteList nodeData = data.subList(7, 7 + length - 3);
 
             return Optional.of(new ApplicationUpdateMsg(status, nodeId));
         } catch (Exception e) {

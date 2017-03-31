@@ -3,7 +3,6 @@ package com.keenant.dhub.zwave.transaction;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.frame.Status;
-import com.keenant.dhub.zwave.messages.RequestNodeInfoMsg;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -31,7 +30,7 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
     private enum State {
         SENT,
         WAITING,
-        RECEIVED_RES,
+        RECEIVED_REPLY,
         DONE,
         FAILED
     }
@@ -54,37 +53,31 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
     }
 
     @Override
-    public boolean isFinished() {
+    public boolean isComplete() {
         return getOutboundQueue().isEmpty() && (state == State.DONE || state == State.FAILED);
     }
 
     @Override
     public void handle(Status status) {
-        switch (state) {
-            case SENT:
-                state = status == Status.ACK ? State.WAITING : State.FAILED;
-                break;
-            default:
-                state = State.FAILED;
-                break;
-        }
+        // Todo
     }
 
     @Override
-    public InboundMessage handle(UnknownMessage frame) {
+    public InboundMessage handle(UnknownMessage msg) {
         switch (state) {
             case WAITING:
-                reply = replyParser.parseMessage(frame).orElse(null);
+                reply = replyParser.parseMessage(msg).orElse(null);
 
                 if (reply == null) {
                     state = State.FAILED;
                     break;
                 }
 
-                state = State.RECEIVED_RES;
+                state = State.RECEIVED_REPLY;
                 return reply;
-            case RECEIVED_RES:
-                callback = callbackParser.parseMessage(frame).orElse(null);
+
+            case RECEIVED_REPLY:
+                callback = callbackParser.parseMessage(msg).orElse(null);
 
                 if (callback == null) {
                     state = State.FAILED;
@@ -93,12 +86,12 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
 
                 state = State.DONE;
                 return callback;
+
             default:
-                getController().send(message, Priority.HIGHEST);
                 state = State.FAILED;
                 break;
         }
 
-        return frame;
+        return msg;
     }
 }

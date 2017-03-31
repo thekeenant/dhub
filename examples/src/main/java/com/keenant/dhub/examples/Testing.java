@@ -4,9 +4,14 @@ import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.cmd.BasicCmd;
+import com.keenant.dhub.zwave.cmd.BasicCmd.Get;
+import com.keenant.dhub.zwave.cmd.BasicCmd.Report;
 import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
+import com.keenant.dhub.zwave.event.message.ApplicationUpdateEvent;
 import com.keenant.dhub.zwave.messages.*;
+import com.keenant.dhub.zwave.transaction.SendDataTransaction;
 
 public class Testing {
     public static void main(String[] args) throws InterruptedException {
@@ -29,8 +34,8 @@ public class Testing {
         controller.send(new RequestNodeInfoMsg(43));
         controller.send(new RequestNodeInfoMsg(43));
 
-        controller.send(new SendDataMsg(43, CmdClass.BASIC.get()));
-        controller.send(new SendDataMsg(43, CmdClass.BASIC.get()));
-        controller.send(new SendDataMsg(43, CmdClass.BASIC.get()));
+        SendDataTransaction<Get, ApplicationCommandMsg<Report>> txn = controller.send(new SendDataMsg<>(43, CmdClass.BASIC.get()));
+        txn.await();
+
     }
 }

@@ -197,7 +197,7 @@ public class ZWaveExamples {
 
         // But we're going to force stop it before the timeout...
         sleep(5000);
-        if (!txn1.isFinished()) {
+        if (!txn1.isComplete()) {
             txn1.stop();
         }
         txn1.await();
@@ -206,7 +206,7 @@ public class ZWaveExamples {
         // This times out too
         RemoveNodeTransaction txn2 = controller.send(new RemoveNodeMsg());
         sleep(5000);
-        if (!txn2.isFinished()) {
+        if (!txn2.isComplete()) {
             txn2.stop();
         }
         txn2.await();

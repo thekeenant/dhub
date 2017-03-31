@@ -1,24 +1,16 @@
 package com.keenant.dhub.zwave;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.core.util.Byteable;
-import com.keenant.dhub.zwave.cmd.BasicCmd;
-import com.keenant.dhub.zwave.cmd.MultiChannelCmd;
-import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd;
-import com.keenant.dhub.zwave.cmd.SwitchMultilevelCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * A command class that we don't send out. They are received and must be parsed
  * via {@link this#parse(ByteList)} and the controller must be notified via events,
  * {@link this#createEvent(Controller, int)}.
  */
-public interface InboundCmd extends Byteable {
+public interface InboundCmd {
     /**
      * Parse an inbound command class.
      * @param data The raw data for the command class, including its ID.
@@ -43,9 +35,4 @@ public interface InboundCmd extends Byteable {
      * @return The new command event.
      */
     CmdEvent createEvent(Controller controller, int nodeId);
-
-    @Override
-    default ByteList toBytes() {
-        throw new UnsupportedOperationException("Inbound command can't be converted back to bytes.");
-    }
 }

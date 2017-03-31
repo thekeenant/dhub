@@ -29,7 +29,7 @@ public class AddNodeTransaction extends CallbackTransaction<Callback> {
         if (!isStarted()) {
             throw new IllegalStateException("Remove node transaction not started.");
         }
-        if (isFinished()) {
+        if (isComplete()) {
             throw new IllegalStateException("Remove node transaction already finished.");
         }
 

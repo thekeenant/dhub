@@ -47,7 +47,7 @@ public class ReplyTransaction<R extends InboundMessage> extends Transaction {
     }
 
     @Override
-    public boolean isFinished() {
+    public boolean isComplete() {
         return getOutboundQueue().isEmpty() && (state == State.DONE || state == State.FAILED);
     }
 
@@ -64,10 +64,10 @@ public class ReplyTransaction<R extends InboundMessage> extends Transaction {
     }
 
     @Override
-    public InboundMessage handle(UnknownMessage frame) {
+    public InboundMessage handle(UnknownMessage msg) {
         switch (state) {
             case WAITING:
-                reply = parser.parseMessage(frame).orElse(null);
+                reply = parser.parseMessage(msg).orElse(null);
                 if (reply == null) {
                     state = State.FAILED;
                     break;
@@ -80,6 +80,6 @@ public class ReplyTransaction<R extends InboundMessage> extends Transaction {
                 break;
         }
 
-        return frame;
+        return msg;
     }
 }
