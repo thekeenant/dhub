@@ -2,6 +2,7 @@ package com.keenant.dhub.zwave.transaction;
 
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.frame.Status;
+import com.keenant.dhub.zwave.messages.SendDataMsg.Callback;
 import lombok.ToString;
 
 import java.util.ArrayList;
@@ -18,6 +19,18 @@ public abstract class CallbackTransaction<C extends InboundMessage> extends Tran
         super(controller);
         this.message = message;
         this.parser = parser;
+    }
+
+    @Override
+    public CallbackTransaction<C> await() {
+        super.await();
+        return this;
+    }
+
+    @Override
+    public CallbackTransaction<C> await(int timeout) {
+        super.await(timeout);
+        return this;
     }
 
     public List<C> getCallbacks() {

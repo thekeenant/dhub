@@ -36,6 +36,18 @@ public class ReplyTransaction<R extends InboundMessage> extends Transaction {
         this.reply = null;
     }
 
+    @Override
+    public ReplyTransaction<R> await() {
+        super.await();
+        return this;
+    }
+
+    @Override
+    public ReplyTransaction<R> await(int timeout) {
+        super.await(timeout);
+        return this;
+    }
+
     public Optional<R> getReply() {
         return Optional.ofNullable(reply);
     }

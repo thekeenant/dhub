@@ -2,11 +2,9 @@ package com.keenant.dhub.hub.zwave;
 
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Cmd;
-import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.InboundCmd;
-import com.keenant.dhub.zwave.cmd.BasicCmd;
 import com.keenant.dhub.zwave.messages.SendDataMsg;
-import com.keenant.dhub.zwave.transaction.ReplyCallbackTransaction;
+import com.keenant.dhub.zwave.transaction.SendDataTransaction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,23 +22,19 @@ public class ZNode {
         this.latestCmds = new HashMap<>();
     }
 
-    public void send(BasicCmd.Set cmd) {
-        network.send(new SendDataMsg(id, cmd));
-        send(CmdClass.BASIC.get());
+    public <C extends Cmd<R>, R extends InboundCmd> SendDataTransaction<C, R> send(C cmd) {
+        return network.send(new SendDataMsg<>(id, cmd));
     }
 
-    public void send(BasicCmd.Get cmd) {
-        network.send(new SendDataMsg(id, cmd));
-    }
-
-    public void send(Cmd cmd, Priority priority) {
-        network.send(new SendDataMsg(id, cmd), priority);
+    public <C extends Cmd<R>, R extends InboundCmd> SendDataTransaction<C, R> send(C cmd, Priority priority) {
+        return network.send(new SendDataMsg<>(id, cmd), priority);
     }
 
     public void updateCmd(InboundCmd cmd) {
         latestCmds.put(cmd.getClass(), cmd);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends InboundCmd> Optional<T> latestCmd(Class<T> cmd) {
         return Optional.ofNullable((T) latestCmds.get(cmd));
     }

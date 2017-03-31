@@ -21,6 +21,18 @@ public class RemoveNodeTransaction extends CallbackTransaction<Callback> {
         super(controller, message, parser);
     }
 
+    @Override
+    public RemoveNodeTransaction await() {
+        super.await();
+        return this;
+    }
+
+    @Override
+    public RemoveNodeTransaction await(int timeout) {
+        super.await(timeout);
+        return this;
+    }
+
     /**
      * Send the stop remove node data frame.
      * @throws IllegalStateException If the transaction hasn't started, or it has already finished.
