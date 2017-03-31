@@ -12,13 +12,17 @@ For examples, see the [examples module](https://github.com/thekeenant/dhub/tree/
 
 ```java
 public class Overview {
-    public static void main(String[] args) {    
+    public static void main(String[] args) {
+        // Create a new controller
         Controller controller = new Controller("ttyACM0");
+        
+        // Start reading/writing to it
+        controller.start();
         
         // Set something to max level (bulb, switch, etc.)
         controller.send(new SendDataMsg(1, CmdClass.BASIC.setMax()));
         
-        // Listen to an event...
+        // Listen to an event
         controller.listen(BasicReportEvent.class, (listener, event) -> {
             int node = event.getNodeId();
             int level = event.getCmd().getValue();
@@ -26,7 +30,7 @@ public class Overview {
             System.out.println("Node #" + node + " = " + level + "%");
         });
         
-        // Request the event that we are expecting by calling this get command...
+        // Request the event that we are expecting by calling this get command
         controller.send(new SendDataMsg(1, CmdClass.BASIC.get()));
     }
 }

@@ -1,7 +1,6 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.core.util.Byteable;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.SendDataCallbackEvent;
@@ -10,15 +9,14 @@ import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Callback;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Reply;
 import com.keenant.dhub.zwave.transaction.ReplyCallbackTransaction;
-import com.keenant.dhub.zwave.transaction.ReplyTransaction;
-import com.keenant.dhub.zwave.transaction.Transaction;
+import com.keenant.dhub.zwave.transaction.SendDataTransaction;
 import com.keenant.dhub.zwave.util.ByteBuilder;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class SendDataMsg implements Message<ReplyCallbackTransaction<Reply, Callback>> {
+public class SendDataMsg<T extends Cmd<R>, R extends InboundMessage> implements Message<SendDataTransaction<T, R>> {
     private static final byte ID = (byte) 0x13;
 
     private static final byte ID_TX_ACK = 0x01;
@@ -29,25 +27,29 @@ public class SendDataMsg implements Message<ReplyCallbackTransaction<Reply, Call
     private static byte nextCallbackId = 0x01;
 
     private final int nodeId;
-    private final Byteable data;
+    private final T cmd;
     private final byte callbackId;
     private final TxOptions txOptions;
 
-    public SendDataMsg(int nodeId, Cmd cmd) {
+    public SendDataMsg(int nodeId, T cmd) {
         this(nodeId, cmd, TX_ALL);
     }
 
-    public SendDataMsg(int nodeId, Cmd data, TxOptions txOptions) {
+    public SendDataMsg(int nodeId, T cmd, TxOptions txOptions) {
         this.nodeId = nodeId;
-        this.data = data;
+        this.cmd = cmd;
         this.callbackId = nextCallbackId;
         nextCallbackId += (byte) 0x01;
         this.txOptions = txOptions;
     }
 
+    public T getCmd() {
+        return cmd;
+    }
+
     @Override
     public ByteList toDataBytes() {
-        ByteList data = this.data.toBytes();
+        ByteList data = this.cmd.toBytes();
 
         ByteList bites = new ByteList();
         bites.add(ID);
@@ -66,14 +68,8 @@ public class SendDataMsg implements Message<ReplyCallbackTransaction<Reply, Call
     }
 
     @Override
-    public ReplyCallbackTransaction<Reply, Callback> createTransaction(Controller controller) {
-        if (txOptions.get() != 0x00) {
-            return new ReplyCallbackTransaction<>(controller, this, this::parseReply, this::parseCallback);
-        }
-        else {
-//            return new ReplyTransaction<>(controller, this, this::parseReply);
-            return null;
-        }
+    public SendDataTransaction<T, R> createTransaction(Controller controller) {
+        return new SendDataTransaction<>(controller, this, this::parseReply, this::parseCallback);
     }
 
     private Optional<Reply> parseReply(UnknownMessage msg) {

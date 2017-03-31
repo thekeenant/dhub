@@ -24,9 +24,9 @@ public abstract class Transaction {
 
     public abstract void start();
 
-    public abstract boolean isFinished();
+    public abstract boolean isComplete();
 
-    public abstract InboundMessage handle(UnknownMessage frame);
+    public abstract InboundMessage handle(UnknownMessage msg);
 
     public abstract void handle(Status status);
 
@@ -40,7 +40,7 @@ public abstract class Transaction {
 
     public boolean await(int timeout) {
         long start = System.currentTimeMillis();
-        while (!isFinished()) {
+        while (!isComplete()) {
             long now = System.currentTimeMillis();
 
             if (!controller.isAlive()) {

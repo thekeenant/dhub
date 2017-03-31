@@ -1,13 +1,12 @@
 package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.zwave.Cmd;
-import com.keenant.dhub.zwave.CmdClass;
-import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.InboundCmd;
+import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
+import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
+import com.keenant.dhub.zwave.messages.ApplicationUpdateMsg;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -64,7 +63,7 @@ public class MultiChannelCmd implements CmdClass {
     }
 
     @ToString
-    public static class EndPointGet implements Cmd {
+    public static class EndPointGet implements Cmd<ApplicationCommandMsg<EndPointReport>> {
         private EndPointGet() {
 
         }
@@ -72,6 +71,11 @@ public class MultiChannelCmd implements CmdClass {
         @Override
         public ByteList toBytes() {
             return new ByteList(ID, ID_END_POINT_GET);
+        }
+
+        @Override
+        public Optional<MessageParser<ApplicationCommandMsg<EndPointReport>>> getResponseParser() {
+            return Optional.of(ApplicationCommandMsg::parse);
         }
     }
 
@@ -120,6 +124,11 @@ public class MultiChannelCmd implements CmdClass {
             ByteList list = new ByteList(ID, ID_ENCAP, sourceEndpoint, destEndpoint);
             list.addAll(cmd.toBytes());
             return list;
+        }
+
+        @Override
+        public Optional<MessageParser> getResponseParser() {
+            return Optional.empty();
         }
     }
 }

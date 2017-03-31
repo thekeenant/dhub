@@ -1,13 +1,11 @@
 package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.zwave.Cmd;
-import com.keenant.dhub.zwave.CmdClass;
-import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.InboundCmd;
+import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchBinaryReportEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
+import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -94,10 +92,15 @@ public class SwitchBinaryCmd implements CmdClass {
             // Todo: Final byte is duration
             return new ByteList(ID, ID_SET, value ? (byte) 0xFF : (byte) 0x00, 0x00);
         }
+
+        @Override
+        public Optional<MessageParser> getResponseParser() {
+            return Optional.empty();
+        }
     }
 
     @ToString
-    public static class Get implements Cmd {
+    public static class Get implements Cmd<ApplicationCommandMsg<Report>> {
         private Get() {
 
         }
@@ -105,6 +108,11 @@ public class SwitchBinaryCmd implements CmdClass {
         @Override
         public ByteList toBytes() {
             return new ByteList(ID, ID_GET);
+        }
+
+        @Override
+        public Optional<MessageParser<ApplicationCommandMsg<Report>>> getResponseParser() {
+            return Optional.of(ApplicationCommandMsg::parse);
         }
     }
 

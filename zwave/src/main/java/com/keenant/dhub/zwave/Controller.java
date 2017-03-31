@@ -90,7 +90,7 @@ public class Controller implements Lifecycle {
      */
     Optional<Transaction> updateCurrent() {
         if (current != null) {
-            if (current.isFinished()) {
+            if (current.isComplete()) {
                 log.log(Level.DEV, "Transaction complete: " + current);
                 current.setCompletionTimeNanos(System.nanoTime());
 

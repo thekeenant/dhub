@@ -1,7 +1,10 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.zwave.*;
+import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.InboundCmd;
+import com.keenant.dhub.zwave.InboundMessage;
+import com.keenant.dhub.zwave.UnknownMessage;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.ApplicationCommandEvent;
 import com.keenant.dhub.zwave.exception.DataFrameException;
@@ -12,14 +15,15 @@ import lombok.ToString;
 import java.util.Optional;
 
 @ToString
-public class ApplicationCommandMsg implements InboundMessage {
+public class ApplicationCommandMsg<C extends InboundCmd> implements InboundMessage {
     private static final byte ID = (byte) 0x04;
 
     private final byte status;
     private final int nodeId;
-    private final InboundCmd cmd;
+    private final C cmd;
 
-    public static Optional<ApplicationCommandMsg> parse(UnknownMessage msg) throws DataFrameException {
+    @SuppressWarnings("unchecked")
+    public static <T extends InboundCmd> Optional<ApplicationCommandMsg<T>> parse(UnknownMessage msg) throws DataFrameException {
         ByteList data = msg.getDataBytes();
         DataFrameType type = msg.getType();
 
@@ -37,19 +41,20 @@ public class ApplicationCommandMsg implements InboundMessage {
             int length = data.get(3);
 
             ByteList cmdData = data.subList(4, 4 + length);
-            InboundCmd cmd = InboundCmd.parse(cmdData).orElse(null);
+
+            T cmd = (T) InboundCmd.parse(cmdData).orElse(null);
 
             if (cmd == null) {
-                cmd = new UnknownCmd(cmdData);
+                return Optional.empty();
             }
 
-            return Optional.of(new ApplicationCommandMsg(status, nodeId, cmd));
+            return Optional.of(new ApplicationCommandMsg<>(status, nodeId, cmd));
         } catch (Exception e) {
             throw new DataFrameException();
         }
     }
 
-    private ApplicationCommandMsg(byte status, int nodeId, InboundCmd cmd) {
+    private ApplicationCommandMsg(byte status, int nodeId, C cmd) {
         this.status = status;
         this.nodeId = nodeId;
         this.cmd = cmd;
@@ -59,7 +64,7 @@ public class ApplicationCommandMsg implements InboundMessage {
         return nodeId;
     }
 
-    public InboundCmd getCmd() {
+    public C getCmd() {
         return cmd;
     }
 

@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>dhub-zwave</artifactId>
+    <description>test</description>
 
     <dependencies>
         <dependency>
