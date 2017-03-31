@@ -1,12 +1,11 @@
 package com.keenant.dhub.hub.web;
 
-import com.keenant.dhub.hub.plugin.Plugin;
+import com.keenant.dhub.hub.Plugin;
 import io.airlift.airline.Cli.CliBuilder;
 import spark.Service;
-import spark.route.RouteOverview;
 
 public class WebPlugin extends Plugin {
-    private Service service;
+    private Service http;
 
     public WebPlugin() {
 
@@ -14,18 +13,27 @@ public class WebPlugin extends Plugin {
 
     @Override
     public void init(CliBuilder<Runnable> cli) {
-        service = Service.ignite();
+        http = Service.ignite();
+        http.ipAddress("localhost");
+        http.port(4567);
     }
 
     @Override
     public void start() {
-        service.ipAddress("localhost");
-        service.port(8080);
-        RouteOverview.enableRouteOverview("/__routes__");
-        service.init();
 
-        service.path("/test", () -> {
-            service.get("/derp", (req, res) -> this);
+        http.before((req, res) -> {
+            String path = req.pathInfo();
+            if (path.endsWith("/")) {
+                res.redirect(path.substring(0, path.length() - 1));
+            }
+        });
+
+        http.init();
+    }
+
+    public void api(String path, ServiceRouteGroup routeGroup) {
+        http.path("/api/v1", () -> {
+            http.path(path, () -> routeGroup.addRoutes(http));
         });
     }
 

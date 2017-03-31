@@ -14,11 +14,10 @@ public class Testing {
         Controller controller = new Controller("ttyACM0");
         controller.start();
 
-        controller.send(VersionMsg.get());
-        controller.send(NodeListMsg.get());
-        controller.send(MemoryGetIdMsg.get());
-
-        controller.send(AddNodeMsg.start());
+        Thread.sleep(2000);
+        System.out.println("Sending");
+        controller.send(RequestNodeInfoMsg.get(43));
+        controller.send(RequestNodeInfoMsg.get(43));
 
 //        Thread.sleep(3000);
 //        controller.send(SendDataMsg.of(37, BasicCmd.set(0)));

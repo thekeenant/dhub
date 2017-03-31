@@ -10,6 +10,8 @@ import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.SendDataCallbackEvent;
 import com.keenant.dhub.zwave.event.message.SendDataReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
+import com.keenant.dhub.zwave.messages.SendDataMsg.Callback;
+import com.keenant.dhub.zwave.messages.SendDataMsg.Reply;
 import com.keenant.dhub.zwave.transaction.ReplyCallbackTransaction;
 import com.keenant.dhub.zwave.transaction.ReplyTransaction;
 import com.keenant.dhub.zwave.transaction.Transaction;
@@ -19,7 +21,7 @@ import lombok.ToString;
 import java.util.Optional;
 
 @ToString
-public class SendDataMsg implements Message<Transaction> {
+public class SendDataMsg implements Message<ReplyCallbackTransaction<Reply, Callback>> {
     private static final byte ID = (byte) 0x13;
 
     private static final byte ID_TX_ACK = 0x01;
@@ -39,7 +41,7 @@ public class SendDataMsg implements Message<Transaction> {
     }
 
     public static SendDataMsg of(int nodeId, Byteable data) {
-        return of(nodeId, data, new TxOptions());
+        return of(nodeId, data, TX_ALL);
     }
 
     private SendDataMsg(int nodeId, Byteable data, TxOptions txOptions) {
@@ -71,12 +73,13 @@ public class SendDataMsg implements Message<Transaction> {
     }
 
     @Override
-    public Transaction createTransaction(Controller controller) {
+    public ReplyCallbackTransaction<Reply, Callback> createTransaction(Controller controller) {
         if (txOptions.get() != 0x00) {
             return new ReplyCallbackTransaction<>(controller, this, this::parseReply, this::parseCallback);
         }
         else {
-            return new ReplyTransaction<>(controller, this, this::parseReply);
+//            return new ReplyTransaction<>(controller, this, this::parseReply);
+            return null;
         }
     }
 

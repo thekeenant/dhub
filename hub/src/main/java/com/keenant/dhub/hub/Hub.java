@@ -1,7 +1,6 @@
 package com.keenant.dhub.hub;
 
 import com.keenant.dhub.core.Lifecycle;
-import com.keenant.dhub.hub.plugin.Plugin;
 import com.keenant.dhub.hub.web.WebPlugin;
 import com.keenant.dhub.hub.zwave.ZPlugin;
 import io.airlift.airline.Cli;
@@ -30,7 +29,13 @@ public class Hub implements Lifecycle {
     public void start() {
         CliBuilder<Runnable> builder = new CliBuilder<>("hub");
 
-        getPlugins().forEach(plugin -> plugin.init(builder));
+        // Initialize plugins
+        getPlugins().forEach(plugin -> {
+            plugin.setHub(this);
+            plugin.init(builder);
+        });
+
+        // Start plugins
         getPlugins().forEach(Plugin::start);
 
         cli = builder.build();

@@ -172,6 +172,11 @@ public class Transceiver implements Runnable {
         Transaction txn = updateTransaction(null).orElse(null);
 
         if (!buffer.isEmpty()) {
+            System.out.println(buffer);
+            System.out.println(txn);
+        }
+
+        if (!buffer.isEmpty()) {
             log.log(Level.DEBUG, "Buffer: " + buffer);
         }
 

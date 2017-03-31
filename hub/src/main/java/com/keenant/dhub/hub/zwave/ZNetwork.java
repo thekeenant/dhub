@@ -4,27 +4,32 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.util.Listener;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.event.message.AddNodeCallbackEvent;
+import com.keenant.dhub.zwave.event.message.ApplicationCommandEvent;
 import com.keenant.dhub.zwave.event.message.NodeListReplyEvent;
 import com.keenant.dhub.zwave.event.message.RemoveNodeCallbackEvent;
 import com.keenant.dhub.zwave.messages.AddNodeMsg;
 import com.keenant.dhub.zwave.messages.NodeListMsg;
 import com.keenant.dhub.zwave.messages.RemoveNodeMsg.State;
+import lombok.ToString;
 import net.engio.mbassy.listener.Handler;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+@ToString
 public class ZNetwork extends Controller implements Listener {
-    private final ZPlugin server;
+    private final ZPlugin plugin;
     private final Map<Integer, ZNode> nodes;
 
-    public ZNetwork(SerialPort port, ZPlugin server) throws IllegalArgumentException {
+    private final List<InboundCmd> cmds;
+
+    public ZNetwork(SerialPort port, ZPlugin plugin) throws IllegalArgumentException {
         super(port);
-        this.server = server;
-        this.nodes = new HashMap<>();
+
+        this.plugin = plugin;
+        nodes = new HashMap<>();
+        cmds = Collections.synchronizedList(new ArrayList<>());
     }
 
     public void start() {
@@ -43,8 +48,19 @@ public class ZNetwork extends Controller implements Listener {
         return nodes.keySet();
     }
 
+    public Optional<ZNode> getNode(int id) {
+        return Optional.ofNullable(nodes.get(id));
+    }
+
     public Collection<ZNode> getNodes() {
         return nodes.values();
+    }
+
+    @Handler
+    public void onCmd(ApplicationCommandEvent event) {
+        getNode(event.getMessage().getNodeId()).ifPresent((node) -> {
+            node.updateCmd(event.getMessage().getCmd());
+        });
     }
 
     @Handler

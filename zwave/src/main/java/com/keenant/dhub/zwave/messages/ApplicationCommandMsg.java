@@ -59,8 +59,8 @@ public class ApplicationCommandMsg implements InboundMessage {
         return nodeId;
     }
 
-    public Optional<InboundCmd> getCmd() {
-        return Optional.ofNullable(command);
+    public InboundCmd getCmd() {
+        return command;
     }
 
     @Override

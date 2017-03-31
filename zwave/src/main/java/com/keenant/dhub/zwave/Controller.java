@@ -13,10 +13,7 @@ import com.keenant.dhub.zwave.transaction.Transaction;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.error.IPublicationErrorHandler.ConsoleLogger;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class Controller implements Lifecycle {
@@ -53,7 +50,7 @@ public class Controller implements Lifecycle {
         }
         this.port = port;
         this.bus = new MBassador<>(new ConsoleLogger(true));
-        this.transactions = new ArrayList<>();
+        this.transactions = Collections.synchronizedList(new ArrayList<>());
         this.log = Logging.getLogger(getName());
     }
 
@@ -72,12 +69,10 @@ public class Controller implements Lifecycle {
     public void onReceive(InboundMessage msg) {
         if (msg instanceof ApplicationCommandMsg) {
             ApplicationCommandMsg appMsg = (ApplicationCommandMsg) msg;
-            InboundCmd cmd = appMsg.getCmd().orElse(null);
+            InboundCmd cmd = appMsg.getCmd();
 
-            if (cmd != null) {
-                CmdEvent event = cmd.createEvent(this, appMsg.getNodeId());
-                bus.post(event).asynchronously();
-            }
+            CmdEvent event = cmd.createEvent(this, appMsg.getNodeId());
+            bus.post(event).asynchronously();
         }
 
         InboundMessageEvent event = msg.createEvent(this);
@@ -152,7 +147,10 @@ public class Controller implements Lifecycle {
      * Clear all upcoming transactions. This does not halt the current transaction.
      */
     public void clearQueue() {
-        transactions.clear();
+        // Todo: Is synchronized necessary
+        synchronized (transactions) {
+            transactions.clear();
+        }
     }
 
     /**
@@ -179,7 +177,9 @@ public class Controller implements Lifecycle {
 
         // Add to list and sort
         transactions.add(new PrioritizedObject<>(txn, priority));
-        transactions.sort(TXN_SORTER);
+        synchronized (transactions) {
+            transactions.sort(TXN_SORTER);
+        }
     }
 
     /**
