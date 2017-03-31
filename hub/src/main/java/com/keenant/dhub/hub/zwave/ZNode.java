@@ -2,6 +2,7 @@ package com.keenant.dhub.hub.zwave;
 
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.Cmd;
+import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.cmd.BasicCmd;
 import com.keenant.dhub.zwave.messages.SendDataMsg;
@@ -24,16 +25,16 @@ public class ZNode {
     }
 
     public void send(BasicCmd.Set cmd) {
-        network.send(SendDataMsg.of(id, cmd));
-        send(BasicCmd.get());
+        network.send(new SendDataMsg(id, cmd));
+        send(CmdClass.BASIC.get());
     }
 
     public void send(BasicCmd.Get cmd) {
-        network.send(SendDataMsg.of(id, cmd));
+        network.send(new SendDataMsg(id, cmd));
     }
 
     public void send(Cmd cmd, Priority priority) {
-        network.send(SendDataMsg.of(id, cmd), priority);
+        network.send(new SendDataMsg(id, cmd), priority);
     }
 
     public void updateCmd(InboundCmd cmd) {

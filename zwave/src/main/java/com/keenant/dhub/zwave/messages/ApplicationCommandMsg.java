@@ -17,7 +17,7 @@ public class ApplicationCommandMsg implements InboundMessage {
 
     private final byte status;
     private final int nodeId;
-    private final InboundCmd command;
+    private final InboundCmd cmd;
 
     public static Optional<ApplicationCommandMsg> parse(UnknownMessage msg) throws DataFrameException {
         ByteList data = msg.getDataBytes();
@@ -49,10 +49,10 @@ public class ApplicationCommandMsg implements InboundMessage {
         }
     }
 
-    private ApplicationCommandMsg(byte status, int nodeId, InboundCmd command) {
+    private ApplicationCommandMsg(byte status, int nodeId, InboundCmd cmd) {
         this.status = status;
         this.nodeId = nodeId;
-        this.command = command;
+        this.cmd = cmd;
     }
 
     public int getNodeId() {
@@ -60,7 +60,7 @@ public class ApplicationCommandMsg implements InboundMessage {
     }
 
     public InboundCmd getCmd() {
-        return command;
+        return cmd;
     }
 
     @Override

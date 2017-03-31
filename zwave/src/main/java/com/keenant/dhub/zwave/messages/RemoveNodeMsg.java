@@ -28,8 +28,6 @@ public class RemoveNodeMsg implements Message<RemoveNodeTransaction> {
     private static final byte STATUS_DONE = 0x06;
     private static final byte STATUS_FAILED = 0x07;
 
-    private static final RemoveNodeMsg ANY = new RemoveNodeMsg(Mode.ANY);
-    private static final RemoveNodeMsg STOP = new RemoveNodeMsg(Mode.STOP);
 
     public enum Mode {
         ANY,
@@ -45,18 +43,14 @@ public class RemoveNodeMsg implements Message<RemoveNodeTransaction> {
         FAILED
     }
 
-    public static RemoveNodeMsg start() {
-        return ANY;
-    }
-
-    public static RemoveNodeMsg stop() {
-        return STOP;
-    }
-
     private final Mode mode;
 
-    private RemoveNodeMsg(Mode mode) {
+    public RemoveNodeMsg(Mode mode) {
         this.mode = mode;
+    }
+
+    public RemoveNodeMsg() {
+        this(Mode.ANY);
     }
 
     @Override

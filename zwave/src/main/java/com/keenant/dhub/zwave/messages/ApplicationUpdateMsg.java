@@ -23,7 +23,7 @@ public class ApplicationUpdateMsg implements InboundMessage {
     public enum State {
         NODE_INFO_RECEIVED((byte) 0x84);
 
-        private byte value;
+        private final byte value;
 
         State(byte value) {
             this.value = value;

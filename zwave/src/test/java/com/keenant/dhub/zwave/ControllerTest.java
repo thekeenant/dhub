@@ -29,7 +29,7 @@ public class ControllerTest {
         Controller control = createController();
         assertFalse(control.updateCurrent().isPresent());
 
-        control.send(MemoryGetIdMsg.get());
+        control.send(new MemoryGetIdMsg());
         assertTrue(control.updateCurrent().isPresent());
     }
 }

@@ -16,6 +16,8 @@ public class Testing {
 
         Thread.sleep(2000);
         System.out.println("Sending");
+
+
         controller.send(RequestNodeInfoMsg.get(43));
         controller.send(RequestNodeInfoMsg.get(43));
 

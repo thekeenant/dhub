@@ -2,10 +2,12 @@ package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Cmd;
+import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
+import com.keenant.dhub.zwave.exception.CommandFrameException;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -13,7 +15,9 @@ import java.util.Optional;
 /**
  * Multi channel command class (v4).
  */
-public class MultiChannelCmd {
+public class MultiChannelCmd implements CmdClass {
+    public static final MultiChannelCmd INSTANCE = new MultiChannelCmd();
+
     private static final byte ID = (byte) 0x60;
 
     private static final byte ID_END_POINT_GET = (byte) 0x07;
@@ -22,35 +26,41 @@ public class MultiChannelCmd {
 
     private static final EndPointGet END_POINT_GET = new EndPointGet();
 
+    private MultiChannelCmd() {
+
+    }
+
     /**
-     * @return The multi endPoint endpoint get command.
+     * @return The multi channel endpoint get command.
      */
-    public static EndPointGet endPointGet() {
+    public EndPointGet endPointGet() {
         return END_POINT_GET;
     }
 
-    public static Optional<EndPointReport> parseEndPointReport(ByteList data) {
-        if (ID != data.get(0)) {
-            return Optional.empty();
-        }
-
-        if (data.get(1) == ID_END_POINT_REPORT) {
-            boolean identical = (data.get(2) & 0x40) > 0;
-            int count = data.get(3) & 0x3F;
-            return Optional.of(new EndPointReport(identical, count));
-        }
-
-        return Optional.empty();
+    /**
+     * Create a new multi endpoint encapsulation of a command.
+     * @param endPoint The mc/destination id (subnode).
+     * @param cmd The command to send to the channel.
+     * @return The created multi mc encapsulation.
+     */
+    public Encap encap(int endPoint, Cmd cmd) {
+        return new Encap(endPoint, cmd);
     }
 
-    /**
-     * Create a new multi endPoint encapsulation of a command.
-     * @param endPoint The endPoint/destination id (subnode).
-     * @param cmd The command to send to the endPoint.
-     * @return The created multi endPoint encapsulation.
-     */
-    public static Encap encap(int endPoint, Cmd cmd) {
-        return new Encap(endPoint, cmd);
+    @Override
+    public InboundCmd parseInboundCmd(ByteList data) throws CommandFrameException {
+        if (data.get(0) == ID_END_POINT_REPORT) {
+            boolean identical = (data.get(1) & 0x40) > 0;
+            int count = data.get(2) & 0x3F;
+            return new EndPointReport(identical, count);
+        }
+
+        throw new CommandFrameException();
+    }
+
+    @Override
+    public byte getId() {
+        return ID;
     }
 
     @ToString

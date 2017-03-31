@@ -20,11 +20,7 @@ public class RequestNodeInfoMsg implements Message<ReplyCallbackTransaction<Repl
 
     private final int nodeId;
 
-    public static RequestNodeInfoMsg get(int nodeId) {
-        return new RequestNodeInfoMsg(nodeId);
-    }
-
-    private RequestNodeInfoMsg(int nodeId) {
+    public RequestNodeInfoMsg(int nodeId) {
         this.nodeId = nodeId;
     }
 

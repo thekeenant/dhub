@@ -12,23 +12,15 @@ import com.keenant.dhub.zwave.messages.NodeListMsg.Reply;
 import com.keenant.dhub.zwave.transaction.ReplyTransaction;
 import lombok.ToString;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @ToString
 public class NodeListMsg implements Message<ReplyTransaction<Reply>> {
     private static final byte ID = (byte) 0x02;
-
     private static final int NODE_BITMASK_SIZE = 29;
-
-    private static final NodeListMsg INSTANCE = new NodeListMsg();
-
-    public static NodeListMsg get() {
-        return INSTANCE;
-    }
-
-    private NodeListMsg() {
-
-    }
 
     @Override
     public ByteList toDataBytes() {

@@ -18,20 +18,17 @@ import java.util.Optional;
 public class AddNodeMsg implements Message<AddNodeTransaction> {
     public static final byte ID = 0x4A;
 
-    public static final byte MODE_ANY = 0x01;
-    public static final byte MODE_STOP = 0x05;
+    private static final byte MODE_ANY = 0x01;
+    private static final byte MODE_STOP = 0x05;
 //    public static final byte MODE_STOP_FAILED = 0x06;
     
-    public static final byte STATUS_LEARN_READY = 0x01;
-    public static final byte STATUS_NODE_FOUND = 0x02;
-    public static final byte STATUS_ADDING_SLAVE = 0x03;
-    public static final byte STATUS_ADDING_CONTROLLER = 0x04;
-    public static final byte STATUS_PROTOCOL_DONE = 0x05;
-    public static final byte STATUS_DONE = 0x06;
-    public static final byte STATUS_FAILED = 0x07;
-
-    private static final AddNodeMsg ANY = new AddNodeMsg(Mode.ANY);
-    private static final AddNodeMsg STOP = new AddNodeMsg(Mode.STOP);
+    private static final byte STATUS_LEARN_READY = 0x01;
+    private static final byte STATUS_NODE_FOUND = 0x02;
+    private static final byte STATUS_ADDING_SLAVE = 0x03;
+    private static final byte STATUS_ADDING_CONTROLLER = 0x04;
+    private static final byte STATUS_PROTOCOL_DONE = 0x05;
+    private static final byte STATUS_DONE = 0x06;
+    private static final byte STATUS_FAILED = 0x07;
 
     public enum Mode {
         ANY,
@@ -48,18 +45,14 @@ public class AddNodeMsg implements Message<AddNodeTransaction> {
         FAILED,
     }
 
-    public static AddNodeMsg start() {
-        return ANY;
-    }
-
-    public static AddNodeMsg stop() {
-        return STOP;
-    }
-
     private final Mode mode;
 
-    private AddNodeMsg(Mode mode) {
+    public AddNodeMsg(Mode mode) {
         this.mode = mode;
+    }
+
+    public AddNodeMsg() {
+        this(Mode.STOP);
     }
 
     @Override
@@ -77,10 +70,10 @@ public class AddNodeMsg implements Message<AddNodeTransaction> {
         if (mode == Mode.STOP) {
             throw new IllegalStateException("Cannot start stop node removal transaction.");
         }
-        return new AddNodeTransaction(controller, this, AddNodeMsg::parseCallback);
+        return new AddNodeTransaction(controller, this, this::parseCallback);
     }
 
-    private static Optional<Callback> parseCallback(UnknownMessage msg) {
+    private Optional<Callback> parseCallback(UnknownMessage msg) {
         ByteList data = msg.getDataBytes();
         if (ID != data.get(0)) {
             return Optional.empty();

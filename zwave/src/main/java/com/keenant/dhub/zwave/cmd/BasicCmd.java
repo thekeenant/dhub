@@ -2,19 +2,21 @@ package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Cmd;
+import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
+import com.keenant.dhub.zwave.exception.CommandFrameException;
 import lombok.ToString;
-
-import java.util.Optional;
 
 /**
  * The basic command class.
  */
 @ToString
-public class BasicCmd {
+public class BasicCmd implements CmdClass {
+    public static final BasicCmd INSTANCE = new BasicCmd();
+
     private static final byte ID = (byte) 0x20;
     private static final byte ID_SET = (byte) 0x01;
     private static final byte ID_GET = (byte) 0x02;
@@ -29,13 +31,17 @@ public class BasicCmd {
     private static final Set SET_ON = new Set(ON_VALUE);
     private static final Get GET = new Get();
 
+    private BasicCmd() {
+
+    }
+
     /**
      * Create a new basic set command.
      * @param value The basic value, between 0 and 99, or 255.
      * @return The new set command.
      * @throws IllegalArgumentException If the value is out of range.
      */
-    public static Set set(int value) throws IllegalArgumentException {
+    public Set set(int value) throws IllegalArgumentException {
         if (value == MIN_VALUE) {
             return SET_MIN;
         }
@@ -56,7 +62,7 @@ public class BasicCmd {
      * @param percent A value in [0,1].
      * @return The set command.
      */
-    public static Set setPercent(double percent) {
+    public Set setPercent(double percent) {
         double bounded;
         if (percent > 1) {
             bounded = 1;
@@ -77,7 +83,7 @@ public class BasicCmd {
      * @param percent A value in [0,1].
      * @return The set command.
      */
-    public static Set setPercent(float percent) {
+    public Set setPercent(float percent) {
         return setPercent((double) percent);
     }
 
@@ -86,7 +92,7 @@ public class BasicCmd {
      *
      * @return The set command.
      */
-    public static Set setMax() {
+    public Set setMax() {
         return SET_MAX;
     }
 
@@ -96,7 +102,7 @@ public class BasicCmd {
      *
      * @return The set command.
      */
-    public static Set setOn() {
+    public Set setOn() {
         return SET_ON;
     }
 
@@ -104,35 +110,32 @@ public class BasicCmd {
      * Create a new basic set command to 0.
      * @return The set command.
      */
-    public static Set setOff() {
+    public Set setOff() {
         return SET_MIN;
     }
 
     /**
      * @return The basic get command.
      */
-    public static Get get() {
+    public Get get() {
         return GET;
     }
 
-    /**
-     * Attempt to parse an inbound basic report command.
-     * @param data The raw data.
-     * @return The report command, empty if the data didn't match.
-     */
-    public static Optional<Report> parseReport(ByteList data) {
-        if (ID != data.get(0)) {
-            return Optional.empty();
-        }
-
-        byte type = data.get(1);
+    @Override
+    public InboundCmd parseInboundCmd(ByteList data) throws CommandFrameException {
+        byte type = data.get(0);
 
         if (type == ID_REPORT) {
-            int value = data.get(2) & 0xFF;
-            return Optional.of(new Report(value));
+            int value = data.get(1) & 0xFF;
+            return new Report(value);
         }
 
-        return Optional.empty();
+        throw new CommandFrameException();
+    }
+
+    @Override
+    public byte getId() {
+        return ID;
     }
 
     @ToString

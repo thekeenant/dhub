@@ -6,6 +6,7 @@ import com.keenant.dhub.zwave.MessageParser;
 import com.keenant.dhub.zwave.frame.Status;
 import com.keenant.dhub.zwave.messages.RemoveNodeMsg;
 import com.keenant.dhub.zwave.messages.RemoveNodeMsg.Callback;
+import com.keenant.dhub.zwave.messages.RemoveNodeMsg.Mode;
 import com.keenant.dhub.zwave.messages.RemoveNodeMsg.State;
 import lombok.ToString;
 
@@ -37,7 +38,7 @@ public class RemoveNodeTransaction extends CallbackTransaction<Callback> {
 
     private void queueStopMsg() {
         stopQueued = true;
-        addToOutboundQueue(RemoveNodeMsg.stop());
+        addToOutboundQueue(new RemoveNodeMsg(Mode.STOP));
     }
 
     @Override

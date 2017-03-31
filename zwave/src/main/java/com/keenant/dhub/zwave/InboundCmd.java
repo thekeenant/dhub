@@ -20,27 +20,17 @@ import java.util.function.Function;
  */
 public interface InboundCmd extends Byteable {
     /**
-     * The list of command parser functions. They all take a {@link ByteList} and
-     * return an {@link Optional<InboundCmd >}.
-     */
-    List<Function<ByteList, Optional<? extends InboundCmd>>> CMD_PARSERS = Arrays.asList(
-            BasicCmd::parseReport,
-            MultiChannelCmd::parseEndPointReport,
-            SwitchBinaryCmd::parseReport,
-            SwitchMultilevelCmd::parseReport
-    );
-
-    /**
      * Parse an inbound command class.
      * @param data The raw data for the command class, including its ID.
      * @return The new command object, empty if we didn't understand it.
      */
     static Optional<InboundCmd> parse(ByteList data) {
-        for (Function<ByteList, Optional<? extends InboundCmd>> parser : CMD_PARSERS) {
-            Optional<? extends InboundCmd> cmd = parser.apply(data);
-            if (cmd.isPresent()) {
-                return Optional.of(cmd.get());
-            }
+        ByteList withoutCmd = data.subList(1, data.size());
+        Optional<CmdClass> cmdClass = CmdClass.getCmdClass(data.get(0));
+
+        if (cmdClass.isPresent()) {
+            InboundCmd converted = cmdClass.get().parseInboundCmd(withoutCmd);
+            return Optional.of(converted);
         }
 
         return Optional.empty();

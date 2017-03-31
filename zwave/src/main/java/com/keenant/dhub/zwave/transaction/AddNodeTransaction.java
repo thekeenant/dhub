@@ -6,6 +6,7 @@ import com.keenant.dhub.zwave.MessageParser;
 import com.keenant.dhub.zwave.frame.Status;
 import com.keenant.dhub.zwave.messages.AddNodeMsg;
 import com.keenant.dhub.zwave.messages.AddNodeMsg.Callback;
+import com.keenant.dhub.zwave.messages.AddNodeMsg.Mode;
 import com.keenant.dhub.zwave.messages.AddNodeMsg.State;
 import lombok.ToString;
 
@@ -37,7 +38,7 @@ public class AddNodeTransaction extends CallbackTransaction<Callback> {
 
     private void queueStopMsg() {
         stopQueued = true;
-        addToOutboundQueue(AddNodeMsg.stop());
+        addToOutboundQueue(new AddNodeMsg(Mode.STOP));
     }
 
     @Override
