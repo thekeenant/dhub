@@ -1,11 +1,9 @@
 package com.keenant.dhub.zwave;
 
-import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.cmd.BasicCmd;
 import com.keenant.dhub.zwave.cmd.MultiChannelCmd;
 import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd;
 import com.keenant.dhub.zwave.cmd.SwitchMultilevelCmd;
-import com.keenant.dhub.zwave.exception.CommandFrameException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +14,7 @@ import java.util.Optional;
  * A Z-Wave command class, which may have multiple
  * different commands within it.
  */
-public interface CmdClass<I extends InboundCmd> {
+public interface CmdClass<I extends InboundCmd> extends CmdParser<I> {
     BasicCmd BASIC = BasicCmd.INSTANCE;
     MultiChannelCmd MULTI_CHANNEL = MultiChannelCmd.INSTANCE;
     SwitchBinaryCmd SWITCH_BINARY = SwitchBinaryCmd.INSTANCE;
@@ -57,16 +55,6 @@ public interface CmdClass<I extends InboundCmd> {
         }
         return classes;
     }
-
-    /**
-     * Parse a command that we receive, typically from a node via
-     * {@link com.keenant.dhub.zwave.messages.ApplicationCommandMsg}.
-     *
-     * @param data The command data, excluding the first byte which would be the command id.
-     * @return The parsed command.
-     * @throws CommandFrameException If the command was unable to be processed.
-     */
-    I parseInboundCmd(ByteList data) throws CommandFrameException;
 
     /**
      * @return The unique command class id, as specified by Z-Wave specifications.

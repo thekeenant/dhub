@@ -7,6 +7,6 @@ import java.util.Optional;
 /**
  * A Z-Wave command class command.
  */
-public interface Cmd<R extends InboundMessage> extends Byteable {
-    Optional<MessageParser<R>> getResponseParser();
+public interface Cmd<R extends InboundCmd> extends Byteable {
+    Optional<CmdParser<R>> getResponseParser();
 }

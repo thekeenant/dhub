@@ -2,6 +2,7 @@ package com.keenant.dhub.zwave.transaction;
 
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.frame.Status;
+import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import com.keenant.dhub.zwave.messages.SendDataMsg;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Callback;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Reply;
@@ -9,14 +10,13 @@ import lombok.ToString;
 
 import java.util.Optional;
 
-@ToString(exclude = {"replyParser", "callbackParser", "responseParser"})
-public class SendDataTransaction<T extends Cmd<R>, R extends InboundMessage> extends Transaction {
+@ToString(exclude = {"replyParser", "callbackParser"})
+public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends Transaction {
     private final SendDataMsg<T, R> message;
     private final MessageParser<Reply> replyParser;
     private final MessageParser<Callback> callbackParser;
-    private final MessageParser<R> responseParser;
-    private State state;
 
+    private State state;
     private Reply reply;
     private Callback callback;
     private R response;
@@ -34,7 +34,6 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundMessage> ext
         this.message = message;
         this.replyParser = replyParser;
         this.callbackParser = callbackParser;
-        responseParser = message.getCmd().getResponseParser().orElse(null);
     }
 
     public Optional<Reply> getReply() {
@@ -67,6 +66,8 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundMessage> ext
 
     @Override
     public InboundMessage handle(UnknownMessage msg) {
+        CmdParser<R> responseParser = message.getCmd().getResponseParser().orElse(null);
+
         switch (state) {
             case SENT:
                 reply = replyParser.parseMessage(msg).orElse(null);
@@ -92,7 +93,9 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundMessage> ext
                 return callback;
 
             case RECEIVED_CALLBACK:
-                response = responseParser.parseMessage(msg).orElse(null);
+                // These generics aren't safe...
+                ApplicationCommandMsg<R> cmdMessage = ApplicationCommandMsg.<R>parse(msg).orElse(null);
+                response = cmdMessage.getCmd();
 
                 if (response == null) {
                     state = State.FAILED;
@@ -100,7 +103,7 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundMessage> ext
                 }
 
                 state = State.DONE;
-                return response;
+                return cmdMessage;
 
             default:
                 state = State.FAILED;

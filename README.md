@@ -24,14 +24,24 @@ public class Overview {
         
         // Listen to an event
         controller.listen(BasicReportEvent.class, (listener, event) -> {
+            BasicCmd.Report report = event.getCmd();
             int node = event.getNodeId();
-            int level = event.getCmd().getValue();
+            int level = report.getValue();
 
             System.out.println("Node #" + node + " = " + level + "%");
         });
         
         // Request the event that we are expecting by calling this get command
         controller.send(new SendDataMsg(1, CmdClass.BASIC.get()));
+ 
+        // The following is equivalent to the previous get + report combination, but
+        // it's synchronous. We force this thread to wait for the transaction to finish.
+        SendDataTransaction<Get, Report> txn = controller.send(new SendDataMsg<>(1, CmdClass.BASIC.get()));
+        txn.await();
+        
+        // Here's the report - it's wrapped as optional because sometimes transactions fail...
+        Optional<Report> opt = txn.getResponse();
+        opt.ifPresent((report) -> System.out.println("Node #1" + " = " + report.getValue() + "%"));
     }
 }
 ```

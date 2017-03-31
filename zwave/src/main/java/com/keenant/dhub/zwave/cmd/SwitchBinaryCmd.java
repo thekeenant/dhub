@@ -2,10 +2,10 @@ package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.*;
+import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd.Report;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchBinaryReportEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
-import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -14,7 +14,7 @@ import java.util.Optional;
  * The binary switch command class.
  */
 @ToString
-public class SwitchBinaryCmd implements CmdClass {
+public class SwitchBinaryCmd implements CmdClass<Report> {
     public static final SwitchBinaryCmd INSTANCE = new SwitchBinaryCmd();
 
     private static final byte ID = (byte) 0x25;
@@ -63,7 +63,7 @@ public class SwitchBinaryCmd implements CmdClass {
     }
 
     @Override
-    public InboundCmd parseInboundCmd(ByteList data) throws CommandFrameException {
+    public Report parseInboundCmd(ByteList data) throws CommandFrameException {
         byte type = data.get(0);
 
         if (type == ID_REPORT) {
@@ -100,7 +100,7 @@ public class SwitchBinaryCmd implements CmdClass {
     }
 
     @ToString
-    public static class Get implements Cmd<ApplicationCommandMsg<Report>> {
+    public static class Get implements Cmd<Report> {
         private Get() {
 
         }
@@ -111,8 +111,8 @@ public class SwitchBinaryCmd implements CmdClass {
         }
 
         @Override
-        public Optional<MessageParser<ApplicationCommandMsg<Report>>> getResponseParser() {
-            return Optional.of(ApplicationCommandMsg::parse);
+        public Optional<CmdParser<Report>> getResponseParser() {
+            return Optional.of(INSTANCE);
         }
     }
 

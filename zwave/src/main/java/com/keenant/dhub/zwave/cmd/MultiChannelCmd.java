@@ -2,6 +2,7 @@ package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.*;
+import com.keenant.dhub.zwave.cmd.MultiChannelCmd.EndPointReport;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
@@ -14,7 +15,7 @@ import java.util.Optional;
 /**
  * Multi channel command class (v4).
  */
-public class MultiChannelCmd implements CmdClass {
+public class MultiChannelCmd implements CmdClass<EndPointReport> {
     public static final MultiChannelCmd INSTANCE = new MultiChannelCmd();
 
     private static final byte ID = (byte) 0x60;
@@ -47,7 +48,7 @@ public class MultiChannelCmd implements CmdClass {
     }
 
     @Override
-    public InboundCmd parseInboundCmd(ByteList data) throws CommandFrameException {
+    public EndPointReport parseInboundCmd(ByteList data) throws CommandFrameException {
         if (data.get(0) == ID_END_POINT_REPORT) {
             boolean identical = (data.get(1) & 0x40) > 0;
             int count = data.get(2) & 0x3F;
@@ -63,7 +64,7 @@ public class MultiChannelCmd implements CmdClass {
     }
 
     @ToString
-    public static class EndPointGet implements Cmd<ApplicationCommandMsg<EndPointReport>> {
+    public static class EndPointGet implements Cmd<EndPointReport> {
         private EndPointGet() {
 
         }
@@ -74,8 +75,8 @@ public class MultiChannelCmd implements CmdClass {
         }
 
         @Override
-        public Optional<MessageParser<ApplicationCommandMsg<EndPointReport>>> getResponseParser() {
-            return Optional.of(ApplicationCommandMsg::parse);
+        public Optional<CmdParser<EndPointReport>> getResponseParser() {
+            return Optional.of(INSTANCE);
         }
     }
 

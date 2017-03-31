@@ -6,9 +6,6 @@ import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.SendDataCallbackEvent;
 import com.keenant.dhub.zwave.event.message.SendDataReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
-import com.keenant.dhub.zwave.messages.SendDataMsg.Callback;
-import com.keenant.dhub.zwave.messages.SendDataMsg.Reply;
-import com.keenant.dhub.zwave.transaction.ReplyCallbackTransaction;
 import com.keenant.dhub.zwave.transaction.SendDataTransaction;
 import com.keenant.dhub.zwave.util.ByteBuilder;
 import lombok.ToString;
@@ -16,7 +13,7 @@ import lombok.ToString;
 import java.util.Optional;
 
 @ToString
-public class SendDataMsg<T extends Cmd<R>, R extends InboundMessage> implements Message<SendDataTransaction<T, R>> {
+public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Message<SendDataTransaction<C, R>> {
     private static final byte ID = (byte) 0x13;
 
     private static final byte ID_TX_ACK = 0x01;
@@ -27,15 +24,15 @@ public class SendDataMsg<T extends Cmd<R>, R extends InboundMessage> implements 
     private static byte nextCallbackId = 0x01;
 
     private final int nodeId;
-    private final T cmd;
+    private final C cmd;
     private final byte callbackId;
     private final TxOptions txOptions;
 
-    public SendDataMsg(int nodeId, T cmd) {
+    public SendDataMsg(int nodeId, C cmd) {
         this(nodeId, cmd, TX_ALL);
     }
 
-    public SendDataMsg(int nodeId, T cmd, TxOptions txOptions) {
+    public SendDataMsg(int nodeId, C cmd, TxOptions txOptions) {
         this.nodeId = nodeId;
         this.cmd = cmd;
         this.callbackId = nextCallbackId;
@@ -43,7 +40,7 @@ public class SendDataMsg<T extends Cmd<R>, R extends InboundMessage> implements 
         this.txOptions = txOptions;
     }
 
-    public T getCmd() {
+    public C getCmd() {
         return cmd;
     }
 
@@ -68,7 +65,7 @@ public class SendDataMsg<T extends Cmd<R>, R extends InboundMessage> implements 
     }
 
     @Override
-    public SendDataTransaction<T, R> createTransaction(Controller controller) {
+    public SendDataTransaction<C, R> createTransaction(Controller controller) {
         return new SendDataTransaction<>(controller, this, this::parseReply, this::parseCallback);
     }
 
