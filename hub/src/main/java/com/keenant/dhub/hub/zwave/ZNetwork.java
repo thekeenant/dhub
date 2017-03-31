@@ -36,7 +36,7 @@ public class ZNetwork extends Controller implements Listener {
         super.start();
         subscribe(this);
 
-        send(NodeListMsg.get());
+        send(new NodeListMsg());
     }
 
     public void stop() {
@@ -66,14 +66,14 @@ public class ZNetwork extends Controller implements Listener {
     @Handler
     public void onAddNode(AddNodeCallbackEvent event) {
         if (event.getMessage().getState() == AddNodeMsg.State.DONE) {
-            send(NodeListMsg.get(), Priority.HIGHEST);
+            send(new NodeListMsg(), Priority.HIGHEST);
         }
     }
 
     @Handler
     public void onRemoveNode(RemoveNodeCallbackEvent event) {
         if (event.getMessage().getState() == State.DONE) {
-            send(NodeListMsg.get(), Priority.HIGHEST);
+            send(new NodeListMsg(), Priority.HIGHEST);
         }
     }
 

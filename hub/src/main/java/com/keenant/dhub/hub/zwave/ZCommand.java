@@ -10,7 +10,7 @@ public class ZCommand implements Runnable {
     }
 
     @Command(name = "send")
-    public static class SendData implements Runnable {
+    public static class SendDataCmd implements Runnable {
 
         @Override
         public void run() {

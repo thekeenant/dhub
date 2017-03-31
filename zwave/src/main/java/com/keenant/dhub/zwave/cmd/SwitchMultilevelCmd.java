@@ -3,10 +3,12 @@ package com.keenant.dhub.zwave.cmd;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.core.util.Cast;
 import com.keenant.dhub.zwave.Cmd;
+import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchMultilevelReport;
+import com.keenant.dhub.zwave.exception.CommandFrameException;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -15,7 +17,9 @@ import java.util.Optional;
  * The basic command class.
  */
 @ToString
-public class SwitchMultilevelCmd {
+public class SwitchMultilevelCmd implements CmdClass {
+    public static final SwitchMultilevelCmd INSTANCE = new SwitchMultilevelCmd();
+
     private static final byte ID = (byte) 0x26;
     private static final byte ID_SET = (byte) 0x01;
     private static final byte ID_GET = (byte) 0x02;
@@ -28,13 +32,17 @@ public class SwitchMultilevelCmd {
     private static final Set SET_MAX = new Set(MAX_VALUE);
     private static final Get GET = new Get();
 
+    private SwitchMultilevelCmd() {
+
+    }
+
     /**
      * Create a new basic set command.
      * @param value The basic value, between 0 and 99, or 255.
      * @return The new set command.
      * @throws IllegalArgumentException If the value is out of range.
      */
-    public static Set set(int value) throws IllegalArgumentException {
+    public Set set(int value) throws IllegalArgumentException {
         if (value == MIN_VALUE) {
             return SET_MIN;
         }
@@ -52,7 +60,7 @@ public class SwitchMultilevelCmd {
      * @param percent A value in [0,1].
      * @return The set command.
      */
-    public static Set setPercent(double percent) {
+    public Set setPercent(double percent) {
         double bounded;
         if (percent > 1) {
             bounded = 1;
@@ -73,7 +81,7 @@ public class SwitchMultilevelCmd {
      * @param percent A value in [0,1].
      * @return The set command.
      */
-    public static Set setPercent(float percent) {
+    public Set setPercent(float percent) {
         return setPercent((double) percent);
     }
 
@@ -82,7 +90,7 @@ public class SwitchMultilevelCmd {
      *
      * @return The set command.
      */
-    public static Set setMax() {
+    public Set setMax() {
         return SET_MAX;
     }
 
@@ -90,37 +98,34 @@ public class SwitchMultilevelCmd {
      * Create a new basic set command to 0.
      * @return The set command.
      */
-    public static Set setOff() {
+    public Set setOff() {
         return SET_MIN;
     }
 
     /**
      * @return The basic get command.
      */
-    public static Get get() {
+    public Get get() {
         return GET;
     }
 
-    /**
-     * Attempt to parse an inbound basic report command.
-     * @param data The raw data.
-     * @return The report command, empty if the data didn't match.
-     */
-    public static Optional<Report> parseReport(ByteList data) {
-        if (ID != data.get(0)) {
-            return Optional.empty();
-        }
-
-        byte type = data.get(1);
+    @Override
+    public InboundCmd parseInboundCmd(ByteList data) throws CommandFrameException {
+        byte type = data.get(0);
 
         if (type == ID_REPORT) {
-            int current = data.get(2);
-            Integer target = data.getSafely(3).map(Cast::toInt).orElse(null);
-            Integer duration = data.getSafely(4).map(Cast::toInt).orElse(null);
-            return Optional.of(new Report(current, target, duration));
+            int current = data.get(1);
+            Integer target = data.getSafely(2).map(Cast::toInt).orElse(null);
+            Integer duration = data.getSafely(3).map(Cast::toInt).orElse(null);
+            return new Report(current, target, duration);
         }
 
-        return Optional.empty();
+        throw new CommandFrameException();
+    }
+
+    @Override
+    public byte getId() {
+        return ID;
     }
 
     @ToString

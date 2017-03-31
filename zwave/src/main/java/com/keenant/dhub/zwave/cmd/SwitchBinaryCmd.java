@@ -2,10 +2,12 @@ package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.Cmd;
+import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchBinaryReportEvent;
+import com.keenant.dhub.zwave.exception.CommandFrameException;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -14,7 +16,9 @@ import java.util.Optional;
  * The binary switch command class.
  */
 @ToString
-public class SwitchBinaryCmd {
+public class SwitchBinaryCmd implements CmdClass {
+    public static final SwitchBinaryCmd INSTANCE = new SwitchBinaryCmd();
+
     private static final byte ID = (byte) 0x25;
     private static final byte ID_SET = (byte) 0x01;
     private static final byte ID_GET = (byte) 0x02;
@@ -26,55 +30,55 @@ public class SwitchBinaryCmd {
     private static final Report REPORT_ON = new Report(true);
     private static final Report REPORT_OFF = new Report(false);
 
+    private SwitchBinaryCmd() {
+
+    }
+
     /**
      * Get the binary switch set command.
      * @param value True for on, false for off.
      * @return The new command.
      */
-    public static Set set(boolean value) {
+    public Set set(boolean value) {
         return value ? SET_ON : SET_OFF;
     }
 
     /**
      * @return Binary switch on command
      */
-    public static Set setOn() {
+    public Set setOn() {
         return SET_ON;
     }
 
     /**
      * @return Binary switch off command
      */
-    public static Set setOff() {
+    public Set setOff() {
         return SET_OFF;
     }
 
     /**
      * @return The get command.
      */
-    public static Get get() {
+    public Get get() {
         return GET;
     }
 
-    /**
-     * Attempt to parse an inbound switch binary report command.
-     * @param data The raw data.
-     * @return The report command, empty if the data didn't match.
-     */
-    public static Optional<Report> parseReport(ByteList data) {
-        if (ID != data.get(0)) {
-            return Optional.empty();
-        }
-
-        byte type = data.get(1);
+    @Override
+    public InboundCmd parseInboundCmd(ByteList data) throws CommandFrameException {
+        byte type = data.get(0);
 
         if (type == ID_REPORT) {
-            boolean value = data.get(2) == (byte) 0x01;
-            Report report = value ? REPORT_ON : REPORT_OFF;
-            return Optional.of(report);
+            boolean value = data.get(1) == (byte) 0x01;
+            return value ? REPORT_ON : REPORT_OFF;
         }
 
-        return Optional.empty();
+        throw new CommandFrameException();
+    }
+
+    @Override
+    public byte getId() {
+        return ID;
     }
 
     @ToString

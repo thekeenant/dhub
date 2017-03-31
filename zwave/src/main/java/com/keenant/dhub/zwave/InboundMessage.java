@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface InboundMessage {
     /**
      * List of parsers. They all take two arguments, a {@link ByteList} and a {@link DataFrameType},
-     * and return an {@link Optional< InboundMessage >}.
+     * and return an {@link Optional}.
      */
     List<MessageParser> MSG_PARSERS = Arrays.asList(
             ApplicationCommandMsg::parse,

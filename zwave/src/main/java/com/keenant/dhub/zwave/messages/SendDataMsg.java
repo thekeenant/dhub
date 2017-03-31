@@ -36,15 +36,11 @@ public class SendDataMsg implements Message<ReplyCallbackTransaction<Reply, Call
     private final byte callbackId;
     private final TxOptions txOptions;
 
-    public static SendDataMsg of(int nodeId, Byteable data, TxOptions txOptions) {
-        return new SendDataMsg(nodeId, data, txOptions);
+    public SendDataMsg(int nodeId, Byteable data) {
+        this(nodeId, data, TX_ALL);
     }
 
-    public static SendDataMsg of(int nodeId, Byteable data) {
-        return of(nodeId, data, TX_ALL);
-    }
-
-    private SendDataMsg(int nodeId, Byteable data, TxOptions txOptions) {
+    public SendDataMsg(int nodeId, Byteable data, TxOptions txOptions) {
         this.nodeId = nodeId;
         this.data = data;
         this.callbackId = nextCallbackId;
@@ -93,6 +89,7 @@ public class SendDataMsg implements Message<ReplyCallbackTransaction<Reply, Call
         boolean value = data.get(1) == 0x01;
 
         if (data.size() > 3) {
+            // Todo: We can check funcId
             byte funcId = data.get(2);
             byte txStatus = data.get(3);
             return Optional.of(new Reply(value, funcId, txStatus));
