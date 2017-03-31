@@ -3,6 +3,7 @@ package com.keenant.dhub.zwave.transaction;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.frame.Status;
+import com.keenant.dhub.zwave.messages.RequestNodeInfoMsg;
 import lombok.ToString;
 
 import java.util.Optional;
