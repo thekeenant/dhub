@@ -2,10 +2,10 @@ package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.*;
+import com.keenant.dhub.zwave.cmd.BasicCmd.Report;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
-import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -14,7 +14,7 @@ import java.util.Optional;
  * The basic command class.
  */
 @ToString
-public class BasicCmd implements CmdClass {
+public class BasicCmd implements CmdClass<Report> {
     public static final BasicCmd INSTANCE = new BasicCmd();
 
     private static final byte ID = (byte) 0x20;
@@ -122,7 +122,7 @@ public class BasicCmd implements CmdClass {
     }
 
     @Override
-    public InboundCmd parseInboundCmd(ByteList data) throws CommandFrameException {
+    public Report parseInboundCmd(ByteList data) throws CommandFrameException {
         byte type = data.get(0);
 
         if (type == ID_REPORT) {
@@ -158,7 +158,7 @@ public class BasicCmd implements CmdClass {
     }
 
     @ToString
-    public static class Get implements Cmd<ApplicationCommandMsg<Report>> {
+    public static class Get implements Cmd<Report> {
         private Get() {
 
         }
@@ -169,8 +169,8 @@ public class BasicCmd implements CmdClass {
         }
 
         @Override
-        public Optional<MessageParser<ApplicationCommandMsg<Report>>> getResponseParser() {
-            return Optional.of(ApplicationCommandMsg::parse);
+        public Optional<CmdParser<Report>> getResponseParser() {
+            return Optional.of(INSTANCE);
         }
     }
 
