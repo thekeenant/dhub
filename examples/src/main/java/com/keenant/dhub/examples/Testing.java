@@ -2,28 +2,35 @@ package com.keenant.dhub.examples;
 
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
+import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.cmd.BasicCmd;
+import com.keenant.dhub.zwave.event.TransactionCompleteEvent;
+import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.messages.*;
-import com.keenant.dhub.zwave.transaction.RemoveNodeTransaction;
 
 public class Testing {
     public static void main(String[] args) throws InterruptedException {
-        Logging.setLevel(Level.DEV);
+        Logging.setLevel(Level.INFO);
 
         Controller controller = new Controller("ttyACM0");
         controller.start();
 
-        Thread.sleep(2000);
-        System.out.println("Sending");
+        controller.listen(TransactionCompleteEvent.class, (listener, event) -> {
+            System.out.println(event.getTransaction().millisAlive());
+        });
 
+        controller.listen(BasicReportEvent.class, (listener, event) -> {
+            int node = event.getNodeId();
+            int level = event.getCmd().getValue();
 
-        controller.send(RequestNodeInfoMsg.get(43));
-        controller.send(RequestNodeInfoMsg.get(43));
+            System.out.println("Node #" + node + " = " + level + "%");
+        });
 
-//        Thread.sleep(3000);
-//        controller.send(SendDataMsg.of(37, BasicCmd.set(0)));
-//        controller.send(SendDataMsg.of(37, BasicCmd.setPercent(100.0)));
-//        controller.send(SendDataMsg.of(37, BasicCmd.set(0)));
+        controller.send(new RequestNodeInfoMsg(43));
+        controller.send(new RequestNodeInfoMsg(43));
+
+        controller.send(new SendDataMsg(43, CmdClass.BASIC.get()));
+        controller.send(new SendDataMsg(43, CmdClass.BASIC.get()));
+        controller.send(new SendDataMsg(43, CmdClass.BASIC.get()));
     }
 }

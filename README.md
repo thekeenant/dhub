@@ -5,5 +5,32 @@
 
 At JRiver, I have been working on Z-Wave home automation software. This is not it. I've been developing something of my own so that I can learn how Z-Wave works.
 
+## Examples
+For examples, see the [examples module](https://github.com/thekeenant/dhub/tree/master/examples/src/main/java/com/keenant/dhub/examples).
+
+### Overview
+
+```java
+public class Overview {
+    public static void main(String[] args) {    
+        Controller controller = new Controller("ttyACM0");
+        
+        // Set something to max level (bulb, switch, etc.)
+        controller.send(new SendDataMsg(1, CmdClass.BASIC.setMax()));
+        
+        // Listen to an event...
+        controller.listen(BasicReportEvent.class, (listener, event) -> {
+            int node = event.getNodeId();
+            int level = event.getCmd().getValue();
+
+            System.out.println("Node #" + node + " = " + level + "%");
+        });
+        
+        // Request the event that we are expecting by calling this get command...
+        controller.send(new SendDataMsg(1, CmdClass.BASIC.get()));
+    }
+}
+```
+
 ## Todo
 * Resend failed transactions (transaction options/configuration).

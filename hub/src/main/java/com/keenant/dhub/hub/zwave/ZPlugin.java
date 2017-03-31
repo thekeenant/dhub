@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.google.gson.Gson;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
-import com.keenant.dhub.core.util.Listener;
+import com.keenant.dhub.core.util.EventListener;
 import com.keenant.dhub.hub.Plugin;
 import com.keenant.dhub.hub.web.WebPlugin;
 import com.keenant.dhub.zwave.CmdClass;
@@ -120,7 +120,7 @@ public class ZPlugin extends Plugin {
         return networks;
     }
 
-    private final class ZServerListener implements Listener {
+    private final class ZServerListener implements EventListener {
         @Handler
         public void onTransactionComplete(TransactionCompleteEvent event) {
             log.info(event + " Complete");
