@@ -127,7 +127,7 @@ public class SwitchMultilevelCmd implements CmdClass<Report> {
     }
 
     @ToString
-    public static class Set implements Cmd {
+    public static class Set implements Cmd<InboundCmd> {
         private final int value;
 
         private Set(int value) {
@@ -140,7 +140,7 @@ public class SwitchMultilevelCmd implements CmdClass<Report> {
         }
 
         @Override
-        public Optional<MessageParser> getResponseParser() {
+        public Optional<CmdParser<InboundCmd>> getResponseParser() {
             return Optional.empty();
         }
     }
@@ -179,6 +179,10 @@ public class SwitchMultilevelCmd implements CmdClass<Report> {
          */
         public int getCurrent() {
             return current;
+        }
+
+        public double getCurrentPercent() {
+            return (double) getCurrent() / (double) MAX_VALUE;
         }
 
         /**

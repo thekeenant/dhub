@@ -52,7 +52,7 @@ public class AddNodeMsg implements Message<AddNodeTransaction> {
     }
 
     public AddNodeMsg() {
-        this(Mode.STOP);
+        this(Mode.ANY);
     }
 
     @Override

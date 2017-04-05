@@ -1,8 +1,9 @@
 package com.keenant.dhub.hub;
 
 import com.keenant.dhub.core.Lifecycle;
-import com.keenant.dhub.hub.web.WebPlugin;
-import com.keenant.dhub.hub.zwave.ZPlugin;
+import com.keenant.dhub.hub.network.Network;
+import com.keenant.dhub.hub.plugins.web.WebPlugin;
+import com.keenant.dhub.hub.plugins.zwave.ZPlugin;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Cli.CliBuilder;
 import io.airlift.airline.ParseException;
@@ -13,6 +14,7 @@ public class Hub implements Lifecycle {
     private static Hub instance;
 
     private Map<Class<? extends Plugin>, Plugin> plugins;
+    private List<Network<?>> networks;
     private Cli<Runnable> cli;
 
     public static Hub getHub() {
@@ -24,6 +26,21 @@ public class Hub implements Lifecycle {
         plugins = new HashMap<>();
         plugins.put(ZPlugin.class, new ZPlugin());
         plugins.put(WebPlugin.class, new WebPlugin());
+        networks = new ArrayList<>();
+    }
+
+    public void registerNetwork(Network<?> provider) {
+        networks.add(provider);
+    }
+
+    public List<Network<?>> getNetworks() {
+        return networks;
+    }
+
+    public Optional<Network<?>> getNetwork(String id) {
+        return networks.stream()
+                .filter((network) -> network.getId().equals(id))
+                .findAny();
     }
 
     public void start() {
@@ -37,6 +54,9 @@ public class Hub implements Lifecycle {
 
         // Start plugins
         getPlugins().forEach(Plugin::start);
+
+        // Init networks
+        getNetworks().forEach(Network::loadDevices);
 
         cli = builder.build();
     }

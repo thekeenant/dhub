@@ -46,7 +46,7 @@ public interface CmdClass<I extends InboundCmd> extends CmdParser<I> {
      * @param cmdClassIds Collection of command class ids.
      * @return
      */
-    static List<CmdClass> toCmdClasses(Iterable<Integer> cmdClassIds) {
+    static List<CmdClass> getCmdClasses(Iterable<Integer> cmdClassIds) {
         // Todo: Maybe this should be a map instead?
         // So as to indicate which command classes we understand and dont (null).
         List<CmdClass> classes = new ArrayList<>();
