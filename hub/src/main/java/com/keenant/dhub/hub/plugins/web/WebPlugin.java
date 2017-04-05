@@ -1,4 +1,4 @@
-package com.keenant.dhub.hub.web;
+package com.keenant.dhub.hub.plugins.web;
 
 import com.keenant.dhub.hub.Plugin;
 import io.airlift.airline.Cli.CliBuilder;
@@ -14,19 +14,21 @@ public class WebPlugin extends Plugin {
     @Override
     public void init(CliBuilder<Runnable> cli) {
         http = Service.ignite();
-        http.ipAddress("localhost");
         http.port(4567);
     }
 
     @Override
     public void start() {
-
         http.before((req, res) -> {
             String path = req.pathInfo();
-            if (path.endsWith("/")) {
+            if (path.length() > 1 && path.endsWith("/")) {
                 res.redirect(path.substring(0, path.length() - 1));
             }
         });
+
+        // Register routes
+        Routes routes = new Routes(getHub());
+        routes.setup(http);
 
         http.init();
     }

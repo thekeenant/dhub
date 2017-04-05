@@ -58,6 +58,10 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
         return Optional.ofNullable(reply);
     }
 
+    public Optional<C> getCallback() {
+        return Optional.ofNullable(callback);
+    }
+
     @Override
     public void start() {
         addToOutboundQueue(message);

@@ -1,6 +1,7 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
+import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.UnknownMessage;
@@ -11,7 +12,9 @@ import com.keenant.dhub.zwave.exception.IllegalDataFrameTypeException;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import lombok.ToString;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @ToString
 public class ApplicationUpdateMsg implements InboundMessage {
@@ -19,6 +22,7 @@ public class ApplicationUpdateMsg implements InboundMessage {
 
     private final State status;
     private final int nodeId;
+    private final List<CmdClass> cmdClasses;
 
     public enum State {
         NODE_INFO_RECEIVED((byte) 0x84);
@@ -68,17 +72,23 @@ public class ApplicationUpdateMsg implements InboundMessage {
             byte generic = data.get(5);
             byte specific = data.get(6);
 
-            ByteList nodeData = data.subList(7, 7 + length - 3);
+            ByteList cmdClassBytes = data.subList(7, 7 + length - 3);
+            List<Integer> cmdClassInts = cmdClassBytes.stream()
+                    .map((bite) -> bite & 0xFF)
+                    .collect(Collectors.toList());
 
-            return Optional.of(new ApplicationUpdateMsg(status, nodeId));
+            List<CmdClass> cmdClasses = CmdClass.getCmdClasses(cmdClassInts);
+
+            return Optional.of(new ApplicationUpdateMsg(status, nodeId, cmdClasses));
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    private ApplicationUpdateMsg(State status, int nodeId) {
+    private ApplicationUpdateMsg(State status, int nodeId, List<CmdClass> cmdClasses) {
         this.status = status;
         this.nodeId = nodeId;
+        this.cmdClasses = cmdClasses;
     }
 
     public State getStatus() {
@@ -87,6 +97,10 @@ public class ApplicationUpdateMsg implements InboundMessage {
 
     public int getNodeId() {
         return nodeId;
+    }
+
+    public List<CmdClass> getCmdClasses() {
+        return cmdClasses;
     }
 
     @Override

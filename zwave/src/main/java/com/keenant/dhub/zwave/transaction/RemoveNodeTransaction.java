@@ -67,6 +67,8 @@ public class RemoveNodeTransaction extends CallbackTransaction<Callback> {
 
     @Override
     protected boolean isFinished(Callback latestCallback) {
+        System.out.println(latestCallback);
+
         if (stopQueued) {
             return stopAckReceived;
         }

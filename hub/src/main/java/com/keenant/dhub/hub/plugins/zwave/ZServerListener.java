@@ -1,4 +1,4 @@
-package com.keenant.dhub.hub.zwave;
+package com.keenant.dhub.hub.plugins.zwave;
 
 import com.keenant.dhub.core.util.EventListener;
 import com.keenant.dhub.zwave.event.message.NodeListReplyEvent;

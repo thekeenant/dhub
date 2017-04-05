@@ -1,4 +1,4 @@
-package com.keenant.dhub.hub.zwave;
+package com.keenant.dhub.hub.plugins.zwave;
 
 import io.airlift.airline.Command;
 

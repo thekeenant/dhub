@@ -80,7 +80,7 @@ public class SwitchBinaryCmd implements CmdClass<Report> {
     }
 
     @ToString
-    public static class Set implements Cmd {
+    public static class Set implements Cmd<InboundCmd> {
         private final boolean value;
 
         private Set(boolean value) {
@@ -94,7 +94,7 @@ public class SwitchBinaryCmd implements CmdClass<Report> {
         }
 
         @Override
-        public Optional<MessageParser> getResponseParser() {
+        public Optional<CmdParser<InboundCmd>> getResponseParser() {
             return Optional.empty();
         }
     }
