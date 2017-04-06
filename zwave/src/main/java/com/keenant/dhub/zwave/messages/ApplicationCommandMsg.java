@@ -1,10 +1,7 @@
 package com.keenant.dhub.zwave.messages;
 
 import com.keenant.dhub.core.util.ByteList;
-import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.InboundCmd;
-import com.keenant.dhub.zwave.InboundMessage;
-import com.keenant.dhub.zwave.UnknownMessage;
+import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.ApplicationCommandEvent;
 import com.keenant.dhub.zwave.exception.DataFrameException;
@@ -23,7 +20,7 @@ public class ApplicationCommandMsg<C extends InboundCmd> implements InboundMessa
     private final C cmd;
 
     @SuppressWarnings("unchecked")
-    public static <T extends InboundCmd> Optional<ApplicationCommandMsg<T>> parse(UnknownMessage msg) throws DataFrameException {
+    public static <T extends InboundCmd> Optional<ApplicationCommandMsg<T>> parse(UnknownMessage msg, CmdParser<T> parser) throws DataFrameException {
         ByteList data = msg.getDataBytes();
         DataFrameType type = msg.getType();
 
@@ -42,7 +39,15 @@ public class ApplicationCommandMsg<C extends InboundCmd> implements InboundMessa
 
             ByteList cmdData = data.subList(4, 4 + length);
 
-            T cmd = (T) InboundCmd.parse(cmdData).orElse(null);
+            T cmd;
+
+            if (parser == null) {
+                cmd = (T) InboundCmd.parse(cmdData).orElse(null);
+            }
+            else {
+                cmdData = cmdData.subList(1, cmdData.size());
+                cmd = parser.parseInboundCmd(cmdData);
+            }
 
             if (cmd == null) {
                 return Optional.empty();
@@ -50,8 +55,13 @@ public class ApplicationCommandMsg<C extends InboundCmd> implements InboundMessa
 
             return Optional.of(new ApplicationCommandMsg<>(status, nodeId, cmd));
         } catch (Exception e) {
-            throw new DataFrameException();
+            throw new DataFrameException(e);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends InboundCmd> Optional<ApplicationCommandMsg<T>> parse(UnknownMessage msg) throws DataFrameException {
+        return parse(msg, null);
     }
 
     private ApplicationCommandMsg(byte status, int nodeId, C cmd) {

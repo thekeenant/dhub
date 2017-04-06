@@ -29,7 +29,6 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
 
     private enum State {
         SENT,
-        WAITING,
         RECEIVED_REPLY,
         DONE,
         FAILED
@@ -81,7 +80,7 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
     @Override
     public InboundMessage handle(UnknownMessage msg) {
         switch (state) {
-            case WAITING:
+            case SENT:
                 reply = replyParser.parseMessage(msg).orElse(null);
 
                 if (reply == null) {

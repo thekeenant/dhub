@@ -12,6 +12,9 @@ import spark.Response;
 import spark.Route;
 import spark.Service;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class Routes {
     private final Hub hub;
 
@@ -20,6 +23,11 @@ public class Routes {
     }
 
     public void setup(Service http) {
+        http.exception(Exception.class, (e, req, res) -> {
+            String trace = Arrays.stream(e.getStackTrace()).map(Object::toString).collect(Collectors.joining("<br/>"));
+            res.body("<h1>" + e.getClass().getSimpleName() + ": " + e.getMessage() + "</h1><p>" + trace + "</p>");
+        });
+
         http.path("/api/v1", () -> {
             http.get("/networks", (req, res) -> hub.getNetworks());
             http.get("/networks/:network", networkGet());
