@@ -110,12 +110,21 @@ public class Transceiver implements Runnable {
      *
      * @return The current transaction, acquired from controller.
      */
-    private Optional<Transaction> updateTransaction(ByteList currentBuffer) {
+    private Optional<Transaction> updateTransaction(ByteList currentBuffer, Transaction previousTxn) {
         if (!currentBuffer.isEmpty()) {
             return controller.getCurrent();
         }
 
         Transaction txn = controller.updateCurrent().orElse(null);
+
+        if (previousTxn != txn) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+
+            }
+            return Optional.ofNullable(txn);
+        }
 
         while (txn != null && !txn.getOutboundQueue().isEmpty()) {
             write(txn.getOutboundQueue().poll());
@@ -146,6 +155,8 @@ public class Transceiver implements Runnable {
         sleep(1500);
         dump();
 
+        Transaction previousTxn = null;
+
         // We continually add to the end of this list and read from the start. It's a buffer!
         ByteList buffer = new ByteList();
 
@@ -160,7 +171,11 @@ public class Transceiver implements Runnable {
             buffer.addAll(read());
 
             // Process the buffer
-            process(buffer);
+            try {
+                previousTxn = process(buffer, previousTxn);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             sleep(10);
         }
@@ -170,8 +185,8 @@ public class Transceiver implements Runnable {
      * Process data from the port.
      * @param buffer The data buffer.
      */
-    private void process(ByteList buffer) {
-        Transaction txn = updateTransaction(buffer).orElse(null);
+    private Transaction process(ByteList buffer, Transaction previousTxn) {
+        Transaction txn = updateTransaction(buffer, previousTxn).orElse(null);
 
         if (!buffer.isEmpty()) {
             log.log(Level.DEBUG, "Buffer: " + buffer);
@@ -246,6 +261,8 @@ public class Transceiver implements Runnable {
                 write(Status.ACK);
             }
         }
+
+        return txn;
     }
 
     /**

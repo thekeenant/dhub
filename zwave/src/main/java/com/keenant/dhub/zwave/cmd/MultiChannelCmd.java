@@ -2,12 +2,10 @@ package com.keenant.dhub.zwave.cmd;
 
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.*;
-import com.keenant.dhub.zwave.cmd.MultiChannelCmd.EndPointReport;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
+import com.keenant.dhub.zwave.event.cmd.MultiChannelInboundEncapEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
-import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
-import com.keenant.dhub.zwave.messages.ApplicationUpdateMsg;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -15,7 +13,8 @@ import java.util.Optional;
 /**
  * Multi channel command class (v4).
  */
-public class MultiChannelCmd implements CmdClass<EndPointReport> {
+@ToString
+public class MultiChannelCmd implements CmdClass<InboundCmd> {
     public static final MultiChannelCmd INSTANCE = new MultiChannelCmd();
 
     private static final byte ID = (byte) 0x60;
@@ -43,19 +42,31 @@ public class MultiChannelCmd implements CmdClass<EndPointReport> {
      * @param cmd The command to send to the channel.
      * @return The created multi mc encapsulation.
      */
-    public Encap encap(int endPoint, Cmd cmd) {
-        return new Encap(endPoint, cmd);
+    public <T extends InboundCmd> Encap<T> encap(int endPoint, Cmd<T> cmd) {
+        return new Encap<>(endPoint, cmd);
     }
 
-    @Override
-    public EndPointReport parseInboundCmd(ByteList data) throws CommandFrameException {
+    public InboundCmd parseInboundCmd(ByteList data) throws CommandFrameException {
         if (data.get(0) == ID_END_POINT_REPORT) {
-            boolean identical = (data.get(1) & 0x40) > 0;
-            int count = data.get(2) & 0x3F;
-            return new EndPointReport(identical, count);
+            return parseReport(data);
         }
 
         throw new CommandFrameException();
+    }
+
+    private static EndPointReport parseReport(ByteList data) {
+        boolean identical = (data.get(1) & 0x40) > 0;
+        int count = data.get(2) & 0x3F;
+        return new EndPointReport(identical, count);
+    }
+
+    public static <T extends InboundCmd> InboundEncap<T> parseInboundEncap(ByteList data, CmdParser<T> parser) {
+        int sourceEndPoint = data.get(1);
+        int destEndPoint = data.get(2);
+        // Not 3 -> end because 3 is the cmd id
+        ByteList cmdData = data.subList(4, data.size());
+        T cmd = parser.parseInboundCmd(cmdData);
+        return new InboundEncap<>(sourceEndPoint, cmd);
     }
 
     @Override
@@ -76,7 +87,7 @@ public class MultiChannelCmd implements CmdClass<EndPointReport> {
 
         @Override
         public Optional<CmdParser<EndPointReport>> getResponseParser() {
-            return Optional.of(INSTANCE);
+            return Optional.of(MultiChannelCmd::parseReport);
         }
     }
 
@@ -105,13 +116,45 @@ public class MultiChannelCmd implements CmdClass<EndPointReport> {
     }
 
     @ToString
-    public static class Encap implements Cmd {
+    public static class InboundEncap<T extends InboundCmd> implements InboundCmd {
         private final int endPoint;
-        private final Cmd cmd;
+        private final T cmd;
 
-        private Encap(int endPoint, Cmd cmd) {
+        private InboundEncap(int endPoint, T cmd) {
             this.endPoint = endPoint;
             this.cmd = cmd;
+        }
+
+        public int getEndPoint() {
+            return endPoint;
+        }
+
+        public T getCmd() {
+            return cmd;
+        }
+
+        @Override
+        public CmdEvent createEvent(Controller controller, int nodeId) {
+            return new MultiChannelInboundEncapEvent(controller, nodeId, this);
+        }
+    }
+
+    @ToString
+    public static class Encap<R extends InboundCmd> implements Cmd<InboundEncap<R>> {
+        private final int endPoint;
+        private final Cmd<R> cmd;
+
+        private Encap(int endPoint, Cmd<R> cmd) {
+            this.endPoint = endPoint;
+            this.cmd = cmd;
+        }
+
+        public int getEndPoint() {
+            return endPoint;
+        }
+
+        public Cmd<R> getCmd() {
+            return cmd;
         }
 
         @Override
@@ -128,8 +171,14 @@ public class MultiChannelCmd implements CmdClass<EndPointReport> {
         }
 
         @Override
-        public Optional<MessageParser> getResponseParser() {
-            return Optional.empty();
+        public Optional<CmdParser<InboundEncap<R>>> getResponseParser() {
+            CmdParser<R> parser = cmd.getResponseParser().orElse(null);
+
+            if (parser == null) {
+                return Optional.empty();
+            }
+
+            return Optional.of(data -> parseInboundEncap(data, parser));
         }
     }
 }

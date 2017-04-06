@@ -105,8 +105,7 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
                 return callback;
 
             case RECEIVED_CALLBACK:
-                // These generics aren't safe...
-                ApplicationCommandMsg<R> cmdMessage = ApplicationCommandMsg.<R>parse(msg).orElse(null);
+                ApplicationCommandMsg<R> cmdMessage = ApplicationCommandMsg.parse(msg, responseParser).orElse(null);
                 response = cmdMessage.getCmd();
 
                 if (response == null) {

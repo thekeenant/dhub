@@ -8,4 +8,8 @@ public class DataFrameException extends RuntimeException {
     public DataFrameException() {
 
     }
+
+    public DataFrameException(Exception e) {
+        super(e);
+    }
 }

@@ -56,7 +56,13 @@ public class Hub implements Lifecycle {
         getPlugins().forEach(Plugin::start);
 
         // Init networks
-        getNetworks().forEach(Network::loadDevices);
+        getNetworks().forEach((network) -> {
+            try {
+                network.loadDevices();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 
         cli = builder.build();
     }

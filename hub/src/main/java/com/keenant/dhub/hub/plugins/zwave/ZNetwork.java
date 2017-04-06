@@ -4,9 +4,9 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.util.EventListener;
 import com.keenant.dhub.hub.network.Network;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.messages.AddNodeMsg;
+import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
 import com.keenant.dhub.zwave.messages.NodeListMsg;
-import com.keenant.dhub.zwave.messages.RemoveNodeMsg;
+import com.keenant.dhub.zwave.messages.VersionMsg;
 import com.keenant.dhub.zwave.transaction.ReplyTransaction;
 import lombok.ToString;
 
@@ -15,6 +15,7 @@ import java.util.*;
 @ToString(exclude = "plugin", callSuper = true)
 public class ZNetwork extends Controller implements EventListener, Network<ZNode> {
     private final ZPlugin plugin;
+    private ZNode mainNode;
     private Map<Integer, ZNode> nodes;
 
     public ZNetwork(SerialPort port, ZPlugin plugin) throws IllegalArgumentException {
@@ -48,17 +49,28 @@ public class ZNetwork extends Controller implements EventListener, Network<ZNode
 
     @Override
     public void loadDevices() {
-        ReplyTransaction<NodeListMsg.Reply> txn = send(new NodeListMsg());
-        txn.await(5000);
+        send(new VersionMsg()).await(5000);
 
-        NodeListMsg.Reply reply = txn.getReply().orElseThrow(RuntimeException::new);
-
+        NodeListMsg.Reply nodeList = send(new NodeListMsg())
+                .await(3000)
+                .getReply()
+                .orElseThrow(RuntimeException::new);
         nodes = new HashMap<>();
-        for (int nodeId : reply.getNodeIds()) {
-            nodes.put(nodeId, new ZNode(this, nodeId));
-        }
 
-        send(new RemoveNodeMsg());
-        send(new AddNodeMsg());
+        MemoryGetIdMsg.Reply memory = send(new MemoryGetIdMsg())
+                .await(5000)
+                .getReply()
+                .orElseThrow(RuntimeException::new);
+        mainNode = new ZNode(this, memory.getNodeId());
+
+        for (int nodeId : nodeList.getNodeIds()) {
+            if (nodeId == mainNode.getNodeId()) {
+                continue;
+            }
+
+            ZNode node = new ZNode(this, nodeId);
+            node.load();
+            nodes.put(nodeId, node);
+        }
     }
 }

@@ -145,7 +145,6 @@ public class Controller implements Lifecycle {
      */
     public <T extends ControllerEvent> EventListener listen(Class<T> type, EventHandler<T> handler) {
         // Generic listener which handles all controller events.
-
         EventListener listener = new EventListener() {
             @Handler
             @SuppressWarnings("unchecked")

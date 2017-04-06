@@ -25,6 +25,7 @@ public class ApplicationUpdateMsg implements InboundMessage {
     private final List<CmdClass> cmdClasses;
 
     public enum State {
+        NODE_INFO_FAILED((byte) 0x81),
         NODE_INFO_RECEIVED((byte) 0x84);
 
         private final byte value;
@@ -56,33 +57,33 @@ public class ApplicationUpdateMsg implements InboundMessage {
             throw new IllegalDataFrameTypeException(type);
         }
 
-        try {
-            State status = State.valueOf(data.get(1)).orElse(null);
+        State state = State.valueOf(data.get(1)).orElse(null);
 
-            if (status == null) {
-                // Todo: What should we do here?
-                return Optional.empty();
-            }
-
-            int nodeId = data.get(2) & 0xFF;
-            int length = data.get(3);
-
-            // Todo
-            byte basic = data.get(4);
-            byte generic = data.get(5);
-            byte specific = data.get(6);
-
-            ByteList cmdClassBytes = data.subList(7, 7 + length - 3);
-            List<Integer> cmdClassInts = cmdClassBytes.stream()
-                    .map((bite) -> bite & 0xFF)
-                    .collect(Collectors.toList());
-
-            List<CmdClass> cmdClasses = CmdClass.getCmdClasses(cmdClassInts);
-
-            return Optional.of(new ApplicationUpdateMsg(status, nodeId, cmdClasses));
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+        if (state == null) {
+            throw new DataFrameException("Invalid application update state.");
         }
+
+        if (state == State.NODE_INFO_FAILED) {
+            // Todo: Failed
+            return Optional.empty();
+        }
+
+        int nodeId = data.get(2) & 0xFF;
+        int length = data.get(3);
+
+        // Todo
+        byte basic = data.get(4);
+        byte generic = data.get(5);
+        byte specific = data.get(6);
+
+        ByteList cmdClassBytes = data.subList(7, 7 + length - 3);
+        List<Integer> cmdClassInts = cmdClassBytes.stream()
+                .map((bite) -> bite & 0xFF)
+                .collect(Collectors.toList());
+
+        List<CmdClass> cmdClasses = CmdClass.getCmdClasses(cmdClassInts);
+
+        return Optional.of(new ApplicationUpdateMsg(state, nodeId, cmdClasses));
     }
 
     private ApplicationUpdateMsg(State status, int nodeId, List<CmdClass> cmdClasses) {

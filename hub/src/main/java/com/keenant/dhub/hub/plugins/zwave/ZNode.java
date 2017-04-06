@@ -2,8 +2,10 @@ package com.keenant.dhub.hub.plugins.zwave;
 
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.hub.network.Device;
-import com.keenant.dhub.hub.plugins.zwave.feature.BinaryZFeature;
-import com.keenant.dhub.hub.plugins.zwave.feature.LevelZFeature;
+import com.keenant.dhub.hub.plugins.zwave.feature.BinaryGetZFeature;
+import com.keenant.dhub.hub.plugins.zwave.feature.BinarySetZFeature;
+import com.keenant.dhub.hub.plugins.zwave.feature.LevelGetZFeature;
+import com.keenant.dhub.hub.plugins.zwave.feature.LevelSetZFeature;
 import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.InboundCmd;
@@ -44,23 +46,29 @@ public class ZNode implements Device<ZFeature> {
         return id + "";
     }
 
+    public int getNodeId() {
+        return id;
+    }
+
     @Override
     public void load() {
         ReplyCallbackTransaction<Reply, ApplicationUpdateMsg> txn = network.send(new RequestNodeInfoMsg(id));
-        txn.await(5000);
+        txn.await(10000);
 
-        ApplicationUpdateMsg msg = txn.getCallback().orElseThrow(RuntimeException::new);
+        txn.getCallback().ifPresent((msg) -> {
+            features = new ArrayList<>();
 
-        features = new ArrayList<>();
-
-        for (CmdClass cmd : msg.getCmdClasses()) {
-            if (cmd instanceof SwitchMultilevelCmd) {
-                features.add(new LevelZFeature(this));
+            for (CmdClass cmd : msg.getCmdClasses()) {
+                if (cmd instanceof SwitchMultilevelCmd) {
+                    features.add(new LevelSetZFeature(this));
+                    features.add(new LevelGetZFeature(this));
+                }
+                else if (cmd instanceof SwitchBinaryCmd) {
+                    features.add(new BinarySetZFeature(this));
+                    features.add(new BinaryGetZFeature(this));
+                }
             }
-            else if (cmd instanceof SwitchBinaryCmd) {
-                features.add(new BinaryZFeature(this));
-            }
-        }
+        });
     }
 
     @Override

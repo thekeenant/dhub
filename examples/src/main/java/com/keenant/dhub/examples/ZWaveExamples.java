@@ -4,10 +4,12 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.EventListener;
-import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.cmd.BasicCmd;
+import com.keenant.dhub.zwave.cmd.BasicCmd.Report;
+import com.keenant.dhub.zwave.cmd.MultiChannelCmd.Encap;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
 import com.keenant.dhub.zwave.messages.AddNodeMsg;
@@ -26,13 +28,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Some Z-Wave library examples.
  */
 public class ZWaveExamples {
-    private static final int NODE_ID = 43; // arbitrary, pick one that is your device
-    private static final int MC_NODE_ID = 41; // some multi channel node id
+    private static final int NODE_ID = 2; // arbitrary, pick one that is your device
+    private static final int MC_NODE_ID = 2; // some multi channel node id
 
     private static Controller controller;
 
     public static void main(String[] args) throws Exception {
-        Logging.setLevel(Level.DEV);
+        Logging.setLevel(Level.INFO);
 
         controller = new Controller(SerialPort.getCommPorts()[1]);
         controller.start();
@@ -49,9 +51,9 @@ public class ZWaveExamples {
             return;
         }
 
-        addRemoveNodeTest();
-        basicSetTest(NODE_ID);
-        basicGetReportTest(NODE_ID);
+//        addRemoveNodeTest();
+//        basicSetTest(NODE_ID);
+//        basicGetReportTest(NODE_ID);
         multiChannelTest(MC_NODE_ID);
     }
 
@@ -62,23 +64,23 @@ public class ZWaveExamples {
         System.out.println("basicSetTest start");
 
         // Set to 50%.
-        controller.send(new SendDataMsg(nodeId, CmdClass.BASIC.setPercent(0.5)));
+        controller.send(new SendDataMsg<>(nodeId, CmdClass.BASIC.setPercent(0.5)));
         sleep(2000);
 
         // Turn off.
-        controller.send(new SendDataMsg(nodeId, CmdClass.BASIC.set(0)));
+        controller.send(new SendDataMsg<>(nodeId, CmdClass.BASIC.set(0)));
         sleep(2000);
 
         // Then turn it back to 50% via basic on command, equivalent to BasicCmd.set(255).
-        controller.send(new SendDataMsg(nodeId, CmdClass.BASIC.setOn()));
+        controller.send(new SendDataMsg<>(nodeId, CmdClass.BASIC.setOn()));
         sleep(2000);
 
         // Turn to value 25 (out of 99).
-        controller.send(new SendDataMsg(nodeId, CmdClass.BASIC.set(25)));
+        controller.send(new SendDataMsg<>(nodeId, CmdClass.BASIC.set(25)));
         sleep(2000);
 
         // Another way to turn off
-        controller.send(new SendDataMsg(nodeId, CmdClass.BASIC.setOff()));
+        controller.send(new SendDataMsg<>(nodeId, CmdClass.BASIC.setOff()));
         sleep(2000);
 
         System.out.println("done\n");
@@ -117,12 +119,12 @@ public class ZWaveExamples {
 
         // Let's set it to 25% first.
         System.out.println("  Queueing basic set command...");
-        controller.send(new SendDataMsg(nodeId, CmdClass.BASIC.setPercent(0.25)));
+        controller.send(new SendDataMsg<>(nodeId, CmdClass.BASIC.setPercent(0.25)));
         sleep(2000);
 
         // Tell a device to send us a report!
         System.out.println("  Queueing basic get command...");
-        controller.send(new SendDataMsg(nodeId, CmdClass.BASIC.get()));
+        controller.send(new SendDataMsg<>(nodeId, CmdClass.BASIC.get()));
 
         // Wait until we get the report back!
         while (await.get()) {
@@ -131,7 +133,7 @@ public class ZWaveExamples {
 
         // Turn back off
         System.out.println("  Queueing basic set command (back to off)...");
-        controller.send(new SendDataMsg(nodeId, CmdClass.BASIC.setOff()));
+        controller.send(new SendDataMsg<>(nodeId, CmdClass.BASIC.setOff()));
         sleep(2000);
 
         System.out.println("done\n");
@@ -162,7 +164,7 @@ public class ZWaveExamples {
         });
 
         // Queue the get message, so we get a report message back.
-        controller.send(new SendDataMsg(nodeId, CmdClass.MULTI_CHANNEL.endPointGet()));
+        controller.send(new SendDataMsg<>(nodeId, CmdClass.MULTI_CHANNEL.endPointGet()));
 
         // Wait until we know how many endpoints there are...
         while (await.get()) {
@@ -172,14 +174,16 @@ public class ZWaveExamples {
         // Turn on and off each endpoint.
         for (int i = 1; i < count.get() + 1; i++) {
             // On
-            Cmd cmd = CmdClass.MULTI_CHANNEL.encap(i, CmdClass.BASIC.set(99));
-            controller.send(new SendDataMsg(nodeId, cmd));
-            sleep(200);
+            Encap<InboundCmd> cmd1 = CmdClass.MULTI_CHANNEL.encap(i, CmdClass.BASIC.set(99));
+            controller.send(new SendDataMsg<>(nodeId, cmd1)).await();
 
             // Off
-            cmd = CmdClass.MULTI_CHANNEL.encap(i, CmdClass.BASIC.set(0));
-            controller.send(new SendDataMsg(nodeId, cmd));
-            sleep(200);
+            cmd1 = CmdClass.MULTI_CHANNEL.encap(i, CmdClass.BASIC.set(0));
+            controller.send(new SendDataMsg<>(nodeId, cmd1)).await();
+
+            // Report
+            Encap<Report> cmd2 = CmdClass.MULTI_CHANNEL.encap(i, CmdClass.BASIC.get());
+            controller.send(new SendDataMsg<>(nodeId, cmd2)).await();
         }
 
         System.out.println("done\n");

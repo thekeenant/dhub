@@ -14,6 +14,7 @@ public class WebPlugin extends Plugin {
     @Override
     public void init(CliBuilder<Runnable> cli) {
         http = Service.ignite();
+        http.threadPool(8, 2, -1);
         http.port(4567);
     }
 

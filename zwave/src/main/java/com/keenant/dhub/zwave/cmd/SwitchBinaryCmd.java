@@ -67,7 +67,7 @@ public class SwitchBinaryCmd implements CmdClass<Report> {
         byte type = data.get(0);
 
         if (type == ID_REPORT) {
-            boolean value = data.get(1) == (byte) 0x01;
+            boolean value = data.get(1) != (byte) 0x00;
             return value ? REPORT_ON : REPORT_OFF;
         }
 
