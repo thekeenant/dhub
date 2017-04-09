@@ -1,25 +1,44 @@
 package com.keenant.dhub.hub.plugins.zwave.feature;
 
-import com.keenant.dhub.hub.network.binary.BinaryGetFeature;
+import com.keenant.dhub.hub.network.feature.BinaryGetFeature;
+import com.keenant.dhub.hub.plugins.zwave.ZDevice;
 import com.keenant.dhub.hub.plugins.zwave.ZFeature;
-import com.keenant.dhub.hub.plugins.zwave.ZNode;
 import com.keenant.dhub.zwave.CmdClass;
-import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd.Report;
-import lombok.ToString;
+import com.keenant.dhub.zwave.event.cmd.SwitchBinaryReportEvent;
+import net.engio.mbassy.listener.Handler;
 
-import java.util.Optional;
+public class BinaryGetZFeature implements BinaryGetFeature, ZFeature {
+    private final ZDevice device;
+    private boolean latestValue;
 
-@ToString
-public class BinaryGetZFeature extends ZFeature implements BinaryGetFeature {
-    public BinaryGetZFeature(ZNode node) {
-        super(node);
+    public BinaryGetZFeature(ZDevice device) {
+        this.device = device;
     }
 
     @Override
-    public boolean getBinary() {
-        Optional<Report> report = getNode().send(CmdClass.SWITCH_BINARY.get()).await(5000).getResponse();
+    public void start() {
 
-        // Todo: Exception
-        return report.orElseThrow(RuntimeException::new).getValue();
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public boolean getValue() {
+        return latestValue;
+    }
+
+    @Override
+    public void requestUpdate() {
+        device.send(CmdClass.SWITCH_BINARY.get());
+    }
+
+    @Handler
+    public void onBinaryGetCmd(SwitchBinaryReportEvent event) {
+        if (device.getNodeId() == event.getNodeId()) {
+            latestValue = event.getCmd().getValue();
+        }
     }
 }

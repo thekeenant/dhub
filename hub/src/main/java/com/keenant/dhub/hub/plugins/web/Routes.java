@@ -1,11 +1,7 @@
 package com.keenant.dhub.hub.plugins.web;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.keenant.dhub.hub.Hub;
 import com.keenant.dhub.hub.network.Device;
-import com.keenant.dhub.hub.network.Feature;
 import com.keenant.dhub.hub.network.Network;
 import spark.Request;
 import spark.Response;
@@ -32,8 +28,8 @@ public class Routes {
             http.get("/networks", (req, res) -> hub.getNetworks());
             http.get("/networks/:network", networkGet());
             http.get("/networks/:network/:device", deviceGet());
-            http.get("/networks/:network/:device/:feature", featureGet());
-            http.put("/networks/:network/:device/:feature", featurePut());
+//            http.get("/networks/:network/:device/:feature", featureGet());
+//            http.put("/networks/:network/:device/:feature", featurePut());
         });
     }
 
@@ -49,29 +45,8 @@ public class Routes {
     private Route deviceGet() {
         return new DeviceRoute(hub) {
             @Override
-            public Object handle(Network<?> network, Device<?> device, Request req, Response res) {
+            public Object handle(Network<?> network, Device device, Request req, Response res) {
                 return device;
-            }
-        };
-    }
-
-    private Route featureGet() {
-        return new FeatureRoute(hub) {
-            @Override
-            public Object handle(Network network, Device device, Feature feature, Request req, Response res) {
-                return new Gson().toJson(feature.toJson());
-            }
-        };
-    }
-
-    private Route featurePut() {
-        return new FeatureRoute(hub) {
-            @Override
-            public Object handle(Network<?> network, Device<?> device, Feature feature, Request req, Response res) {
-                JsonParser parser = new JsonParser();
-                JsonObject json = parser.parse(req.body()).getAsJsonObject();
-                feature.acceptData(json);
-                return "ok";
             }
         };
     }

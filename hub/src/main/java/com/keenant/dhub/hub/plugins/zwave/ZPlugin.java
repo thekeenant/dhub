@@ -33,8 +33,8 @@ public class ZPlugin extends Plugin {
     public void init(CliBuilder<Runnable> cli) {
         Logging.setLevel(Level.DEV);
 
+        // Todo
         GroupBuilder<Runnable> cmd = cli.withGroup("zserver");
-        cmd.withDefaultCommand(ZCommand.class);
 
         List<ZNetwork> networks = new ArrayList<>();
         for (SerialPort port : SerialPort.getCommPorts()) {
@@ -50,7 +50,7 @@ public class ZPlugin extends Plugin {
 
     @Override
     public void start() {
-        networks.forEach(ZNetwork::start);
+
     }
 
     @Override

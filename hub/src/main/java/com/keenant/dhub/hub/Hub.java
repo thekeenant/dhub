@@ -3,6 +3,7 @@ package com.keenant.dhub.hub;
 import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.hub.network.Network;
 import com.keenant.dhub.hub.plugins.web.WebPlugin;
+import com.keenant.dhub.hub.plugins.zwave.ZNetwork;
 import com.keenant.dhub.hub.plugins.zwave.ZPlugin;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Cli.CliBuilder;
@@ -55,20 +56,18 @@ public class Hub implements Lifecycle {
         // Start plugins
         getPlugins().forEach(Plugin::start);
 
-        // Init networks
-        getNetworks().forEach((network) -> {
-            try {
-                network.loadDevices();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        // Start networks
+        getNetworks().forEach(Network::start);
 
         cli = builder.build();
     }
 
     public void stop() {
+        // Stop plugins
         getPlugins().forEach(Plugin::stop);
+
+        // Stop networks
+        getNetworks().forEach(Network::stop);
     }
 
     public Collection<Plugin> getPlugins() {

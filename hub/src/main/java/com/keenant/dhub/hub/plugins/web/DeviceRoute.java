@@ -12,7 +12,7 @@ public abstract class DeviceRoute extends NetworkRoute {
         super(hub);
     }
 
-    public abstract Object handle(Network<?> network, Device<?> device, Request req, Response res);
+    public abstract Object handle(Network<?> network, Device device, Request req, Response res);
 
     @Override
     public Object handle(Network<?> network, Request req, Response res) {
