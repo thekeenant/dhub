@@ -3,7 +3,6 @@ package com.keenant.dhub.hub;
 import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.hub.network.Network;
 import com.keenant.dhub.hub.plugins.web.WebPlugin;
-import com.keenant.dhub.hub.plugins.zwave.ZNetwork;
 import com.keenant.dhub.hub.plugins.zwave.ZPlugin;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Cli.CliBuilder;
@@ -15,7 +14,7 @@ public class Hub implements Lifecycle {
     private static Hub instance;
 
     private Map<Class<? extends Plugin>, Plugin> plugins;
-    private List<Network<?>> networks;
+    private List<Network> networks;
     private Cli<Runnable> cli;
 
     public static Hub getHub() {
@@ -30,22 +29,23 @@ public class Hub implements Lifecycle {
         networks = new ArrayList<>();
     }
 
-    public void registerNetwork(Network<?> provider) {
+    public void registerNetwork(Network provider) {
         networks.add(provider);
     }
 
-    public List<Network<?>> getNetworks() {
+    public List<Network> getNetworks() {
         return networks;
     }
 
-    public Optional<Network<?>> getNetwork(String id) {
+    public Optional<Network> getNetwork(String id) {
         return networks.stream()
-                .filter((network) -> network.getId().equals(id))
+                .filter((network) -> network.getUniqueId().equals(id))
                 .findAny();
     }
 
     public void start() {
         CliBuilder<Runnable> builder = new CliBuilder<>("hub");
+
 
         // Initialize plugins
         getPlugins().forEach(plugin -> {
@@ -59,7 +59,7 @@ public class Hub implements Lifecycle {
         // Start networks
         getNetworks().forEach(Network::start);
 
-        cli = builder.build();
+//        cli = builder.build();
     }
 
     public void stop() {
@@ -88,7 +88,7 @@ public class Hub implements Lifecycle {
             Runnable runnable = cli.parse(args);
             runnable.run();
         } catch (ParseException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 }

@@ -31,8 +31,6 @@ public class ZPlugin extends Plugin {
      */
     @Override
     public void init(CliBuilder<Runnable> cli) {
-        Logging.setLevel(Level.DEV);
-
         // Todo
         GroupBuilder<Runnable> cmd = cli.withGroup("zserver");
 
