@@ -3,11 +3,14 @@ package com.keenant.dhub.zwave.cmd;
 import com.keenant.dhub.core.util.ByteList;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.CmdEvent;
+import com.keenant.dhub.zwave.event.cmd.MultiChannelCapabilityReportEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelInboundEncapEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,6 +24,8 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
 
     private static final byte ID_END_POINT_GET = (byte) 0x07;
     private static final byte ID_END_POINT_REPORT = (byte) 0x08;
+    private static final byte ID_CAPABILITY_GET = (byte) 0x09;
+    private static final byte ID_CAPABILITY_REPORT = (byte) 0x0A;
     private static final byte ID_ENCAP = (byte) 0x0D;
 
     private static final EndPointGet END_POINT_GET = new EndPointGet();
@@ -37,6 +42,14 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
     }
 
     /**
+     * @param endPoint The endpoint to retrieve capabilities for.
+     * @return The multi channel capability get command.
+     */
+    public CapabilityGet capabilityGet(int endPoint) {
+        return new CapabilityGet(endPoint);
+    }
+
+    /**
      * Create a new multi endpoint encapsulation of a command.
      * @param endPoint The mc/destination id (subnode).
      * @param cmd The command to send to the channel.
@@ -48,16 +61,39 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
 
     public InboundCmd parseInboundCmd(ByteList data) throws CommandFrameException {
         if (data.get(0) == ID_END_POINT_REPORT) {
-            return parseReport(data);
+            return parseEndPointReport(data);
+        }
+        if (data.get(0) == ID_CAPABILITY_REPORT) {
+            return parseCapabilityReport(data);
         }
 
         throw new CommandFrameException();
     }
 
-    private static EndPointReport parseReport(ByteList data) {
+    private static EndPointReport parseEndPointReport(ByteList data) {
         boolean identical = (data.get(1) & 0x40) > 0;
         int count = data.get(2) & 0x3F;
         return new EndPointReport(identical, count);
+    }
+
+    private static CapabilityReport parseCapabilityReport(ByteList data) {
+        if (data.get(0) != ID_CAPABILITY_REPORT) {
+            throw new CommandFrameException();
+        }
+
+        int endPoint = data.get(1);
+
+        // Todo
+        byte basic = data.get(2);
+        byte generic = data.get(3);
+        byte specific = data.get(4);
+
+        List<CmdClass> cmdClasses = new ArrayList<>();
+        for (int i = 5; i < data.size(); i++) {
+            CmdClass.getCmdClass(data.get(i & 0xFF)).ifPresent(cmdClasses::add);
+        }
+
+        return new CapabilityReport(endPoint, cmdClasses);
     }
 
     public static <T extends InboundCmd> InboundEncap<T> parseInboundEncap(ByteList data, CmdParser<T> parser) {
@@ -87,7 +123,7 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
 
         @Override
         public Optional<CmdParser<EndPointReport>> getResponseParser() {
-            return Optional.of(MultiChannelCmd::parseReport);
+            return Optional.of(MultiChannelCmd::parseEndPointReport);
         }
     }
 
@@ -112,6 +148,49 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
         @Override
         public CmdEvent createEvent(Controller controller, int nodeId) {
             return new MultiChannelEndPointReportEvent(controller, nodeId, this);
+        }
+    }
+
+    @ToString
+    public static class CapabilityGet implements Cmd<CapabilityReport> {
+        private final int endPoint;
+
+        public CapabilityGet(int endPoint) {
+            this.endPoint = endPoint;
+        }
+
+        @Override
+        public Optional<CmdParser<CapabilityReport>> getResponseParser() {
+            return Optional.of(MultiChannelCmd::parseCapabilityReport);
+        }
+
+        @Override
+        public ByteList toBytes() {
+            return new ByteList(ID, ID_CAPABILITY_GET, endPoint);
+        }
+    }
+
+    @ToString
+    public static class CapabilityReport implements InboundCmd {
+        private final int endPoint;
+        private final List<CmdClass> cmdClasses;
+
+        public CapabilityReport(int endPoint, List<CmdClass> cmdClasses) {
+            this.endPoint = endPoint;
+            this.cmdClasses = cmdClasses;
+        }
+
+        @Override
+        public CmdEvent createEvent(Controller controller, int nodeId) {
+            return new MultiChannelCapabilityReportEvent(controller, nodeId, this);
+        }
+
+        public int getEndPoint() {
+            return endPoint;
+        }
+
+        public List<CmdClass> getCmdClasses() {
+            return cmdClasses;
         }
     }
 

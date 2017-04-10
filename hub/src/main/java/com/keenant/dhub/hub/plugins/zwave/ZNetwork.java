@@ -4,73 +4,81 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.util.EventListener;
 import com.keenant.dhub.hub.network.Network;
 import com.keenant.dhub.zwave.Controller;
+import com.keenant.dhub.zwave.messages.AddNodeMsg;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
 import com.keenant.dhub.zwave.messages.NodeListMsg;
-import com.keenant.dhub.zwave.messages.VersionMsg;
-import com.keenant.dhub.zwave.transaction.ReplyTransaction;
+import com.keenant.dhub.zwave.messages.RemoveNodeMsg;
 import lombok.ToString;
 
 import java.util.*;
 
 @ToString(exclude = "plugin", callSuper = true)
-public class ZNetwork extends Controller implements EventListener, Network<ZNode> {
+public class ZNetwork extends Controller implements EventListener, Network {
     private final ZPlugin plugin;
     private ZNode mainNode;
-    private Map<Integer, ZNode> nodes;
+    private Map<Integer, ZNode> devices;
 
     public ZNetwork(SerialPort port, ZPlugin plugin) throws IllegalArgumentException {
         super(port);
 
         this.plugin = plugin;
-        nodes = new HashMap<>();
+        devices = new HashMap<>();
     }
 
     public Set<Integer> getNodeIds() {
-        return nodes.keySet();
+        return devices.keySet();
     }
 
-    public Optional<ZNode> getNode(int id) {
-        return Optional.ofNullable(nodes.get(id));
-    }
-
-    public Collection<ZNode> getNodes() {
-        return nodes.values();
+    public Optional<ZNode> getNode(int nodeId) {
+        return Optional.ofNullable(devices.get(nodeId));
     }
 
     @Override
     public Collection<ZNode> getDevices() {
-        return getNodes();
+        return devices.values();
     }
 
     @Override
-    public String getId() {
+    public String getUniqueId() {
         return getName();
     }
 
     @Override
-    public void loadDevices() {
-        send(new VersionMsg()).await(5000);
+    public void start() {
+        try {
+            super.start();
 
-        NodeListMsg.Reply nodeList = send(new NodeListMsg())
-                .await(3000)
-                .getReply()
-                .orElseThrow(RuntimeException::new);
-        nodes = new HashMap<>();
+            NodeListMsg.Reply nodeList = send(new NodeListMsg())
+                    .await(5000)
+                    .getReply()
+                    .orElseThrow(RuntimeException::new);
+            devices = new HashMap<>();
 
-        MemoryGetIdMsg.Reply memory = send(new MemoryGetIdMsg())
-                .await(5000)
-                .getReply()
-                .orElseThrow(RuntimeException::new);
-        mainNode = new ZNode(this, memory.getNodeId());
+            MemoryGetIdMsg.Reply memory = send(new MemoryGetIdMsg())
+                    .await(5000)
+                    .getReply()
+                    .orElseThrow(RuntimeException::new);
+            mainNode = new ZNode(this, memory.getNodeId());
 
-        for (int nodeId : nodeList.getNodeIds()) {
-            if (nodeId == mainNode.getNodeId()) {
-                continue;
+            for (int nodeId : nodeList.getNodeIds()) {
+                if (nodeId == mainNode.getId()) {
+                    continue;
+                }
+
+                ZNode node = new ZNode(this, nodeId);
+                node.start();
+                devices.put(nodeId, node);
             }
 
-            ZNode node = new ZNode(this, nodeId);
-            node.load();
-            nodes.put(nodeId, node);
+        } catch (Exception e) {
+
         }
+
+
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
     }
 }

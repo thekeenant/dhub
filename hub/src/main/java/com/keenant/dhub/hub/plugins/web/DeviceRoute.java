@@ -1,5 +1,6 @@
 package com.keenant.dhub.hub.plugins.web;
 
+import com.google.gson.JsonElement;
 import com.keenant.dhub.hub.Hub;
 import com.keenant.dhub.hub.network.Device;
 import com.keenant.dhub.hub.network.Network;
@@ -12,10 +13,10 @@ public abstract class DeviceRoute extends NetworkRoute {
         super(hub);
     }
 
-    public abstract Object handle(Network<?> network, Device<?> device, Request req, Response res);
+    public abstract JsonElement handle(Network network, Device device, Request req, Response res);
 
     @Override
-    public Object handle(Network<?> network, Request req, Response res) {
+    public JsonElement handle(Network network, Request req, Response res) {
         Device device = network.getDevice(req.params("device")).orElseThrow(DeviceNotFoundException::new);
         return handle(network, device, req, res);
     }

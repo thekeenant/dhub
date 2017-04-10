@@ -1,26 +1,35 @@
 package com.keenant.dhub.hub.network;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.keenant.dhub.core.Lifecycle;
+
 import java.util.Collection;
 import java.util.Optional;
 
 /**
  * A network is a collection of devices that communicate similarly.
- *
- * @param <T> The broad type of device that this network contains.
  */
-public interface Network<T extends Device> {
-    String getId();
+public interface Network extends Lifecycle, Data {
+    String getUniqueId();
 
-    void loadDevices();
+    Collection<? extends Device> getDevices();
 
-    Collection<T> getDevices();
-
-    default Optional<T> getDevice(String id) {
-        for (T device : getDevices()) {
-            if (device.getId().equals(id)) {
+    default Optional<? extends Device> getDevice(String id) {
+        for (Device device : getDevices()) {
+            if (device.getUniqueId().equals(id)) {
                 return Optional.of(device);
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    default JsonElement toJson() {
+        JsonObject json = new JsonObject();
+        for (Device device : getDevices()) {
+            json.add(device.getUniqueId(), device.toJson());
+        }
+        return json;
     }
 }

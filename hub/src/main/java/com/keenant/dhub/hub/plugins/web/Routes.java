@@ -1,12 +1,8 @@
 package com.keenant.dhub.hub.plugins.web;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.keenant.dhub.hub.Hub;
-import com.keenant.dhub.hub.network.Device;
-import com.keenant.dhub.hub.network.Feature;
-import com.keenant.dhub.hub.network.Network;
+import com.keenant.dhub.hub.network.*;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -29,7 +25,16 @@ public class Routes {
         });
 
         http.path("/api/v1", () -> {
-            http.get("/networks", (req, res) -> hub.getNetworks());
+            http.get("/networks", new ApiRoute() {
+                @Override
+                public JsonElement jsonHandle(Request request, Response response) throws Exception {
+                    JsonObject json = new JsonObject();
+                    for (Network network : hub.getNetworks()) {
+                        json.add(network.getUniqueId(), network.toJson());
+                    }
+                    return json;
+                }
+            });
             http.get("/networks/:network", networkGet());
             http.get("/networks/:network/:device", deviceGet());
             http.get("/networks/:network/:device/:feature", featureGet());
@@ -40,8 +45,8 @@ public class Routes {
     private Route networkGet() {
         return new NetworkRoute(hub) {
             @Override
-            public Object handle(Network<?> network, Request req, Response res) {
-                return network;
+            public JsonElement handle(Network network, Request req, Response res) {
+                return network.toJson();
             }
         };
     }
@@ -49,8 +54,8 @@ public class Routes {
     private Route deviceGet() {
         return new DeviceRoute(hub) {
             @Override
-            public Object handle(Network<?> network, Device<?> device, Request req, Response res) {
-                return device;
+            public JsonElement handle(Network network, Device device, Request req, Response res) {
+                return device.toJson();
             }
         };
     }
@@ -58,20 +63,39 @@ public class Routes {
     private Route featureGet() {
         return new FeatureRoute(hub) {
             @Override
-            public Object handle(Network network, Device device, Feature feature, Request req, Response res) {
-                return new Gson().toJson(feature.toJson());
+            public JsonElement handle(Network network, Device device, Feature feature, Request req, Response res) {
+                if (feature instanceof DataFeature) {
+                    DataFeature data = (DataFeature) feature;
+                    return data.toJson();
+                }
+
+                // todo
+                return new JsonPrimitive(false);
             }
         };
     }
 
     private Route featurePut() {
+        JsonParser parser = new JsonParser();
+
         return new FeatureRoute(hub) {
             @Override
-            public Object handle(Network<?> network, Device<?> device, Feature feature, Request req, Response res) {
-                JsonParser parser = new JsonParser();
-                JsonObject json = parser.parse(req.body()).getAsJsonObject();
-                feature.acceptData(json);
-                return "ok";
+            public JsonElement handle(Network network, Device device, Feature feature, Request req, Response res) {
+                if (feature instanceof ResponsiveFeature) {
+                    ResponsiveFeature responsive = (ResponsiveFeature) feature;
+                    responsive.respondTo(parser.parse(req.body()));
+
+                    if (feature instanceof DataFeature) {
+                        DataFeature data = (DataFeature) feature;
+                        return data.toJson();
+                    }
+
+                    // todo
+                    return new JsonPrimitive(true);
+                }
+
+                // todo
+                return new JsonPrimitive(false);
             }
         };
     }

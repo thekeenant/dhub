@@ -1,5 +1,6 @@
 package com.keenant.dhub.hub.plugins.web;
 
+import com.google.gson.JsonElement;
 import com.keenant.dhub.hub.Hub;
 import com.keenant.dhub.hub.network.Device;
 import com.keenant.dhub.hub.network.Feature;
@@ -13,12 +14,24 @@ public abstract class FeatureRoute extends DeviceRoute {
         super(hub);
     }
 
-    public abstract Object handle(Network<?> network, Device<?> device, Feature feature, Request req, Response res);
+    public abstract JsonElement handle(Network network, Device device, Feature feature, Request req, Response res);
 
-    @SuppressWarnings("unchecked")
     @Override
-    public Object handle(Network<?> network, Device<?> device, Request req, Response res) {
-        Feature feature = device.getFeature(req.params("feature")).orElseThrow(UnsupportedFeatureException::new);
+    public JsonElement handle(Network network, Device device, Request req, Response res) {
+        String name = req.params("feature");
+        Feature feature = null;
+
+        for (Feature test : device.getFeatures()) {
+            if (test.getUniqueId().equals(name)) {
+                feature = test;
+                break;
+            }
+        }
+
+        if (feature == null) {
+            throw new UnsupportedFeatureException();
+        }
+
         return handle(network, device, feature, req, res);
     }
 }

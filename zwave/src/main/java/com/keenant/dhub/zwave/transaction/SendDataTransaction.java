@@ -8,6 +8,8 @@ import com.keenant.dhub.zwave.messages.SendDataMsg.Callback;
 import com.keenant.dhub.zwave.messages.SendDataMsg.Reply;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @ToString(exclude = {"replyParser", "callbackParser"})
@@ -18,7 +20,7 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
 
     private State state;
     private Reply reply;
-    private Callback callback;
+    private List<Callback> callbacks;
     private R response;
 
     private enum State {
@@ -34,6 +36,7 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
         this.message = message;
         this.replyParser = replyParser;
         this.callbackParser = callbackParser;
+        this.callbacks = new ArrayList<>();
     }
 
     @Override
@@ -52,8 +55,8 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
         return Optional.ofNullable(reply);
     }
 
-    public Optional<Callback> getCallback() {
-        return Optional.ofNullable(callback);
+    public List<Callback> getCallbacks() {
+        return callbacks;
     }
 
     public Optional<R> getResponse() {
@@ -93,12 +96,13 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
                 return reply;
 
             case RECEIVED_REPLY:
-                callback = callbackParser.parseMessage(msg).orElse(null);
+                Callback callback = callbackParser.parseMessage(msg).orElse(null);
 
                 if (callback == null) {
                     state = State.FAILED;
                     break;
                 }
+                callbacks.add(callback);
 
                 // Move to done state if we don't expect a response, otherwise, we wait for more
                 state = responseParser == null ? State.DONE : State.RECEIVED_CALLBACK;
@@ -106,6 +110,19 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
 
             case RECEIVED_CALLBACK:
                 ApplicationCommandMsg<R> cmdMessage = ApplicationCommandMsg.parse(msg, responseParser).orElse(null);
+
+                if (cmdMessage == null) {
+                    callback = callbackParser.parseMessage(msg).orElse(null);
+
+                    if (callback == null) {
+                        state = State.FAILED;
+                        break;
+                    }
+
+                    callbacks.add(callback);
+                    return callback;
+                }
+
                 response = cmdMessage.getCmd();
 
                 if (response == null) {
