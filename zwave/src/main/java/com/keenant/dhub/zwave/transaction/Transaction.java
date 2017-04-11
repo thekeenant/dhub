@@ -62,13 +62,20 @@ public abstract class Transaction {
         return this;
     }
 
+    public boolean isTimeout() {
+        long timeout = 2000;
+
+        return isStarted() && millisAlive() > timeout;
+
+    }
+
     /**
      * @return The time in nanoseconds from when the transaction started to when it ended.
      *         If it is in progress, it is the time up until present time.
      * @throws UnsupportedOperationException If the transaction hasn't started.
      */
     public long nanosAlive() throws UnsupportedOperationException {
-        if (startTimeNanos <= 0) {
+        if (!isStarted()) {
             throw new UnsupportedOperationException("Transaction has not started yet.");
         }
 

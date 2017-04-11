@@ -1,19 +1,17 @@
 package com.keenant.dhub.hub.plugins.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.core.util.EventListener;
+import com.keenant.dhub.core.util.ControllerListener;
 import com.keenant.dhub.hub.network.Network;
 import com.keenant.dhub.zwave.Controller;
-import com.keenant.dhub.zwave.messages.AddNodeMsg;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
 import com.keenant.dhub.zwave.messages.NodeListMsg;
-import com.keenant.dhub.zwave.messages.RemoveNodeMsg;
 import lombok.ToString;
 
 import java.util.*;
 
 @ToString(exclude = "plugin", callSuper = true)
-public class ZNetwork extends Controller implements EventListener, Network {
+public class ZNetwork extends Controller implements ControllerListener, Network {
     private final ZPlugin plugin;
     private ZNode mainNode;
     private Map<Integer, ZNode> devices;

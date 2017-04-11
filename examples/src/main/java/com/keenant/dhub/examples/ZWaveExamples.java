@@ -3,7 +3,7 @@ package com.keenant.dhub.examples;
 import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
-import com.keenant.dhub.core.util.EventListener;
+import com.keenant.dhub.core.util.ControllerListener;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundCmd;
@@ -97,7 +97,7 @@ public class ZWaveExamples {
 
         // Here we make a listener. 99% of the time it shouldn't be anonymous, like it is here.
         // Anything can be a listener, it's just an interface.
-        EventListener listener = new EventListener() {
+        ControllerListener listener = new ControllerListener() {
             // Subscribe to BasicReportEvent events (the method name does not matter).
             @Handler
             public void onBasicReport(BasicReportEvent event) {
@@ -149,7 +149,7 @@ public class ZWaveExamples {
         AtomicInteger count = new AtomicInteger();
         AtomicBoolean await = new AtomicBoolean(true);
 
-        controller.subscribe(new EventListener() {
+        controller.subscribe(new ControllerListener() {
             @Handler
             public void onEndPointReport(MultiChannelEndPointReportEvent event) {
                 int endPointCount = event.getCmd().getEndPointCount();

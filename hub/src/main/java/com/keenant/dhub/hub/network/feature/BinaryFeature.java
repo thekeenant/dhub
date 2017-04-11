@@ -2,7 +2,6 @@ package com.keenant.dhub.hub.network.feature;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.keenant.dhub.hub.network.DataFeature;
 import com.keenant.dhub.hub.network.ResponsiveFeature;
 

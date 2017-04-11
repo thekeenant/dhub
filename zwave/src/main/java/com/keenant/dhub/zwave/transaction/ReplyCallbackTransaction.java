@@ -1,6 +1,5 @@
 package com.keenant.dhub.zwave.transaction;
 
-import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.frame.Status;
 import lombok.ToString;

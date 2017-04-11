@@ -1,7 +1,6 @@
 package com.keenant.dhub.hub.plugins.zwave.feature;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.keenant.dhub.core.util.JsonUtil;
 import com.keenant.dhub.hub.network.feature.BinaryFeature;
 import com.keenant.dhub.hub.plugins.zwave.ZDevice;
@@ -12,8 +11,6 @@ import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd.Report;
 import lombok.ToString;
 
 import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
 
 @ToString(exclude = "device")
 public class BinaryZFeature extends BinaryFeature implements ZFeature {

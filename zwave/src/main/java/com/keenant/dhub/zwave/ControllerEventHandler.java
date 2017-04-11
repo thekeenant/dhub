@@ -1,6 +1,6 @@
 package com.keenant.dhub.zwave;
 
-import com.keenant.dhub.core.util.EventListener;
+import com.keenant.dhub.core.util.ControllerListener;
 import com.keenant.dhub.zwave.event.Event;
 
 /**
@@ -9,7 +9,7 @@ import com.keenant.dhub.zwave.event.Event;
  * @param <T> The type of event to handle.
  */
 @FunctionalInterface
-public interface EventHandler<T extends Event> {
+public interface ControllerEventHandler<T extends Event> {
     /**
      * Called upon receiving the event for this handler.
      *
@@ -17,5 +17,5 @@ public interface EventHandler<T extends Event> {
      *                 controller.
      * @param event The event.
      */
-    void handle(EventListener listener, T event);
+    void handle(ControllerListener listener, T event);
 }

@@ -70,6 +70,7 @@ public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Mess
     }
 
     private Optional<Reply> parseReply(UnknownMessage msg) {
+        System.out.println("Reply: " + msg);
         ByteList data = msg.getDataBytes();
 
         if (data.get(0) != ID) {
@@ -89,6 +90,15 @@ public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Mess
     }
 
     private Optional<Callback> parseCallback(UnknownMessage msg) {
+        System.out.println("Callback: " + msg);
+        ByteList data = msg.getDataBytes();
+
+        if (data.get(0) != ID) {
+            return Optional.empty();
+        }
+
+        // Todo...
+
         return Optional.of(new Callback());
     }
 

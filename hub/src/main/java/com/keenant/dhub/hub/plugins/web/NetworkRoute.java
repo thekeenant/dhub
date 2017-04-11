@@ -6,7 +6,6 @@ import com.keenant.dhub.hub.network.Network;
 import com.keenant.dhub.hub.plugins.web.exception.NetworkNotFoundException;
 import spark.Request;
 import spark.Response;
-import spark.Route;
 
 public abstract class NetworkRoute extends ApiRoute {
     private final Hub hub;

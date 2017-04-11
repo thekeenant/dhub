@@ -1,8 +1,6 @@
 package com.keenant.dhub.hub.plugins.zwave;
 
-import com.keenant.dhub.core.util.EventListener;
-import com.keenant.dhub.hub.plugins.zwave.feature.BinaryZFeature;
-import com.keenant.dhub.hub.plugins.zwave.feature.ChildrenZFeature;
+import com.keenant.dhub.core.util.ControllerListener;
 import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.InboundCmd;
@@ -17,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @ToString(exclude = "network")
-public class ZNode implements ZDevice, EventListener {
+public class ZNode implements ZDevice, ControllerListener {
     private final ZNetwork network;
     private final int id;
     private final List<ZFeature> features;

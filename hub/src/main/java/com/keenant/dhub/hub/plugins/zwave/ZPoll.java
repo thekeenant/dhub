@@ -23,7 +23,7 @@ public class ZPoll implements Lifecycle, Data, Responsive {
     }
 
     public ZPoll(Runnable runnable) {
-        this(runnable, 5000);
+        this(runnable, 5000000);
     }
 
     public void setInterval(int interval) {

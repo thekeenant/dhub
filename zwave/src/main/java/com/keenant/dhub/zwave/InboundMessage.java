@@ -5,7 +5,6 @@ import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import com.keenant.dhub.zwave.messages.ApplicationUpdateMsg;
-import com.keenant.dhub.zwave.messages.RemoveNodeMsg;
 
 import java.util.Arrays;
 import java.util.List;

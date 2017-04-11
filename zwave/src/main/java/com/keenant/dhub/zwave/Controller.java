@@ -4,7 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
-import com.keenant.dhub.core.util.EventListener;
+import com.keenant.dhub.core.util.ControllerListener;
 import com.keenant.dhub.core.util.PrioritizedObject;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.event.*;
@@ -15,6 +15,7 @@ import net.engio.mbassy.bus.error.IPublicationErrorHandler.ConsoleLogger;
 import net.engio.mbassy.listener.Handler;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class Controller implements Lifecycle {
@@ -89,6 +90,8 @@ public class Controller implements Lifecycle {
      * @return The new current transaction. Empty if there isn't an outbound transaction.
      */
     Optional<Transaction> updateCurrent() {
+        // Todo: This was my laziness...
+
         if (current != null) {
             if (current.isComplete()) {
                 log.log(Level.DEV, "Transaction complete: " + current);
@@ -101,6 +104,13 @@ public class Controller implements Lifecycle {
                 // Clear current if it is finished.
                 current = null;
             }
+            else if (current.isTimeout()) {
+                log.log(Level.WARNING, "Transaction timeout: " + current);
+                TransactionTimeoutEvent event = new TransactionTimeoutEvent(this, current);
+                bus.publishAsync(event);
+                current = null;
+                // Todo: txn.recreate() to resend it?
+            }
             else {
                 // Current is valid and still being processed.
                 return Optional.of(current);
@@ -111,21 +121,20 @@ public class Controller implements Lifecycle {
             // Nothing queued either!
             return Optional.empty();
         }
-        else {
-            // Move front of the queue to current, return that.
-            Transaction txn = transactions.remove(0).getObject();
-            txn.setStartTimeNanos(System.nanoTime());
-            current = txn;
 
-            log.log(Level.DEV, "Transaction started: " + current);
-            txn.start();
+        // Move front of the queue to current, return that.
+        Transaction txn = transactions.remove(0).getObject();
+        txn.setStartTimeNanos(System.nanoTime());
+        current = txn;
 
-            // Transaction start event
-            TransactionStartEvent event = new TransactionStartEvent(this, current);
-            bus.publishAsync(event);
+        log.log(Level.DEV, "Transaction started: " + current);
+        txn.start();
 
-            return Optional.of(txn);
-        }
+        // Transaction start event
+        TransactionStartEvent event = new TransactionStartEvent(this, current);
+        bus.publishAsync(event);
+
+        return Optional.of(txn);
     }
 
     /**
@@ -133,19 +142,19 @@ public class Controller implements Lifecycle {
      *
      * This is not really recommended for production usage, as it actually listens to all controller events,
      * checking each one to see if it is of the type you provide. Best to listen to
-     * specific event via subscribing a listener, see {@link this#subscribe(EventListener)}.
+     * specific event via subscribing a listener, see {@link this#subscribe(ControllerListener)}.
      *
      * @param type The type of event to listen to. It can be as generic as a {@link ControllerEvent}, or
      *             as specific as you wish.
      * @param handler The handler, which will be called upon receiving the event.
      * @param <T> The type of the event.
      * @return The newly created listener (anonymous object). You can provide this object
-     *         to the #{@link this#unsubscribe(EventListener)} method to stop this handler from getting
+     *         to the #{@link this#unsubscribe(ControllerListener)} method to stop this handler from getting
      *         events.
      */
-    public <T extends ControllerEvent> EventListener listen(Class<T> type, EventHandler<T> handler) {
+    public <T extends ControllerEvent> ControllerListener listen(Class<T> type, ControllerEventHandler<T> handler) {
         // Generic listener which handles all controller events.
-        EventListener listener = new EventListener() {
+        ControllerListener listener = new ControllerListener() {
             @Handler
             @SuppressWarnings("unchecked")
             public void onEvent(ControllerEvent event) {
@@ -167,7 +176,7 @@ public class Controller implements Lifecycle {
      * Subscribe a listener to this controller's events.
      * @param listener The listener that contains various event subscriptions.
      */
-    public void subscribe(EventListener listener) {
+    public void subscribe(ControllerListener listener) {
         bus.subscribe(listener);
     }
 
@@ -175,7 +184,7 @@ public class Controller implements Lifecycle {
      * Unsubscribe an already registered listener from this controller's events.
      * @param listener The listener.
      */
-    public void unsubscribe(EventListener listener) {
+    public void unsubscribe(ControllerListener listener) {
         bus.unsubscribe(listener);
     }
 

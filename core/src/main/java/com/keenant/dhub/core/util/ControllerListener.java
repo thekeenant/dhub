@@ -4,5 +4,5 @@ import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;
 
 @Listener(references = References.Strong)
-public interface EventListener {
+public interface ControllerListener {
 }

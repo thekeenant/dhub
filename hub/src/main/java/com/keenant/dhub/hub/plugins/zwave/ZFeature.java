@@ -1,7 +1,7 @@
 package com.keenant.dhub.hub.plugins.zwave;
 
 import com.keenant.dhub.core.Lifecycle;
-import com.keenant.dhub.core.util.EventListener;
+import com.keenant.dhub.core.util.ControllerListener;
 import com.keenant.dhub.hub.network.Feature;
 import com.keenant.dhub.hub.plugins.zwave.feature.BinaryZFeature;
 import com.keenant.dhub.hub.plugins.zwave.feature.ChildrenZFeature;
@@ -13,7 +13,7 @@ import com.keenant.dhub.zwave.cmd.SwitchMultilevelCmd;
 
 import java.util.Optional;
 
-public interface ZFeature extends Feature, EventListener, Lifecycle {
+public interface ZFeature extends Feature, ControllerListener, Lifecycle {
     static Optional<ZFeature> fromCmdClass(ZDevice device, CmdClass cmdClass) {
         if (cmdClass instanceof SwitchBinaryCmd) {
             return Optional.of(new BinaryZFeature(device));

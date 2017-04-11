@@ -27,6 +27,26 @@ public class WebPlugin extends Plugin {
             }
         });
 
+        http.options("/*", (request, response) -> {
+            String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
+            if (accessControlRequestHeaders != null) {
+                response.header("Access-Control-Allow-Headers", accessControlRequestHeaders);
+            }
+
+            String accessControlRequestMethod = request.headers("Access-Control-Request-Method");
+            if (accessControlRequestMethod != null) {
+                response.header("Access-Control-Allow-Methods", accessControlRequestMethod);
+            }
+
+            return "OK";
+        });
+
+        http.before((req, res) -> {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Request-Method", "*");
+            res.header("Access-Control-Allow-Headers", "*");
+        });
+
         // Register routes
         Routes routes = new Routes(getHub());
         routes.setup(http);
