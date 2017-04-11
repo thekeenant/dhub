@@ -3,7 +3,7 @@ package com.keenant.dhub.examples;
 import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
-import com.keenant.dhub.core.util.ControllerListener;
+import com.keenant.dhub.zwave.ControllerListener;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundCmd;

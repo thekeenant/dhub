@@ -1,4 +1,4 @@
-package com.keenant.dhub.core.util;
+package com.keenant.dhub.zwave.util;
 
 /**
  * Something that can be represented as an array or list of bytes.

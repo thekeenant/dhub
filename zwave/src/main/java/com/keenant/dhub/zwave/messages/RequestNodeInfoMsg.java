@@ -1,6 +1,6 @@
 package com.keenant.dhub.zwave.messages;
 
-import com.keenant.dhub.core.util.ByteList;
+import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.Message;

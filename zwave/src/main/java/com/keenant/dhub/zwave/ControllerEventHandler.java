@@ -1,6 +1,5 @@
 package com.keenant.dhub.zwave;
 
-import com.keenant.dhub.core.util.ControllerListener;
 import com.keenant.dhub.zwave.event.Event;
 
 /**

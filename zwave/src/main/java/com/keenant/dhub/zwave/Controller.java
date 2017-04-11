@@ -4,7 +4,6 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
-import com.keenant.dhub.core.util.ControllerListener;
 import com.keenant.dhub.core.util.PrioritizedObject;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.event.*;
@@ -15,7 +14,6 @@ import net.engio.mbassy.bus.error.IPublicationErrorHandler.ConsoleLogger;
 import net.engio.mbassy.listener.Handler;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class Controller implements Lifecycle {

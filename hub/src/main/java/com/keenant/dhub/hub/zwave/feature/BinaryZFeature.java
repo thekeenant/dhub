@@ -1,12 +1,13 @@
 package com.keenant.dhub.hub.zwave.feature;
 
+import com.keenant.dhub.hub.network.Device;
 import com.keenant.dhub.hub.network.feature.BinaryFeature;
 import com.keenant.dhub.hub.zwave.ZChild;
 import com.keenant.dhub.hub.zwave.ZDevice;
 import com.keenant.dhub.hub.zwave.ZFeature;
 import com.keenant.dhub.hub.zwave.ZNode;
 import com.keenant.dhub.zwave.CmdClass;
-import com.keenant.dhub.zwave.cmd.BasicCmd;
+import com.keenant.dhub.zwave.ControllerListener;
 import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd.Report;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelInboundEncapEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchBinaryReportEvent;
@@ -16,7 +17,7 @@ import net.engio.mbassy.listener.Handler;
 import java.util.Optional;
 
 @ToString(exclude = "device")
-public class BinaryZFeature extends BinaryFeature implements ZFeature {
+public class BinaryZFeature extends BinaryFeature implements ZFeature, ControllerListener {
     private final ZDevice device;
     private Boolean latestValue;
 
@@ -45,7 +46,7 @@ public class BinaryZFeature extends BinaryFeature implements ZFeature {
 
     @Override
     public void start() {
-        device.subscribe(this);
+        device.getController().subscribe(this);
         updateState();
     }
 
@@ -56,7 +57,7 @@ public class BinaryZFeature extends BinaryFeature implements ZFeature {
             ZNode node = (ZNode) device;
             if (node.getId() == event.getNodeId()) {
                 latestValue = event.getCmd().getValue();
-                device.publish(this);
+                publishFeatureChange();
             }
         }
     }
@@ -74,13 +75,18 @@ public class BinaryZFeature extends BinaryFeature implements ZFeature {
             ZChild child = (ZChild) device;
             if (child.getNode().getId() == event.getNodeId() && child.getEndPoint() == event.getCmd().getEndPoint()) {
                 latestValue = report.getValue();
-                device.publish(this);
+                publishFeatureChange();
             }
         }
     }
 
     @Override
     public void stop() {
-        device.unsubscribe(this);
+        device.getController().unsubscribe(this);
+    }
+
+    @Override
+    public Device getDevice() {
+        return device;
     }
 }

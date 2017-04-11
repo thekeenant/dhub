@@ -1,6 +1,6 @@
 package com.keenant.dhub.zwave;
 
-import com.keenant.dhub.core.util.ByteList;
+import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
 
 public interface CmdParser<I extends InboundCmd> {

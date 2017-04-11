@@ -1,6 +1,6 @@
 package com.keenant.dhub.zwave.frame;
 
-import com.keenant.dhub.core.util.Byteable;
+import com.keenant.dhub.zwave.util.Byteable;
 
 /**
  * A Z-Wave frame (status or dataframe).

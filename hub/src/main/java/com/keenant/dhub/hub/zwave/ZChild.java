@@ -1,12 +1,9 @@
 package com.keenant.dhub.hub.zwave;
 
-import com.keenant.dhub.hub.event.FeatureChangeEvent;
-import com.keenant.dhub.hub.event.NestedFeatureChangeEvent;
-import com.keenant.dhub.hub.network.DataFeature;
 import com.keenant.dhub.hub.network.Network;
-import com.keenant.dhub.hub.zwave.feature.ChildrenZFeature;
 import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.CmdClass;
+import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundCmd;
 import com.keenant.dhub.zwave.cmd.MultiChannelCmd.InboundEncap;
 import lombok.ToString;
@@ -15,23 +12,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@ToString(exclude = "node")
+@ToString(exclude = "network")
 public class ZChild implements ZDevice {
-    private final ZNode node;
-    private final ChildrenZFeature children;
+    private final ZSubNetwork network;
     private final int endPoint;
     private final List<CmdClass> cmdClasses;
     private List<ZFeature> features;
 
-    public ZChild(ZNode node, ChildrenZFeature children, int endPoint, List<CmdClass> cmdClasses) {
-        this.node = node;
-        this.children = children;
+    public ZChild(ZSubNetwork network, int endPoint, List<CmdClass> cmdClasses) {
+        this.network = network;
         this.endPoint = endPoint;
         this.cmdClasses = cmdClasses;
     }
 
     public ZNode getNode() {
-        return node;
+        return network.getDevice();
     }
 
     public int getEndPoint() {
@@ -40,23 +35,23 @@ public class ZChild implements ZDevice {
 
     @Override
     public Network getNetwork() {
-        return children;
+        return network;
+    }
+
+    @Override
+    public Optional<Network> getSubNetwork() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Controller getController() {
+        return network.getDevice().getController();
     }
 
     @Override
     public <C extends Cmd<R>, R extends InboundCmd> Optional<R> send(C cmd, int timeout) {
-        Optional<InboundEncap<R>> encap = node.send(CmdClass.MULTI_CHANNEL.encap(endPoint, cmd), timeout);
+        Optional<InboundEncap<R>> encap = network.getDevice().send(CmdClass.MULTI_CHANNEL.encap(endPoint, cmd), timeout);
         return encap.map(InboundEncap::getCmd);
-    }
-
-    @Override
-    public void subscribe(ZFeature feature) {
-        node.subscribe(feature);
-    }
-
-    @Override
-    public void unsubscribe(ZFeature feature) {
-        node.unsubscribe(feature);
     }
 
     @Override
@@ -84,11 +79,5 @@ public class ZChild implements ZDevice {
     @Override
     public List<ZFeature> getFeatures() {
         return features;
-    }
-
-    @Override
-    public void publish(DataFeature feature) {
-        FeatureChangeEvent event = new FeatureChangeEvent(children, this, feature);
-        children.publish(event);
     }
 }

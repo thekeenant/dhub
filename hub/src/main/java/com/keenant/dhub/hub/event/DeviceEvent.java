@@ -7,8 +7,8 @@ import com.keenant.dhub.hub.network.Network;
 public abstract class DeviceEvent extends NetworkEvent {
     private Device device;
 
-    public DeviceEvent(Network network, Device device) {
-        super(network);
+    public DeviceEvent(Device device) {
+        super(device.getNetwork());
         this.device = device;
     }
 

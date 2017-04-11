@@ -1,4 +1,4 @@
-package com.keenant.dhub.core.util;
+package com.keenant.dhub.zwave.util;
 
 import java.util.ArrayList;
 import java.util.Collection;

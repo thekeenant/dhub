@@ -1,6 +1,6 @@
 package com.keenant.dhub.zwave.frame;
 
-import com.keenant.dhub.core.util.ByteList;
+import com.keenant.dhub.zwave.util.ByteList;
 
 /**
  * A Z-Wave data frame.

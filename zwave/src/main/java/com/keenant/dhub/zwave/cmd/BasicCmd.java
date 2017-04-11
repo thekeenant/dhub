@@ -1,6 +1,6 @@
 package com.keenant.dhub.zwave.cmd;
 
-import com.keenant.dhub.core.util.ByteList;
+import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.cmd.BasicCmd.Report;
 import com.keenant.dhub.zwave.event.CmdEvent;

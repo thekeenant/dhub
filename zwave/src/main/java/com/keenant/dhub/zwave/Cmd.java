@@ -1,6 +1,6 @@
 package com.keenant.dhub.zwave;
 
-import com.keenant.dhub.core.util.Byteable;
+import com.keenant.dhub.zwave.util.Byteable;
 
 import java.util.Optional;
 

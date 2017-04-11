@@ -1,4 +1,4 @@
-package com.keenant.dhub.core.util;
+package com.keenant.dhub.zwave;
 
 import net.engio.mbassy.listener.Listener;
 import net.engio.mbassy.listener.References;

@@ -1,7 +1,7 @@
 package com.keenant.dhub.hub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.core.util.ControllerListener;
+import com.keenant.dhub.zwave.ControllerListener;
 import com.keenant.dhub.hub.event.NetworkEvent;
 import com.keenant.dhub.hub.network.DeviceCollection;
 import com.keenant.dhub.hub.network.Network;
@@ -15,14 +15,13 @@ import net.engio.mbassy.bus.MBassador;
 @ToString(exclude = "plugin", callSuper = true)
 public class ZNetwork extends Controller implements ControllerListener, Network {
     private final ZPlugin plugin;
-    private final MBassador<NetworkEvent> bus;
+    private final DeviceCollection<ZNode> devices = new DeviceCollection<>();
+    private final MBassador<NetworkEvent> bus = new MBassador<>();
     private ZNode mainNode;
-    private DeviceCollection<ZNode> devices = new DeviceCollection<>();
 
     public ZNetwork(SerialPort port, ZPlugin plugin) throws IllegalArgumentException {
         super(port);
         this.plugin = plugin;
-        this.bus = new MBassador<>();
     }
 
     @Override
@@ -53,13 +52,14 @@ public class ZNetwork extends Controller implements ControllerListener, Network 
     @Override
     public void start() {
         try {
+            devices.clear();
+
             super.start();
 
             NodeListMsg.Reply nodeList = send(new NodeListMsg())
                     .await(5000)
                     .getReply()
                     .orElseThrow(RuntimeException::new);
-            devices = new DeviceCollection<>();
 
             MemoryGetIdMsg.Reply memory = send(new MemoryGetIdMsg())
                     .await(5000)
