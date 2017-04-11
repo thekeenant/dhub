@@ -1,39 +1,48 @@
-package com.keenant.dhub.hub.plugins.zwave;
+package com.keenant.dhub.hub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.util.ControllerListener;
+import com.keenant.dhub.hub.event.NetworkEvent;
+import com.keenant.dhub.hub.network.DeviceCollection;
 import com.keenant.dhub.hub.network.Network;
+import com.keenant.dhub.hub.network.NetworkListener;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
 import com.keenant.dhub.zwave.messages.NodeListMsg;
 import lombok.ToString;
-
-import java.util.*;
+import net.engio.mbassy.bus.MBassador;
 
 @ToString(exclude = "plugin", callSuper = true)
 public class ZNetwork extends Controller implements ControllerListener, Network {
     private final ZPlugin plugin;
+    private final MBassador<NetworkEvent> bus;
     private ZNode mainNode;
-    private Map<Integer, ZNode> devices;
+    private DeviceCollection<ZNode> devices = new DeviceCollection<>();
 
     public ZNetwork(SerialPort port, ZPlugin plugin) throws IllegalArgumentException {
         super(port);
-
         this.plugin = plugin;
-        devices = new HashMap<>();
-    }
-
-    public Set<Integer> getNodeIds() {
-        return devices.keySet();
-    }
-
-    public Optional<ZNode> getNode(int nodeId) {
-        return Optional.ofNullable(devices.get(nodeId));
+        this.bus = new MBassador<>();
     }
 
     @Override
-    public Collection<ZNode> getDevices() {
-        return devices.values();
+    public DeviceCollection<ZNode> getDevices() {
+        return devices;
+    }
+
+    @Override
+    public void subscribe(NetworkListener listener) {
+        bus.subscribe(listener);
+    }
+
+    @Override
+    public void unsubscribe(NetworkListener listener) {
+        bus.unsubscribe(listener);
+    }
+
+    @Override
+    public void publish(NetworkEvent event) {
+        bus.publishAsync(event);
     }
 
     @Override
@@ -50,7 +59,7 @@ public class ZNetwork extends Controller implements ControllerListener, Network 
                     .await(5000)
                     .getReply()
                     .orElseThrow(RuntimeException::new);
-            devices = new HashMap<>();
+            devices = new DeviceCollection<>();
 
             MemoryGetIdMsg.Reply memory = send(new MemoryGetIdMsg())
                     .await(5000)
@@ -65,7 +74,7 @@ public class ZNetwork extends Controller implements ControllerListener, Network 
 
                 ZNode node = new ZNode(this, nodeId);
                 node.start();
-                devices.put(nodeId, node);
+                devices.add(node);
             }
 
         } catch (Exception e) {

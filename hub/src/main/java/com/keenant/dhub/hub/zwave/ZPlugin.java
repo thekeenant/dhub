@@ -1,4 +1,4 @@
-package com.keenant.dhub.hub.plugins.zwave;
+package com.keenant.dhub.hub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.core.logging.Logging;

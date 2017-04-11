@@ -1,11 +1,11 @@
-package com.keenant.dhub.hub.plugins.zwave;
+package com.keenant.dhub.hub.zwave;
 
 import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.core.util.ControllerListener;
 import com.keenant.dhub.hub.network.Feature;
-import com.keenant.dhub.hub.plugins.zwave.feature.BinaryZFeature;
-import com.keenant.dhub.hub.plugins.zwave.feature.ChildrenZFeature;
-import com.keenant.dhub.hub.plugins.zwave.feature.LevelZFeature;
+import com.keenant.dhub.hub.zwave.feature.BinaryZFeature;
+import com.keenant.dhub.hub.zwave.feature.ChildrenZFeature;
+import com.keenant.dhub.hub.zwave.feature.LevelZFeature;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.cmd.MultiChannelCmd;
 import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd;

@@ -1,4 +1,4 @@
-package com.keenant.dhub.hub.plugins.web;
+package com.keenant.dhub.hub.web;
 
 import com.keenant.dhub.hub.Plugin;
 import io.airlift.airline.Cli.CliBuilder;
@@ -20,6 +20,8 @@ public class WebPlugin extends Plugin {
 
     @Override
     public void start() {
+        Routes.setup(getHub(), http);
+
         http.before((req, res) -> {
             String path = req.pathInfo();
             if (path.length() > 1 && path.endsWith("/")) {
@@ -46,10 +48,6 @@ public class WebPlugin extends Plugin {
             res.header("Access-Control-Request-Method", "*");
             res.header("Access-Control-Allow-Headers", "*");
         });
-
-        // Register routes
-        Routes routes = new Routes(getHub());
-        routes.setup(http);
 
         http.init();
     }

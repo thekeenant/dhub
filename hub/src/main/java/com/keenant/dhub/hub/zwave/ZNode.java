@@ -1,6 +1,10 @@
-package com.keenant.dhub.hub.plugins.zwave;
+package com.keenant.dhub.hub.zwave;
 
 import com.keenant.dhub.core.util.ControllerListener;
+import com.keenant.dhub.hub.Hub;
+import com.keenant.dhub.hub.event.FeatureChangeEvent;
+import com.keenant.dhub.hub.network.DataFeature;
+import com.keenant.dhub.hub.network.Network;
 import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.InboundCmd;
@@ -24,6 +28,11 @@ public class ZNode implements ZDevice, ControllerListener {
         this.network = network;
         this.id = id;
         this.features = new ArrayList<>();
+    }
+
+    @Override
+    public Network getNetwork() {
+        return network;
     }
 
     @Override

@@ -63,7 +63,7 @@ public abstract class Transaction {
     }
 
     public boolean isTimeout() {
-        long timeout = 2000;
+        long timeout = 5000;
 
         return isStarted() && millisAlive() > timeout;
 

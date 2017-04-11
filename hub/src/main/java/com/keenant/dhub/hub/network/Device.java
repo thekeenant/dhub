@@ -2,6 +2,7 @@ package com.keenant.dhub.hub.network;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.keenant.dhub.hub.event.FeatureChangeEvent;
 
 import java.util.List;
 import java.util.Map.Entry;
@@ -11,6 +12,12 @@ public interface Device extends Data, Responsive {
     String getUniqueId();
 
     List<? extends Feature> getFeatures();
+
+    Network getNetwork();
+
+    default void publish(DataFeature feature) {
+        getNetwork().publish(new FeatureChangeEvent(getNetwork(), this, feature));
+    }
 
     @SuppressWarnings("unchecked")
     default <T extends Feature> Optional<T> getFeature(Class<T> type) {
@@ -58,6 +65,9 @@ public interface Device extends Data, Responsive {
             }
         }
 
-        return features;
+        JsonObject json = new JsonObject();
+        json.add("features", features);
+
+        return json;
     }
 }

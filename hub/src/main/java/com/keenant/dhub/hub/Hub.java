@@ -2,8 +2,8 @@ package com.keenant.dhub.hub;
 
 import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.hub.network.Network;
-import com.keenant.dhub.hub.plugins.web.WebPlugin;
-import com.keenant.dhub.hub.plugins.zwave.ZPlugin;
+import com.keenant.dhub.hub.web.WebPlugin;
+import com.keenant.dhub.hub.zwave.ZPlugin;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Cli.CliBuilder;
 import io.airlift.airline.ParseException;

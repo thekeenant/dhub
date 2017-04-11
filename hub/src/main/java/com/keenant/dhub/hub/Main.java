@@ -41,12 +41,12 @@ public class Main {
         Network network = hub.getNetworks().get(1);
 
         for (Device device : network.getDevices()) {
-            ChildrenFeature feature = device.getFeature(ChildrenFeature.class).orElse(null);
+            ChildrenFeature<?> feature = device.getFeature(ChildrenFeature.class).orElse(null);
 
             if (feature == null)
                 continue;
 
-            Device child = feature.getChild(channel).orElse(null);
+            Device child = feature.getDevices().getById(channel).orElse(null);
 
             if (child == null)
                 continue;

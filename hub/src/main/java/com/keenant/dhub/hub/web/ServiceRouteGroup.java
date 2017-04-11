@@ -1,4 +1,4 @@
-package com.keenant.dhub.hub.plugins.web;
+package com.keenant.dhub.hub.web;
 
 import spark.Service;
 
