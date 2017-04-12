@@ -9,7 +9,7 @@ import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.NodeListReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.NodeListMsg.Reply;
-import com.keenant.dhub.zwave.transaction.ReplyTransaction;
+import com.keenant.dhub.zwave.transaction.ReplyTxn;
 import lombok.ToString;
 
 import java.util.Collections;
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @ToString
-public class NodeListMsg implements Message<ReplyTransaction<Reply>> {
+public class NodeListMsg implements Message<ReplyTxn<Reply>> {
     private static final byte ID = (byte) 0x02;
     private static final int NODE_BITMASK_SIZE = 29;
 
@@ -33,8 +33,8 @@ public class NodeListMsg implements Message<ReplyTransaction<Reply>> {
     }
 
     @Override
-    public ReplyTransaction<Reply> createTransaction(Controller controller) {
-        return new ReplyTransaction<>(controller, this, this::parseReply);
+    public ReplyTxn<Reply> createTransaction(Controller controller) {
+        return new ReplyTxn<>(controller, this, this::parseReply);
     }
 
     private Optional<Reply> parseReply(UnknownMessage msg) {

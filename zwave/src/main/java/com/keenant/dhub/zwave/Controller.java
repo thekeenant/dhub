@@ -1,14 +1,15 @@
 package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.core.logging.Level;
 import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.PrioritizedObject;
 import com.keenant.dhub.core.util.Priority;
+import com.keenant.dhub.zwave.cmd.MultiChannelCmd.InboundEncap;
 import com.keenant.dhub.zwave.event.*;
 import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import com.keenant.dhub.zwave.transaction.Transaction;
+import com.keenant.dhub.zwave.util.EndPoint;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.error.IPublicationErrorHandler.ConsoleLogger;
 import net.engio.mbassy.listener.Handler;
@@ -16,7 +17,7 @@ import net.engio.mbassy.listener.Handler;
 import java.util.*;
 import java.util.logging.Logger;
 
-public class Controller implements Lifecycle {
+public class Controller {
     /**
      * Sorts the transaction queue.
      */
@@ -67,14 +68,26 @@ public class Controller implements Lifecycle {
      * @param msg The inbound message.
      */
     public void onReceive(InboundMessage msg) {
+        // Post command events
         if (msg instanceof ApplicationCommandMsg) {
             ApplicationCommandMsg appMsg = (ApplicationCommandMsg) msg;
             InboundCmd cmd = appMsg.getCmd();
 
-            CmdEvent event = cmd.createEvent(this, appMsg.getNodeId());
+            // Multi channel encap messages contain a command for an endpoint
+            if (cmd instanceof InboundEncap) {
+                InboundEncap encap = (InboundEncap) cmd;
+                EndPoint point = new EndPoint(this, appMsg.getNodeId(), encap.getEndPoint());
+                CmdEvent event = encap.getCmd().createEvent(this, point);
+                bus.publishAsync(event);
+            }
+
+            // All app messages are a command
+            EndPoint point = new EndPoint(this, appMsg.getNodeId());
+            CmdEvent event = cmd.createEvent(this, point);
             bus.publishAsync(event);
         }
 
+        // Post message events
         InboundMessageEvent event = msg.createEvent(this);
         bus.publishAsync(event);
     }
@@ -279,7 +292,6 @@ public class Controller implements Lifecycle {
      *
      * @throws IllegalStateException If the controller is already started.
      */
-    @Override
     public void start() throws IllegalStateException {
         if (isAlive()) {
             throw new IllegalStateException("Controller already started.");
@@ -295,7 +307,6 @@ public class Controller implements Lifecycle {
      *
      * Trashes any current transaction. The transaction queue is unaffected.
      */
-    @Override
     public void stop() {
         if (!isAlive()) {
             return;

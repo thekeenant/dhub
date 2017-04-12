@@ -9,13 +9,13 @@ import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.VersionReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.VersionMsg.Reply;
-import com.keenant.dhub.zwave.transaction.ReplyTransaction;
+import com.keenant.dhub.zwave.transaction.ReplyTxn;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class VersionMsg implements Message<ReplyTransaction<Reply>> {
+public class VersionMsg implements Message<ReplyTxn<Reply>> {
     private static final byte ID = (byte) 0x15;
 
     @Override
@@ -29,8 +29,8 @@ public class VersionMsg implements Message<ReplyTransaction<Reply>> {
     }
 
     @Override
-    public ReplyTransaction<Reply> createTransaction(Controller controller) {
-        return new ReplyTransaction<>(controller, this, this::parseReply);
+    public ReplyTxn<Reply> createTransaction(Controller controller) {
+        return new ReplyTxn<>(controller, this, this::parseReply);
     }
 
     private Optional<Reply> parseReply(UnknownMessage msg) {

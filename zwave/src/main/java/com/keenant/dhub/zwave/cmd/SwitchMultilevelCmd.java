@@ -1,12 +1,13 @@
 package com.keenant.dhub.zwave.cmd;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.core.util.Cast;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.cmd.SwitchMultilevelCmd.Report;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchMultilevelReport;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
+import com.keenant.dhub.zwave.util.ByteList;
+import com.keenant.dhub.zwave.util.EndPoint;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -127,7 +128,7 @@ public class SwitchMultilevelCmd implements CmdClass<Report> {
     }
 
     @ToString
-    public static class Set implements Cmd<InboundCmd> {
+    public static class Set implements Cmd {
         private final int value;
 
         private Set(int value) {
@@ -138,15 +139,10 @@ public class SwitchMultilevelCmd implements CmdClass<Report> {
         public ByteList toBytes() {
             return new ByteList(ID, ID_SET, value, 100);
         }
-
-        @Override
-        public Optional<CmdParser<InboundCmd>> getResponseParser() {
-            return Optional.empty();
-        }
     }
 
     @ToString
-    public static class Get implements Cmd<Report> {
+    public static class Get implements ResponsiveCmd<Report> {
         private Get() {
 
         }
@@ -157,8 +153,8 @@ public class SwitchMultilevelCmd implements CmdClass<Report> {
         }
 
         @Override
-        public Optional<CmdParser<Report>> getResponseParser() {
-            return Optional.of(INSTANCE);
+        public CmdParser<Report> getResponseParser() {
+            return INSTANCE;
         }
     }
 
@@ -202,8 +198,8 @@ public class SwitchMultilevelCmd implements CmdClass<Report> {
         }
 
         @Override
-        public CmdEvent createEvent(Controller controller, int nodeId) {
-            return new SwitchMultilevelReport(controller, nodeId, this);
+        public CmdEvent createEvent(Controller controller, EndPoint endPoint) {
+            return new SwitchMultilevelReport(controller, endPoint, this);
         }
     }
 }

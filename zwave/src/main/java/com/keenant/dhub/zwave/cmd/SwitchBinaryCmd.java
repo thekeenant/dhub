@@ -1,14 +1,13 @@
 package com.keenant.dhub.zwave.cmd;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.cmd.SwitchBinaryCmd.Report;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.SwitchBinaryReportEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
+import com.keenant.dhub.zwave.util.ByteList;
+import com.keenant.dhub.zwave.util.EndPoint;
 import lombok.ToString;
-
-import java.util.Optional;
 
 /**
  * The binary switch command class.
@@ -80,7 +79,7 @@ public class SwitchBinaryCmd implements CmdClass<Report> {
     }
 
     @ToString
-    public static class Set implements Cmd<InboundCmd> {
+    public static class Set implements Cmd {
         private final boolean value;
 
         private Set(boolean value) {
@@ -92,15 +91,10 @@ public class SwitchBinaryCmd implements CmdClass<Report> {
             // Todo: Final byte is duration
             return new ByteList(ID, ID_SET, value ? (byte) 0xFF : (byte) 0x00, 0x00);
         }
-
-        @Override
-        public Optional<CmdParser<InboundCmd>> getResponseParser() {
-            return Optional.empty();
-        }
     }
 
     @ToString
-    public static class Get implements Cmd<Report> {
+    public static class Get implements ResponsiveCmd<Report> {
         private Get() {
 
         }
@@ -111,8 +105,8 @@ public class SwitchBinaryCmd implements CmdClass<Report> {
         }
 
         @Override
-        public Optional<CmdParser<Report>> getResponseParser() {
-            return Optional.of(INSTANCE);
+        public CmdParser<Report> getResponseParser() {
+            return INSTANCE;
         }
     }
 
@@ -129,8 +123,8 @@ public class SwitchBinaryCmd implements CmdClass<Report> {
         }
 
         @Override
-        public CmdEvent createEvent(Controller controller, int nodeId) {
-            return new SwitchBinaryReportEvent(controller, nodeId, this);
+        public CmdEvent createEvent(Controller controller, EndPoint endPoint) {
+            return new SwitchBinaryReportEvent(controller, endPoint, this);
         }
     }
 }

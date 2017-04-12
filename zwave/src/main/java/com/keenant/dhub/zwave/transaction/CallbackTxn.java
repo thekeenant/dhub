@@ -8,26 +8,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ToString(exclude = "parser")
-public abstract class CallbackTransaction<C extends InboundMessage> extends Transaction {
+public abstract class CallbackTxn<C extends InboundMessage> extends Transaction {
     private final Message<?> message;
     private final MessageParser<C> parser;
     private List<C> callbacks;
     private boolean failed;
 
-    public CallbackTransaction(Controller controller, Message<?> message, MessageParser<C> parser) {
+    public CallbackTxn(Controller controller, Message<?> message, MessageParser<C> parser) {
         super(controller);
         this.message = message;
         this.parser = parser;
     }
 
     @Override
-    public CallbackTransaction<C> await() {
+    public CallbackTxn<C> await() {
         super.await();
         return this;
     }
 
     @Override
-    public CallbackTransaction<C> await(int timeout) {
+    public CallbackTxn<C> await(int timeout) {
         super.await(timeout);
         return this;
     }

@@ -1,26 +1,30 @@
 package com.keenant.dhub.zwave.messages;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
-import com.keenant.dhub.zwave.event.message.SendDataCallbackEvent;
-import com.keenant.dhub.zwave.event.message.SendDataReplyEvent;
+import com.keenant.dhub.zwave.event.message.DataCallbackEvent;
+import com.keenant.dhub.zwave.event.message.DataReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
-import com.keenant.dhub.zwave.transaction.SendDataTransaction;
+import com.keenant.dhub.zwave.transaction.SendDataTxn;
+import com.keenant.dhub.zwave.transaction.SendReceiveDataTxn;
+import com.keenant.dhub.zwave.transaction.Transaction;
 import com.keenant.dhub.zwave.util.ByteBuilder;
+import com.keenant.dhub.zwave.util.ByteList;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Message<SendDataTransaction<C, R>> {
+public abstract class DataMsg<C extends Cmd> implements Message<Transaction> {
     private static final byte ID = (byte) 0x13;
 
     private static final byte ID_TX_ACK = 0x01;
     private static final byte ID_TX_AUTO_ROUTE = 0x04;
     private static final byte ID_TX_EXPLORE = (byte) 0x20;
 
+    private static final TxOptions TX_NONE = new TxOptions();
     private static final TxOptions TX_ALL = new TxOptions().all();
+
     private static byte nextCallbackId = 0x01;
 
     private final int nodeId;
@@ -28,11 +32,7 @@ public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Mess
     private final byte callbackId;
     private final TxOptions txOptions;
 
-    public SendDataMsg(int nodeId, C cmd) {
-        this(nodeId, cmd, TX_ALL);
-    }
-
-    public SendDataMsg(int nodeId, C cmd, TxOptions txOptions) {
+    private DataMsg(int nodeId, C cmd, TxOptions txOptions) {
         this.nodeId = nodeId;
         this.cmd = cmd;
         this.callbackId = nextCallbackId;
@@ -64,13 +64,7 @@ public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Mess
         return DataFrameType.REQ;
     }
 
-    @Override
-    public SendDataTransaction<C, R> createTransaction(Controller controller) {
-        return new SendDataTransaction<>(controller, this, this::parseReply, this::parseCallback);
-    }
-
-    private Optional<Reply> parseReply(UnknownMessage msg) {
-        System.out.println("Reply: " + msg);
+    private static Optional<Reply> parseReply(UnknownMessage msg) {
         ByteList data = msg.getDataBytes();
 
         if (data.get(0) != ID) {
@@ -89,8 +83,7 @@ public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Mess
         return Optional.of(new Reply(value));
     }
 
-    private Optional<Callback> parseCallback(UnknownMessage msg) {
-        System.out.println("Callback: " + msg);
+    private static Optional<Callback> parseCallback(UnknownMessage msg) {
         ByteList data = msg.getDataBytes();
 
         if (data.get(0) != ID) {
@@ -100,6 +93,28 @@ public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Mess
         // Todo...
 
         return Optional.of(new Callback());
+    }
+
+    public static class SendReceiveDataMsg<C extends ResponsiveCmd<R>, R extends InboundCmd> extends DataMsg<C> {
+        public SendReceiveDataMsg(int nodeId, C cmd) {
+            super(nodeId, cmd, TX_ALL);
+        }
+
+        @Override
+        public SendReceiveDataTxn<C, R> createTransaction(Controller controller) {
+            return new SendReceiveDataTxn<>(controller, this, DataMsg::parseReply, DataMsg::parseCallback);
+        }
+    }
+
+    public static class SendDataMsg<C extends Cmd> extends DataMsg<C> {
+        public SendDataMsg(int nodeId, C cmd) {
+            super(nodeId, cmd, TX_ALL);
+        }
+
+        @Override
+        public SendDataTxn<C> createTransaction(Controller controller) {
+            return new SendDataTxn<>(controller, this, DataMsg::parseReply, DataMsg::parseCallback);
+        }
     }
 
     @ToString
@@ -127,7 +142,7 @@ public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Mess
 
         @Override
         public InboundMessageEvent createEvent(Controller controller) {
-            return new SendDataReplyEvent(controller, this);
+            return new DataReplyEvent(controller, this);
         }
     }
 
@@ -140,7 +155,7 @@ public class SendDataMsg<C extends Cmd<R>, R extends InboundCmd> implements Mess
 
         @Override
         public InboundMessageEvent createEvent(Controller controller) {
-            return new SendDataCallbackEvent(controller, this);
+            return new DataCallbackEvent(controller, this);
         }
     }
 

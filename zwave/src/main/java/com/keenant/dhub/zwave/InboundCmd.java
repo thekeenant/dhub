@@ -2,6 +2,7 @@ package com.keenant.dhub.zwave;
 
 import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.event.CmdEvent;
+import com.keenant.dhub.zwave.util.EndPoint;
 
 import java.util.Optional;
 
@@ -31,8 +32,8 @@ public interface InboundCmd {
     /**
      * Create a new event associated with this command and it's data.
      * @param controller The controller this command was associated with.
-     * @param nodeId The node id of this command.
+     * @param endPoint The node id of this command.
      * @return The new command event.
      */
-    CmdEvent createEvent(Controller controller, int nodeId);
+    CmdEvent createEvent(Controller controller, EndPoint endPoint);
 }

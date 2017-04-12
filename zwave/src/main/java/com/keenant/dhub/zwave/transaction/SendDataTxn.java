@@ -2,29 +2,22 @@ package com.keenant.dhub.zwave.transaction;
 
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.frame.Status;
+import com.keenant.dhub.zwave.messages.DataMsg.Callback;
+import com.keenant.dhub.zwave.messages.DataMsg.Reply;
+import com.keenant.dhub.zwave.messages.DataMsg.SendDataMsg;
 import lombok.ToString;
 
 import java.util.Optional;
 
-/**
- * PC -> ZW: Request
- * ZW -> PC: ACK
- * ZW -> PC: Response
- * PC -> ZW: ACK
- *   ...
- * ZW -> PC: Callback
- * PC -> ZW: ACK
- *
- * @param <R> The reply type.
- */
 @ToString(exclude = {"replyParser", "callbackParser"})
-public class ReplyCallbackTransaction<R extends InboundMessage, C extends InboundMessage> extends Transaction {
-    private final Message<?> message;
-    private final MessageParser<R> replyParser;
-    private final MessageParser<C> callbackParser;
+public class SendDataTxn<C extends Cmd> extends Transaction {
+    private final SendDataMsg<C> message;
+    private final MessageParser<Reply> replyParser;
+    private final MessageParser<Callback> callbackParser;
+
     private State state;
-    private R reply;
-    private C callback;
+    private Reply reply;
+    private Callback callback;
 
     private enum State {
         SENT,
@@ -33,7 +26,7 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
         FAILED
     }
 
-    public ReplyCallbackTransaction(Controller controller, Message<?> message, MessageParser<R> replyParser, MessageParser<C> callbackParser) {
+    public SendDataTxn(Controller controller, SendDataMsg<C> message, MessageParser<Reply> replyParser, MessageParser<Callback> callbackParser) {
         super(controller);
         this.message = message;
         this.replyParser = replyParser;
@@ -41,23 +34,23 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
     }
 
     @Override
-    public ReplyCallbackTransaction<R, C> await() {
+    public SendDataTxn<C> await() {
         super.await();
         return this;
     }
 
     @Override
-    public ReplyCallbackTransaction<R, C> await(int timeout) {
+    public SendDataTxn<C> await(int timeout) {
         super.await(timeout);
         return this;
     }
 
-    public Optional<R> getReply() {
+    public Optional<Reply> getReply() {
         return Optional.ofNullable(reply);
     }
 
-    public Optional<C> getCallback() {
-        return Optional.ofNullable(callback);
+    public Callback getCallback() {
+        return callback;
     }
 
     @Override
@@ -98,6 +91,7 @@ public class ReplyCallbackTransaction<R extends InboundMessage, C extends Inboun
                     break;
                 }
 
+                // Move to done state if we don't expect a response, otherwise, we wait for more
                 state = State.DONE;
                 return callback;
 

@@ -3,24 +3,24 @@ package com.keenant.dhub.zwave.transaction;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.frame.Status;
 import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
-import com.keenant.dhub.zwave.messages.SendDataMsg;
-import com.keenant.dhub.zwave.messages.SendDataMsg.Callback;
-import com.keenant.dhub.zwave.messages.SendDataMsg.Reply;
+import com.keenant.dhub.zwave.messages.DataMsg.Callback;
+import com.keenant.dhub.zwave.messages.DataMsg.Reply;
+import com.keenant.dhub.zwave.messages.DataMsg.SendReceiveDataMsg;
 import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@ToString(exclude = {"replyParser", "callbackParser"})
-public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends Transaction {
-    private final SendDataMsg<T, R> message;
+@ToString
+public class SendReceiveDataTxn<C extends ResponsiveCmd<R>, R extends InboundCmd> extends Transaction {
+    private final SendReceiveDataMsg<C, R> message;
     private final MessageParser<Reply> replyParser;
     private final MessageParser<Callback> callbackParser;
 
     private State state;
     private Reply reply;
-    private List<Callback> callbacks;
+    private List<Callback> callbacks = new ArrayList<>();
     private R response;
 
     private enum State {
@@ -31,22 +31,21 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
         FAILED
     }
 
-    public SendDataTransaction(Controller controller, SendDataMsg<T, R> message, MessageParser<Reply> replyParser, MessageParser<Callback> callbackParser) {
+    public SendReceiveDataTxn(Controller controller, SendReceiveDataMsg<C, R> message, MessageParser<Reply> replyParser, MessageParser<Callback> callbackParser) {
         super(controller);
         this.message = message;
         this.replyParser = replyParser;
         this.callbackParser = callbackParser;
-        this.callbacks = new ArrayList<>();
     }
 
     @Override
-    public SendDataTransaction<T, R> await() {
+    public SendReceiveDataTxn<C, R> await() {
         super.await();
         return this;
     }
 
     @Override
-    public SendDataTransaction<T, R> await(int timeout) {
+    public SendReceiveDataTxn<C, R> await(int timeout) {
         super.await(timeout);
         return this;
     }
@@ -81,8 +80,6 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
 
     @Override
     public InboundMessage handle(UnknownMessage msg) {
-        CmdParser<R> responseParser = message.getCmd().getResponseParser().orElse(null);
-
         switch (state) {
             case SENT:
                 reply = replyParser.parseMessage(msg).orElse(null);
@@ -104,11 +101,11 @@ public class SendDataTransaction<T extends Cmd<R>, R extends InboundCmd> extends
                 }
                 callbacks.add(callback);
 
-                // Move to done state if we don't expect a response, otherwise, we wait for more
-                state = responseParser == null ? State.DONE : State.RECEIVED_CALLBACK;
+                state = State.RECEIVED_CALLBACK;
                 return callback;
 
             case RECEIVED_CALLBACK:
+                CmdParser<R> responseParser = message.getCmd().getResponseParser();
                 ApplicationCommandMsg<R> cmdMessage = ApplicationCommandMsg.parse(msg, responseParser).orElse(null);
 
                 if (cmdMessage == null) {

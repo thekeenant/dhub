@@ -2,12 +2,12 @@ package com.keenant.dhub.zwave.event.message;
 
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
-import com.keenant.dhub.zwave.messages.SendDataMsg.Reply;
+import com.keenant.dhub.zwave.messages.DataMsg.Callback;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class SendDataReplyEvent extends InboundMessageEvent<Reply> {
-    public SendDataReplyEvent(Controller controller, Reply message) {
+public class DataCallbackEvent extends InboundMessageEvent<Callback> {
+    public DataCallbackEvent(Controller controller, Callback message) {
         super(controller, message);
     }
 }

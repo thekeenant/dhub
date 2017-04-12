@@ -9,13 +9,13 @@ import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.AddNodeCallbackEvent;
 import com.keenant.dhub.zwave.exception.DataFrameException;
 import com.keenant.dhub.zwave.frame.DataFrameType;
-import com.keenant.dhub.zwave.transaction.AddNodeTransaction;
+import com.keenant.dhub.zwave.transaction.AddNodeTxn;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class AddNodeMsg implements Message<AddNodeTransaction> {
+public class AddNodeMsg implements Message<AddNodeTxn> {
     public static final byte ID = 0x4A;
 
     private static final byte MODE_ANY = 0x01;
@@ -66,11 +66,11 @@ public class AddNodeMsg implements Message<AddNodeTransaction> {
     }
 
     @Override
-    public AddNodeTransaction createTransaction(Controller controller) {
+    public AddNodeTxn createTransaction(Controller controller) {
         if (mode == Mode.STOP) {
             throw new IllegalStateException("Cannot start stop node removal transaction.");
         }
-        return new AddNodeTransaction(controller, this, this::parseCallback);
+        return new AddNodeTxn(controller, this, this::parseCallback);
     }
 
     private Optional<Callback> parseCallback(UnknownMessage msg) {

@@ -1,17 +1,17 @@
 package com.keenant.dhub.zwave.cmd;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelCapabilityReportEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelEndPointReportEvent;
 import com.keenant.dhub.zwave.event.cmd.MultiChannelInboundEncapEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
+import com.keenant.dhub.zwave.util.ByteList;
+import com.keenant.dhub.zwave.util.EndPoint;
 import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Multi channel command class (v4).
@@ -50,12 +50,28 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
     }
 
     /**
+     * Create a new multi endpoint encapsulation of a command that is responsive.
+     * @param endPoint The mc/destination id (subnode).
+     * @param cmd The command to send to the channel.
+     * @return The created multi mc encapsulation.
+     */
+    public <C extends ResponsiveCmd<R>, R extends InboundCmd> ResponsiveEncap<C, R> encap(int endPoint, C cmd) {
+        return new ResponsiveEncap<>(endPoint, cmd);
+    }
+
+    /**
      * Create a new multi endpoint encapsulation of a command.
      * @param endPoint The mc/destination id (subnode).
      * @param cmd The command to send to the channel.
      * @return The created multi mc encapsulation.
      */
-    public <T extends InboundCmd> Encap<T> encap(int endPoint, Cmd<T> cmd) {
+    @SuppressWarnings("unchecked")
+    public <C extends Cmd> Encap<C> encap(int endPoint, C cmd) {
+        // Todo: Check this
+        if (cmd instanceof ResponsiveCmd) {
+            ResponsiveCmd responsive = (ResponsiveCmd) cmd;
+            return (Encap<C>) encap(endPoint, responsive);
+        }
         return new Encap<>(endPoint, cmd);
     }
 
@@ -111,7 +127,7 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
     }
 
     @ToString
-    public static class EndPointGet implements Cmd<EndPointReport> {
+    public static class EndPointGet implements ResponsiveCmd<EndPointReport> {
         private EndPointGet() {
 
         }
@@ -122,8 +138,8 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
         }
 
         @Override
-        public Optional<CmdParser<EndPointReport>> getResponseParser() {
-            return Optional.of(MultiChannelCmd::parseEndPointReport);
+        public CmdParser<EndPointReport> getResponseParser() {
+            return MultiChannelCmd::parseEndPointReport;
         }
     }
 
@@ -146,13 +162,13 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
         }
 
         @Override
-        public CmdEvent createEvent(Controller controller, int nodeId) {
-            return new MultiChannelEndPointReportEvent(controller, nodeId, this);
+        public CmdEvent createEvent(Controller controller, EndPoint endPoint) {
+            return new MultiChannelEndPointReportEvent(controller, endPoint, this);
         }
     }
 
     @ToString
-    public static class CapabilityGet implements Cmd<CapabilityReport> {
+    public static class CapabilityGet implements ResponsiveCmd<CapabilityReport> {
         private final int endPoint;
 
         public CapabilityGet(int endPoint) {
@@ -160,8 +176,8 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
         }
 
         @Override
-        public Optional<CmdParser<CapabilityReport>> getResponseParser() {
-            return Optional.of(MultiChannelCmd::parseCapabilityReport);
+        public CmdParser<CapabilityReport> getResponseParser() {
+            return MultiChannelCmd::parseCapabilityReport;
         }
 
         @Override
@@ -181,8 +197,8 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
         }
 
         @Override
-        public CmdEvent createEvent(Controller controller, int nodeId) {
-            return new MultiChannelCapabilityReportEvent(controller, nodeId, this);
+        public CmdEvent createEvent(Controller controller, EndPoint endPoint) {
+            return new MultiChannelCapabilityReportEvent(controller, endPoint, this);
         }
 
         public int getEndPoint() {
@@ -213,17 +229,16 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
         }
 
         @Override
-        public CmdEvent createEvent(Controller controller, int nodeId) {
-            return new MultiChannelInboundEncapEvent(controller, nodeId, this);
+        public CmdEvent createEvent(Controller controller, EndPoint endPoint) {
+            return new MultiChannelInboundEncapEvent(controller, endPoint, this);
         }
     }
 
-    @ToString
-    public static class Encap<R extends InboundCmd> implements Cmd<InboundEncap<R>> {
+    public static class Encap<C extends Cmd> implements Cmd {
         private final int endPoint;
-        private final Cmd<R> cmd;
+        private final C cmd;
 
-        private Encap(int endPoint, Cmd<R> cmd) {
+        private Encap(int endPoint, C cmd) {
             this.endPoint = endPoint;
             this.cmd = cmd;
         }
@@ -232,7 +247,7 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
             return endPoint;
         }
 
-        public Cmd<R> getCmd() {
+        public C getCmd() {
             return cmd;
         }
 
@@ -248,16 +263,18 @@ public class MultiChannelCmd implements CmdClass<InboundCmd> {
             list.addAll(cmd.toBytes());
             return list;
         }
+    }
+
+    @ToString
+    public static class ResponsiveEncap<C extends ResponsiveCmd<R>, R extends InboundCmd> extends Encap<C> implements ResponsiveCmd<InboundEncap<R>> {
+        private ResponsiveEncap(int endPoint, C cmd) {
+            super(endPoint, cmd);
+        }
 
         @Override
-        public Optional<CmdParser<InboundEncap<R>>> getResponseParser() {
-            CmdParser<R> parser = cmd.getResponseParser().orElse(null);
-
-            if (parser == null) {
-                return Optional.empty();
-            }
-
-            return Optional.of(data -> parseInboundEncap(data, parser));
+        public CmdParser<InboundEncap<R>> getResponseParser() {
+            CmdParser<R> parser = getCmd().getResponseParser();
+            return data -> parseInboundEncap(data, parser);
         }
     }
 }

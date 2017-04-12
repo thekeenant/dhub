@@ -5,13 +5,13 @@ import com.keenant.dhub.zwave.transaction.Transaction;
 
 /**
  * A data frame that
- * @param <Txn>
+ * @param <T>
  */
-public interface Message<Txn extends Transaction> extends DataFrame {
+public interface Message<T extends Transaction> extends DataFrame {
     /**
      * Create a new transaction that starts with this outbound data frame.
      * @param controller The controller this message will be dispatched.
      * @return The new transaction.
      */
-    Txn createTransaction(Controller controller);
+    T createTransaction(Controller controller);
 }

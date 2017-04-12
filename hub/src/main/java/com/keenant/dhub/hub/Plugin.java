@@ -1,21 +1,11 @@
 package com.keenant.dhub.hub;
 
-import com.keenant.dhub.core.Lifecycle;
 import io.airlift.airline.Cli.CliBuilder;
 
-/**
- * A dhub plugin.
- */
-public abstract class Plugin implements Lifecycle {
-    private transient Hub hub;
+public abstract class Plugin {
+    public abstract void load(CliBuilder<Runnable> cli);
 
-    public abstract void init(CliBuilder<Runnable> cli);
+    public abstract void enable();
 
-    void setHub(Hub hub) {
-        this.hub = hub;
-    }
-
-    public Hub getHub() {
-        return hub;
-    }
+    public abstract void disable();
 }

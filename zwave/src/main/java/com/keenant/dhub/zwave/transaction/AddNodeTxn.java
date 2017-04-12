@@ -4,31 +4,31 @@ import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.Message;
 import com.keenant.dhub.zwave.MessageParser;
 import com.keenant.dhub.zwave.frame.Status;
-import com.keenant.dhub.zwave.messages.RemoveNodeMsg;
-import com.keenant.dhub.zwave.messages.RemoveNodeMsg.Callback;
-import com.keenant.dhub.zwave.messages.RemoveNodeMsg.Mode;
-import com.keenant.dhub.zwave.messages.RemoveNodeMsg.State;
+import com.keenant.dhub.zwave.messages.AddNodeMsg;
+import com.keenant.dhub.zwave.messages.AddNodeMsg.Callback;
+import com.keenant.dhub.zwave.messages.AddNodeMsg.Mode;
+import com.keenant.dhub.zwave.messages.AddNodeMsg.State;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class RemoveNodeTransaction extends CallbackTransaction<Callback> {
+public class AddNodeTxn extends CallbackTxn<Callback> {
     private static final long TIMEOUT = 60000;
 
     private boolean stopQueued;
     private boolean stopAckReceived;
 
-    public RemoveNodeTransaction(Controller controller, Message<?> message, MessageParser<Callback> parser) {
+    public AddNodeTxn(Controller controller, Message<?> message, MessageParser<Callback> parser) {
         super(controller, message, parser);
     }
 
     @Override
-    public RemoveNodeTransaction await() {
+    public AddNodeTxn await() {
         super.await();
         return this;
     }
 
     @Override
-    public RemoveNodeTransaction await(int timeout) {
+    public AddNodeTxn await(int timeout) {
         super.await(timeout);
         return this;
     }
@@ -50,7 +50,7 @@ public class RemoveNodeTransaction extends CallbackTransaction<Callback> {
 
     private void queueStopMsg() {
         stopQueued = true;
-        addToOutboundQueue(new RemoveNodeMsg(Mode.STOP));
+        addToOutboundQueue(new AddNodeMsg(Mode.STOP));
     }
 
     @Override
@@ -67,12 +67,18 @@ public class RemoveNodeTransaction extends CallbackTransaction<Callback> {
 
     @Override
     protected boolean isFinished(Callback latestCallback) {
+        if (!isStarted()) {
+            return false;
+        }
+
         if (stopQueued) {
             return stopAckReceived;
         }
 
         if (latestCallback != null) {
-            boolean finished = latestCallback.getState() == State.DONE || latestCallback.getState() == State.FAILED;
+            State state = latestCallback.getState();
+
+            boolean finished = state == State.PROTOCOL_DONE || state == State.DONE || state == State.FAILED;
             if (finished) {
                 queueStopMsg();
                 return false;

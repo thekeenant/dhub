@@ -1,16 +1,14 @@
 package com.keenant.dhub.hub;
 
-import com.keenant.dhub.core.Lifecycle;
 import com.keenant.dhub.hub.network.Network;
-import com.keenant.dhub.hub.web.WebPlugin;
-import com.keenant.dhub.hub.zwave.ZPlugin;
+import com.keenant.dhub.hub.plugins.zwave.ZPlugin;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Cli.CliBuilder;
 import io.airlift.airline.ParseException;
 
 import java.util.*;
 
-public class Hub implements Lifecycle {
+public class Hub {
     private static Hub instance;
 
     private Map<Class<? extends Plugin>, Plugin> plugins;
@@ -25,7 +23,6 @@ public class Hub implements Lifecycle {
         instance = this;
         plugins = new HashMap<>();
         plugins.put(ZPlugin.class, new ZPlugin());
-        plugins.put(WebPlugin.class, new WebPlugin());
         networks = new ArrayList<>();
     }
 
@@ -46,25 +43,24 @@ public class Hub implements Lifecycle {
     public void start() {
         CliBuilder<Runnable> builder = new CliBuilder<>("hub");
 
-
         // Initialize plugins
         getPlugins().forEach(plugin -> {
-            plugin.setHub(this);
-            plugin.init(builder);
+            plugin.load(builder);
         });
 
         // Start plugins
-        getPlugins().forEach(Plugin::start);
+        getPlugins().forEach(Plugin::enable);
 
         // Start networks
         getNetworks().forEach(Network::start);
 
-//        cli = builder.build();
+        // Todo:
+        // cli = builder.build();
     }
 
     public void stop() {
         // Stop plugins
-        getPlugins().forEach(Plugin::stop);
+        getPlugins().forEach(Plugin::disable);
 
         // Stop networks
         getNetworks().forEach(Network::stop);

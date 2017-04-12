@@ -1,14 +1,13 @@
 package com.keenant.dhub.zwave.cmd;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.cmd.BasicCmd.Report;
 import com.keenant.dhub.zwave.event.CmdEvent;
 import com.keenant.dhub.zwave.event.cmd.BasicReportEvent;
 import com.keenant.dhub.zwave.exception.CommandFrameException;
+import com.keenant.dhub.zwave.util.ByteList;
+import com.keenant.dhub.zwave.util.EndPoint;
 import lombok.ToString;
-
-import java.util.Optional;
 
 /**
  * The basic command class.
@@ -139,7 +138,7 @@ public class BasicCmd implements CmdClass<Report> {
     }
 
     @ToString
-    public static class Set implements Cmd<InboundCmd> {
+    public static class Set implements Cmd {
         private final int value;
 
         private Set(int value) {
@@ -150,15 +149,10 @@ public class BasicCmd implements CmdClass<Report> {
         public ByteList toBytes() {
             return new ByteList(ID, ID_SET, value);
         }
-
-        @Override
-        public Optional<CmdParser<InboundCmd>> getResponseParser() {
-            return Optional.empty();
-        }
     }
 
     @ToString
-    public static class Get implements Cmd<Report> {
+    public static class Get implements ResponsiveCmd<Report> {
         private Get() {
 
         }
@@ -169,8 +163,8 @@ public class BasicCmd implements CmdClass<Report> {
         }
 
         @Override
-        public Optional<CmdParser<Report>> getResponseParser() {
-            return Optional.of(INSTANCE);
+        public CmdParser<Report> getResponseParser() {
+            return INSTANCE;
         }
     }
 
@@ -187,12 +181,12 @@ public class BasicCmd implements CmdClass<Report> {
         }
 
         public double getPercent() {
-            return (double) value / MAX_VALUE;
+            return (double) Math.min(value, MAX_VALUE) / MAX_VALUE;
         }
 
         @Override
-        public CmdEvent createEvent(Controller controller, int nodeId) {
-            return new BasicReportEvent(controller, nodeId, this);
+        public CmdEvent createEvent(Controller controller, EndPoint endPoint) {
+            return new BasicReportEvent(controller, endPoint, this);
         }
     }
 }

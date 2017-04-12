@@ -9,13 +9,13 @@ import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.MemoryGetIdReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.MemoryGetIdMsg.Reply;
-import com.keenant.dhub.zwave.transaction.ReplyTransaction;
+import com.keenant.dhub.zwave.transaction.ReplyTxn;
 import lombok.ToString;
 
 import java.util.Optional;
 
 @ToString
-public class MemoryGetIdMsg implements Message<ReplyTransaction<Reply>> {
+public class MemoryGetIdMsg implements Message<ReplyTxn<Reply>> {
     private static final byte ID = (byte) 0x20;
 
     @Override
@@ -29,8 +29,8 @@ public class MemoryGetIdMsg implements Message<ReplyTransaction<Reply>> {
     }
 
     @Override
-    public ReplyTransaction<Reply> createTransaction(Controller controller) {
-        return new ReplyTransaction<>(controller, this, this::parseReply);
+    public ReplyTxn<Reply> createTransaction(Controller controller) {
+        return new ReplyTxn<>(controller, this, this::parseReply);
     }
 
     private Optional<Reply> parseReply(UnknownMessage msg) {
