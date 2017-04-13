@@ -1,7 +1,7 @@
 package com.keenant.dhub.hub.plugins.clock;
 
 import com.keenant.dhub.hub.Hub;
-import com.keenant.dhub.hub.Plugin;
+import com.keenant.dhub.hub.plugin.Plugin;
 import io.airlift.airline.Arguments;
 import io.airlift.airline.Cli.CliBuilder;
 import io.airlift.airline.Command;
@@ -11,21 +11,19 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.zone.ZoneRulesException;
 import java.util.List;
 
 public class ClockPlugin extends Plugin {
-    private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
 
     @Override
     public void load(CliBuilder<Runnable> cli) {
-        System.out.println("clock");
         cli.withCommand(ClockCommand.class);
     }
 
     @Override
     public void enable() {
-        Hub.getHub().registerNetwork(new ClockNetwork());
+        Hub.getHub().getNetworkManager().register(new ClockNetwork());
     }
 
     @Override
@@ -33,7 +31,7 @@ public class ClockPlugin extends Plugin {
 
     }
 
-    @Command(name = "clock", description = "Current time based on system time or a time zone.")
+    @Command(name = "clock", description = "Current time based on system time or a time zone")
     public static class ClockCommand implements Runnable {
         @Arguments(usage = "<time zone>")
         private List<String> args;
@@ -45,7 +43,7 @@ public class ClockPlugin extends Plugin {
             if (args != null) {
                 try {
                     zone = ZoneId.of(args.get(0));
-                } catch (ZoneRulesException e) {
+                } catch (Exception e) {
                     throw new ParseException(e.getMessage());
                 }
             }

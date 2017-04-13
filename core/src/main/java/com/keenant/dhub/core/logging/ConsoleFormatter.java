@@ -10,7 +10,7 @@ public class ConsoleFormatter extends Formatter {
 
     @Override
     public String format(LogRecord record) {
-        String format = "%s %-12s %s: %s\n";
+        String format = "%s %s %s: %s";
         String date = TIME_FORMAT.format(new Date(record.getMillis()));
         String name = record.getLoggerName();
         String level = "[" + record.getLevel().getName() + "]";

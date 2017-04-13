@@ -1,8 +1,6 @@
 package com.keenant.dhub.examples;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.core.logging.Level;
-import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.ControllerListener;
@@ -27,6 +25,7 @@ import net.engio.mbassy.listener.Handler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 /**
  * Some Z-Wave library examples.
@@ -38,9 +37,7 @@ public class ZWaveExamples {
     private static Controller controller;
 
     public static void main(String[] args) throws Exception {
-        Logging.setLevel(Level.INFO);
-
-        controller = new Controller(SerialPort.getCommPorts()[1]);
+        controller = new Controller(SerialPort.getCommPorts()[1], Logger.getLogger("Controller"));
         controller.start();
 
         System.out.println(controller);

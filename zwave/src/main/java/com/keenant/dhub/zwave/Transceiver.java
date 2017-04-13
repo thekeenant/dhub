@@ -1,14 +1,12 @@
 package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.core.logging.Level;
-import com.keenant.dhub.core.logging.Logging;
-import com.keenant.dhub.zwave.util.ByteList;
-import com.keenant.dhub.zwave.util.Byteable;
 import com.keenant.dhub.zwave.frame.DataFrame;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.frame.Status;
 import com.keenant.dhub.zwave.transaction.Transaction;
+import com.keenant.dhub.zwave.util.ByteList;
+import com.keenant.dhub.zwave.util.Byteable;
 
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -29,10 +27,10 @@ public class Transceiver implements Runnable {
     private Thread thread;
     private boolean notifyStop;
 
-    public Transceiver(Controller controller, SerialPort port) {
+    public Transceiver(Controller controller, SerialPort port, Logger log) {
         this.controller = controller;
         this.port = port;
-        this.log = Logging.getLogger(port.getSystemPortName());
+        this.log = log;
     }
 
     /**
@@ -97,8 +95,8 @@ public class Transceiver implements Runnable {
      *                 to bytes via #{@link Byteable#toBytes()}.
      */
     private void write(Byteable byteable) {
-        log.log(Level.DEBUG, "Writing... " + byteable.toBytes());
-        log.log(Level.DEV, "Writing... " + byteable);
+        log.finest("Writing... " + byteable.toBytes());
+        log.finer("Writing... " + byteable);
 
         byte[] arr = byteable.toByteArray();
         port.writeBytes(arr, arr.length);
@@ -189,7 +187,7 @@ public class Transceiver implements Runnable {
         Transaction txn = updateTransaction(buffer, previousTxn).orElse(null);
 
         if (!buffer.isEmpty()) {
-            log.log(Level.DEBUG, "Buffer: " + buffer);
+            log.finest("Buffer: " + buffer);
         }
 
         while (!buffer.isEmpty()) {
@@ -200,8 +198,8 @@ public class Transceiver implements Runnable {
             if (status != null) {
                 buffer.remove(0);
 
-                log.log(Level.DEBUG, "Reading... " + new ByteList(first));
-                log.log(Level.DEV, "Reading... " + status);
+                log.finest("Reading... " + new ByteList(first));
+                log.finer("Reading... " + status);
                 if (txn != null) {
                     txn.handle(status);
                 }
@@ -250,12 +248,12 @@ public class Transceiver implements Runnable {
                     controller.onReceive(msg);
                 }
 
-                log.log(Level.DEBUG, "Reading... " + data + " (" + type + ")");
+                log.finest("Reading... " + data + " (" + type + ")");
                 if (msg == null) {
-                    log.log(Level.DEV, "Reading... " + unknown);
+                    log.finer("Reading... " + unknown);
                 }
                 else {
-                    log.log(Level.DEV, "Reading... " + msg);
+                    log.finer("Reading... " + msg);
                 }
 
                 write(Status.ACK);

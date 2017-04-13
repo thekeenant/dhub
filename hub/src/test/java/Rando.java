@@ -1,6 +1,4 @@
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.core.logging.Level;
-import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.hub.Reaction;
 import com.keenant.dhub.hub.action.*;
 import com.keenant.dhub.hub.network.NetworkListener;
@@ -20,6 +18,7 @@ import net.engio.mbassy.listener.Handler;
 import org.junit.Test;
 
 import java.time.ZoneId;
+import java.util.logging.Logger;
 
 public class Rando implements NetworkListener {
     @Test
@@ -30,14 +29,12 @@ public class Rando implements NetworkListener {
         clocks.addDevice(clock);
         DateTimeProvider timeProvider = clock.getProvider(DateTimeProvider.class).orElse(null);
 
-        Logging.setLevel(Level.INFO);
-
         ZNetwork network = null;
 
         for (SerialPort port : SerialPort.getCommPorts()) {
             if (!port.getSystemPortName().startsWith("ttyA"))
                 continue;
-            network = new ZNetwork(port);
+            network = new ZNetwork(port, Logger.getLogger("test"));
             network.start();
         }
 
@@ -64,6 +61,11 @@ public class Rando implements NetworkListener {
         IfElseAction action = new IfElseAction(new BooleanTrueRule(provider1), strictIf, strictElse);
 
         Reaction reaction = new Reaction(timeProvider, action);
+        new Thread(() -> {
+            new Thread(() -> {
+                reaction.execute();
+            }).start();
+        }).start();
 
 
         for (int i = 0; i < 50; i++) {

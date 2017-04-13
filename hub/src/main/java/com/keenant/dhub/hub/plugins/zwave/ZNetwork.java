@@ -8,11 +8,13 @@ import com.keenant.dhub.zwave.messages.MemoryGetIdMsg;
 import com.keenant.dhub.zwave.messages.NodeListMsg;
 import com.keenant.dhub.zwave.transaction.Transaction;
 
+import java.util.logging.Logger;
+
 public class ZNetwork extends Network<ZDevice> {
     private final Controller controller;
 
-    public ZNetwork(SerialPort port) {
-        this.controller = new Controller(port);
+    public ZNetwork(SerialPort port, Logger log) {
+        this.controller = new Controller(port, log);
     }
 
     @Override
@@ -25,6 +27,10 @@ public class ZNetwork extends Network<ZDevice> {
                 .await(5000)
                 .getReply()
                 .orElse(null);
+
+        if (mem == null) {
+            return;
+        }
 
         long homeId = mem.getHomeId();
         int mainNode = mem.getNodeId();

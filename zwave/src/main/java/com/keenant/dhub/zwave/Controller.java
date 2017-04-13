@@ -1,8 +1,6 @@
 package com.keenant.dhub.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.keenant.dhub.core.logging.Level;
-import com.keenant.dhub.core.logging.Logging;
 import com.keenant.dhub.core.util.PrioritizedObject;
 import com.keenant.dhub.core.util.Priority;
 import com.keenant.dhub.zwave.cmd.MultiChannelCmd.InboundEncap;
@@ -15,6 +13,7 @@ import net.engio.mbassy.bus.error.IPublicationErrorHandler.ConsoleLogger;
 import net.engio.mbassy.listener.Handler;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Controller {
@@ -45,22 +44,22 @@ public class Controller {
      * @param port The serial port for this controller.
      * @throws IllegalArgumentException If the port is null.
      */
-    public Controller(SerialPort port) throws IllegalArgumentException {
+    public Controller(SerialPort port, Logger log) throws IllegalArgumentException {
         if (port == null) {
             throw new IllegalArgumentException("Port cannot be null.");
         }
         this.port = port;
         this.bus = new MBassador<>(new ConsoleLogger(true));
         this.transactions = Collections.synchronizedList(new ArrayList<>());
-        this.log = Logging.getLogger(getName());
+        this.log = log;
     }
 
     /**
      * Constructor.
      * @param portName The serial port name for this controller (ex. ttyACM0, s0, ...).
      */
-    public Controller(String portName) {
-        this(SerialPort.getCommPort(portName));
+    public Controller(String portName, Logger log) {
+        this(SerialPort.getCommPort(portName), log);
     }
 
     /**
@@ -105,7 +104,7 @@ public class Controller {
 
         if (current != null) {
             if (current.isComplete()) {
-                log.log(Level.DEV, "Transaction complete: " + current);
+                log.finer("Transaction complete: " + current);
                 current.setCompletionTimeNanos(System.nanoTime());
 
                 // Transaction finished event
@@ -138,7 +137,7 @@ public class Controller {
         txn.setStartTimeNanos(System.nanoTime());
         current = txn;
 
-        log.log(Level.DEV, "Transaction started: " + current);
+        log.finer("Transaction started: " + current);
         txn.start();
 
         // Transaction start event
@@ -298,7 +297,7 @@ public class Controller {
         }
 
         current = null;
-        transceiver = new Transceiver(this, port);
+        transceiver = new Transceiver(this, port, log);
         transceiver.start();
     }
 

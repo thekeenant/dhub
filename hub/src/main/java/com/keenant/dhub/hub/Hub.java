@@ -1,74 +1,80 @@
 package com.keenant.dhub.hub;
 
-import com.keenant.dhub.hub.network.Network;
+import com.keenant.dhub.hub.plugin.PluginManager;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Cli.CliBuilder;
 import io.airlift.airline.Help;
+import io.airlift.airline.ParseCommandUnrecognizedException;
 import io.airlift.airline.ParseException;
+import lombok.ToString;
 
-import java.util.*;
+import java.util.logging.Logger;
 
+@ToString
 public class Hub {
     private static Hub instance;
 
-    private PluginManager plugins;
-    private NetworkManager networks;
-    private ReactionManager reactions;
+    private PluginManager pluginManager;
+    private NetworkManager networkManager;
+    private ReactionManager reactionManager;
     private Cli<Runnable> cli;
+    private Logger logger;
 
     public static Hub getHub() {
         return instance;
     }
 
-    public Hub() {
+    public Hub(Logger logger) {
+        this.logger = logger;
+
         instance = this;
-        plugins = new PluginManager();
-        networks = new NetworkManager();
-        reactions = new ReactionManager();
+        pluginManager = new PluginManager();
+        networkManager = new NetworkManager();
+        reactionManager = new ReactionManager();
     }
 
-    public void registerNetwork(Network provider) {
-        networks.add(provider);
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public PluginManager getPluginManager() {
+        return pluginManager;
+    }
+
+    public ReactionManager getReactionManager() {
+        return reactionManager;
     }
 
     public NetworkManager getNetworkManager() {
-        return networks;
+        return networkManager;
+    }
+
+    public void load() {
+        CliBuilder<Runnable> cliBuilder = new CliBuilder<>(" ");
+        cliBuilder.withCommand(Help.class);
+        pluginManager.load(cliBuilder);
+        cli = cliBuilder.build();
     }
 
     public void start() {
-        CliBuilder<Runnable> builder = new CliBuilder<>(" ");
-        builder.withCommand(Help.class);
-
-        plugins.load(builder);
-        plugins.enableAll();
-        cli = builder.build();
+        pluginManager.enableAll();
     }
 
     public void stop() {
-        plugins.disableAll();
-        networks.stopAll();
-    }
-
-    public Collection<Plugin> getPlugins() {
-        return plugins.values();
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Plugin> Optional<T> getPlugin(Class<T> plugin) {
-        return Optional.ofNullable((T) plugins.get(plugin));
-    }
-
-    public boolean hasPlugin(Class<? extends Plugin> plugin) {
-        return getPlugin(plugin).isPresent();
+        pluginManager.disableAll();
+        networkManager.stopAll();
     }
 
     public void onCommand(String[] args) {
         try {
             Runnable runnable = cli.parse(args);
             runnable.run();
+        } catch (ParseCommandUnrecognizedException e) {
+            System.err.println("Unknown command. Type \"help\" for commands.");
         } catch (ParseException e) {
-            System.err.println("Command error: " + e.getMessage());
-//            e.printStackTrace();
+            System.err.println(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
