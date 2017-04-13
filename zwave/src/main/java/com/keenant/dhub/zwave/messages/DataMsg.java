@@ -15,7 +15,7 @@ import lombok.ToString;
 import java.util.Optional;
 
 @ToString
-public abstract class DataMsg<C extends Cmd> implements Message<Transaction> {
+public abstract class DataMsg<C extends Cmd, T extends Transaction> implements Message<T> {
     private static final byte ID = (byte) 0x13;
 
     private static final byte ID_TX_ACK = 0x01;
@@ -95,7 +95,7 @@ public abstract class DataMsg<C extends Cmd> implements Message<Transaction> {
         return Optional.of(new Callback());
     }
 
-    public static class SendReceiveDataMsg<C extends ResponsiveCmd<R>, R extends InboundCmd> extends DataMsg<C> {
+    public static class SendReceiveDataMsg<C extends ResponsiveCmd<R>, R extends InboundCmd> extends DataMsg<C, SendReceiveDataTxn<C, R>> {
         public SendReceiveDataMsg(int nodeId, C cmd) {
             super(nodeId, cmd, TX_ALL);
         }
@@ -106,7 +106,7 @@ public abstract class DataMsg<C extends Cmd> implements Message<Transaction> {
         }
     }
 
-    public static class SendDataMsg<C extends Cmd> extends DataMsg<C> {
+    public static class SendDataMsg<C extends Cmd> extends DataMsg<C, SendDataTxn> {
         public SendDataMsg(int nodeId, C cmd) {
             super(nodeId, cmd, TX_ALL);
         }

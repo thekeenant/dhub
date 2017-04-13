@@ -2,7 +2,7 @@ package com.keenant.dhub.hub.network.event;
 
 import com.keenant.dhub.hub.network.Device;
 
-public abstract class DeviceEvent extends NetworkEvent {
+public class DeviceEvent extends NetworkEvent {
     private final Device device;
 
     public DeviceEvent(Device device) {
@@ -11,6 +11,6 @@ public abstract class DeviceEvent extends NetworkEvent {
     }
 
     public Device getDevice() {
-        return this.device;
+        return device;
     }
 }

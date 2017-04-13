@@ -1,7 +1,6 @@
 package com.keenant.dhub.hub;
 
 import com.keenant.dhub.hub.network.Network;
-import com.keenant.dhub.hub.plugins.zwave.ZPlugin;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Cli.CliBuilder;
 import io.airlift.airline.ParseException;
@@ -22,7 +21,6 @@ public class Hub {
     public Hub() {
         instance = this;
         plugins = new HashMap<>();
-        plugins.put(ZPlugin.class, new ZPlugin());
         networks = new ArrayList<>();
     }
 

@@ -1,41 +1,49 @@
 package com.keenant.dhub.hub.network;
 
+import com.keenant.dhub.hub.network.event.ProviderChangeEvent;
+import lombok.ToString;
+
 import java.util.function.Supplier;
 
+@ToString(exclude = {"device", "supplier"})
 public abstract class Provider<T> {
+    private final Device<?> device;
     private final Supplier<T> supplier;
-    private T latestValue;
 
-    public Provider(Supplier<T> supplier) {
+    private T lastValue;
+
+    public Provider(Device<?> device, Supplier<T> supplier, T defValue) {
+        this.device = device;
         this.supplier = supplier;
+        this.lastValue = defValue;
     }
 
     public abstract boolean isEqual(T before, T after);
 
-    public void init() {
-        update();
+    private T getNewValue() {
+        T value = supplier.get();
+        if (value == null) {
+            throw new RuntimeException(getClass().getName() + " supplied a null value.");
+        }
+        return value;
     }
 
     public void update() {
-        T newValue = supplier.get();
+        T newValue = getNewValue();
+        T prevValue = lastValue;
+        lastValue = newValue;
 
-        if (newValue == null) {
-            throw new RuntimeException();
+        if (prevValue != null && !isEqual(prevValue, newValue)) {
+            ProviderChangeEvent event = new ProviderChangeEvent(this);
+            device.getNetwork().publish(event);
         }
-
-        if (latestValue != null && !isEqual(latestValue, newValue)) {
-            // Todo
-            System.out.println("Changed from: " + latestValue + " to " + newValue);
-        }
-
-        latestValue = newValue;
     }
 
     public T get() {
-        if (latestValue == null) {
-            // Todo
-            throw new RuntimeException();
-        }
-        return latestValue;
+        return lastValue;
+    }
+
+    public Device getDevice() {
+        return device;
     }
 }
