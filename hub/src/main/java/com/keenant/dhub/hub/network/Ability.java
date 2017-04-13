@@ -15,4 +15,6 @@ public abstract class Ability<T> {
         }
         consumer.accept(data);
     }
+
+
 }

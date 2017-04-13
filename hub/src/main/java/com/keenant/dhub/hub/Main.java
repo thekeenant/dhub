@@ -20,15 +20,7 @@ public class Main {
 
         String line;
         while ((line = console.readLine()) != null) {
-            try {
-                hub.onCommand(line.split(" "));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        while (true) {
-
+            hub.onCommand(line.split(" "));
         }
     }
 }

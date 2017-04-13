@@ -3,6 +3,7 @@ package com.keenant.dhub.hub;
 import com.keenant.dhub.hub.network.Network;
 import io.airlift.airline.Cli;
 import io.airlift.airline.Cli.CliBuilder;
+import io.airlift.airline.Help;
 import io.airlift.airline.ParseException;
 
 import java.util.*;
@@ -10,8 +11,9 @@ import java.util.*;
 public class Hub {
     private static Hub instance;
 
-    private Map<Class<? extends Plugin>, Plugin> plugins;
-    private List<Network> networks;
+    private PluginManager plugins;
+    private NetworkManager networks;
+    private ReactionManager reactions;
     private Cli<Runnable> cli;
 
     public static Hub getHub() {
@@ -20,48 +22,31 @@ public class Hub {
 
     public Hub() {
         instance = this;
-        plugins = new HashMap<>();
-        networks = new ArrayList<>();
+        plugins = new PluginManager();
+        networks = new NetworkManager();
+        reactions = new ReactionManager();
     }
 
     public void registerNetwork(Network provider) {
         networks.add(provider);
     }
 
-    public List<Network> getNetworks() {
+    public NetworkManager getNetworkManager() {
         return networks;
     }
 
-    public Optional<Network> getNetwork(String id) {
-        return networks.stream()
-                .filter((network) -> network.getUniqueId().equals(id))
-                .findAny();
-    }
-
     public void start() {
-        CliBuilder<Runnable> builder = new CliBuilder<>("hub");
+        CliBuilder<Runnable> builder = new CliBuilder<>(" ");
+        builder.withCommand(Help.class);
 
-        // Initialize plugins
-        getPlugins().forEach(plugin -> {
-            plugin.load(builder);
-        });
-
-        // Start plugins
-        getPlugins().forEach(Plugin::enable);
-
-        // Start networks
-        getNetworks().forEach(Network::start);
-
-        // Todo:
-        // cli = builder.build();
+        plugins.load(builder);
+        plugins.enableAll();
+        cli = builder.build();
     }
 
     public void stop() {
-        // Stop plugins
-        getPlugins().forEach(Plugin::disable);
-
-        // Stop networks
-        getNetworks().forEach(Network::stop);
+        plugins.disableAll();
+        networks.stopAll();
     }
 
     public Collection<Plugin> getPlugins() {
@@ -82,7 +67,8 @@ public class Hub {
             Runnable runnable = cli.parse(args);
             runnable.run();
         } catch (ParseException e) {
-            e.printStackTrace();
+            System.err.println("Command error: " + e.getMessage());
+//            e.printStackTrace();
         }
     }
 }
