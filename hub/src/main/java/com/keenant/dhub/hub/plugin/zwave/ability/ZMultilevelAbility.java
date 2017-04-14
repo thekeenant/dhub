@@ -1,8 +1,8 @@
-package com.keenant.dhub.hub.plugins.zwave.ability;
+package com.keenant.dhub.hub.plugin.zwave.ability;
 
 import com.keenant.dhub.hub.network.ability.IntegerAbility;
-import com.keenant.dhub.hub.plugins.zwave.ZDevice;
-import com.keenant.dhub.hub.plugins.zwave.provider.ZMultilevelProvider;
+import com.keenant.dhub.hub.plugin.zwave.ZDevice;
+import com.keenant.dhub.hub.plugin.zwave.provider.ZMultilevelProvider;
 import com.keenant.dhub.zwave.CmdClass;
 
 public class ZMultilevelAbility extends IntegerAbility {

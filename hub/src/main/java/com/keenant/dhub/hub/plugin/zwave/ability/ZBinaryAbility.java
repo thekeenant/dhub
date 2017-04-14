@@ -1,8 +1,8 @@
-package com.keenant.dhub.hub.plugins.zwave.ability;
+package com.keenant.dhub.hub.plugin.zwave.ability;
 
 import com.keenant.dhub.hub.network.ability.BooleanAbility;
-import com.keenant.dhub.hub.plugins.zwave.ZDevice;
-import com.keenant.dhub.hub.plugins.zwave.provider.ZBinaryProvider;
+import com.keenant.dhub.hub.plugin.zwave.ZDevice;
+import com.keenant.dhub.hub.plugin.zwave.provider.ZBinaryProvider;
 import com.keenant.dhub.zwave.CmdClass;
 import lombok.ToString;
 

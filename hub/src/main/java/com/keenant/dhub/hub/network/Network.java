@@ -30,7 +30,7 @@ public abstract class Network<T extends Device> {
 
     public void addDevice(T device) {
         if (!started) {
-            throw new UnsupportedOperationException("Network not started.");
+            throw new UnsupportedOperationException("Network not started (was super.start() not called?)");
         }
         devices.add(device);
         device.start();
@@ -38,7 +38,7 @@ public abstract class Network<T extends Device> {
 
     public void removeDevice(T device) {
         if (!started) {
-            throw new UnsupportedOperationException("Network not started.");
+            throw new UnsupportedOperationException("Network not started (was super.start() not called?)");
         }
         devices.remove(device);
         device.stop();

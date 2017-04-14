@@ -50,6 +50,8 @@ public class Hub {
     }
 
     public void load() {
+        pluginManager.init();
+
         CliBuilder<Runnable> cliBuilder = new CliBuilder<>(" ");
         cliBuilder.withCommand(Help.class);
         pluginManager.load(cliBuilder);

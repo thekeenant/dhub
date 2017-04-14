@@ -18,7 +18,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.keenant.dhub.hub.Main</mainClass>
+                            <mainClass>com.keenant.dhub.hub.Bootstrap</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

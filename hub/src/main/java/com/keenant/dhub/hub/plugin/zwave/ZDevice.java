@@ -1,10 +1,10 @@
-package com.keenant.dhub.hub.plugins.zwave;
+package com.keenant.dhub.hub.plugin.zwave;
 
 import com.keenant.dhub.hub.network.Device;
-import com.keenant.dhub.hub.plugins.zwave.ability.ZBinaryAbility;
-import com.keenant.dhub.hub.plugins.zwave.ability.ZMultilevelAbility;
-import com.keenant.dhub.hub.plugins.zwave.provider.ZBinaryProvider;
-import com.keenant.dhub.hub.plugins.zwave.provider.ZMultilevelProvider;
+import com.keenant.dhub.hub.plugin.zwave.ability.ZBinaryAbility;
+import com.keenant.dhub.hub.plugin.zwave.ability.ZMultilevelAbility;
+import com.keenant.dhub.hub.plugin.zwave.provider.ZBinaryProvider;
+import com.keenant.dhub.hub.plugin.zwave.provider.ZMultilevelProvider;
 import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.InboundCmd;

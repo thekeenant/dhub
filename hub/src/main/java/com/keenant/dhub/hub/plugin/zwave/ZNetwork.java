@@ -1,4 +1,4 @@
-package com.keenant.dhub.hub.plugins.zwave;
+package com.keenant.dhub.hub.plugin.zwave;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.keenant.dhub.hub.network.Network;
@@ -11,10 +11,20 @@ import com.keenant.dhub.zwave.transaction.Transaction;
 import java.util.logging.Logger;
 
 public class ZNetwork extends Network<ZDevice> {
+    private final ZPlugin plugin;
+    private final SerialPort port;
+    private final Logger log;
     private final Controller controller;
 
-    public ZNetwork(SerialPort port, Logger log) {
-        this.controller = new Controller(port, log);
+    public ZNetwork(ZPlugin plugin, SerialPort port, Logger log) {
+        this.plugin = plugin;
+        this.port = port;
+        this.log = log;
+        controller = new Controller(port, log);
+    }
+
+    public SerialPort getPort() {
+        return port;
     }
 
     @Override
@@ -29,16 +39,29 @@ public class ZNetwork extends Network<ZDevice> {
                 .orElse(null);
 
         if (mem == null) {
+            plugin.retry(port, this);
+            stop();
             return;
         }
 
+
         long homeId = mem.getHomeId();
         int mainNode = mem.getNodeId();
+
+        log.info("Received memory information: " + homeId + ", node " + mainNode);
 
         NodeListMsg.Reply list = send(new NodeListMsg())
                 .await(5000)
                 .getReply()
                 .orElse(null);
+
+        if (list == null) {
+            plugin.retry(port, this);
+            stop();
+            return;
+        }
+
+        log.info("Received node list: " + list.getNodeIds());
 
         for (int nodeId : list.getNodeIds()) {
             if (nodeId == mainNode) {
@@ -47,6 +70,12 @@ public class ZNetwork extends Network<ZDevice> {
 
             addDevice(new ZDevice(this, nodeId));
         }
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+        controller.stop();
     }
 
     public <T extends Transaction> T send(Message<T> msg) {

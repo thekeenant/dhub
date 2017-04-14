@@ -1,0 +1,5 @@
+{
+  "name": "Clock",
+  "version": "1.0.0",
+  "main": "com.keenant.dhub.hub.plugin.clock.ClockPlugin"
+}

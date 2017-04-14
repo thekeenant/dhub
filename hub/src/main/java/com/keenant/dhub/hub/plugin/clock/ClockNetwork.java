@@ -1,4 +1,4 @@
-package com.keenant.dhub.hub.plugins.clock;
+package com.keenant.dhub.hub.plugin.clock;
 
 import com.keenant.dhub.hub.network.Network;
 import lombok.ToString;

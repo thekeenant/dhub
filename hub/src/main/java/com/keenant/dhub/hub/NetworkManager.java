@@ -15,6 +15,10 @@ public class NetworkManager {
 
     }
 
+    public List<Network> getNetworks() {
+        return networks;
+    }
+
     public void register(Network network) throws IllegalArgumentException {
         if (getNetwork(network.getUniqueId()).isPresent()) {
             throw new IllegalArgumentException("Network with id " + network.getUniqueId() + " already registered.");
