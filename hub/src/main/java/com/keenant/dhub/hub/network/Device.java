@@ -9,7 +9,7 @@ import java.util.Optional;
 @ToString(exclude = "network")
 public abstract class Device<T extends Network> {
     private final T network;
-    private final List<Ability> abilities = new ArrayList<>();
+    private final List<Feature> features = new ArrayList<>();
     private final List<Provider> providers = new ArrayList<>();
 
     public Device(T network) {
@@ -24,9 +24,9 @@ public abstract class Device<T extends Network> {
         return network;
     }
 
-    protected <A extends Ability> A addAbility(A ability) {
-        this.abilities.add(ability);
-        return ability;
+    protected <F extends Feature> F addFeature(F feature) {
+        this.features.add(feature);
+        return feature;
     }
 
     protected <P extends Provider> P addProvider(P provider) {
@@ -35,10 +35,10 @@ public abstract class Device<T extends Network> {
     }
 
     @SuppressWarnings("unchecked")
-    public <A extends Ability> Optional<A> getAbility(Class<A> type) {
-        for (Ability ability : abilities) {
-            if (type.isInstance(ability)) {
-                return Optional.of((A) ability);
+    public <F extends Feature> Optional<F> getFeature(Class<F> type) {
+        for (Feature feature : features) {
+            if (type.isInstance(feature)) {
+                return Optional.of((F) feature);
             }
         }
         return Optional.empty();

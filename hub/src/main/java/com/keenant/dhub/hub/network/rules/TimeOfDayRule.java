@@ -5,7 +5,7 @@ import com.keenant.dhub.hub.network.provider.DateTimeProvider;
 
 import java.time.ZonedDateTime;
 
-public class TimeOfDayRule extends ProviderRule<DateTimeProvider, ZonedDateTime> {
+public class TimeOfDayRule extends ProviderRule<DateTimeProvider<?>, ZonedDateTime> {
     private static final long MAX_VALUE = 24 * 60 * 60 - 1;
 
     private final long startSeconds;

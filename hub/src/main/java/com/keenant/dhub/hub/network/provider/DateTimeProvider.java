@@ -4,16 +4,25 @@ import com.keenant.dhub.hub.network.Device;
 import com.keenant.dhub.hub.network.Provider;
 import lombok.ToString;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.function.Supplier;
+import java.util.Optional;
 
 /**
  * Provides a zoned datetime, with precision to seconds.
  */
 @ToString(callSuper = true)
-public class DateTimeProvider extends Provider<ZonedDateTime> {
-    public DateTimeProvider(Device device, Supplier<ZonedDateTime> supplier) {
-        super(device, supplier, supplier.get());
+public class DateTimeProvider<D extends Device> extends Provider<D, ZonedDateTime> {
+    private final ZoneId zone;
+
+    public DateTimeProvider(D device, ZoneId zone) {
+        super(device);
+        this.zone = zone;
+    }
+
+    @Override
+    public Optional<ZonedDateTime> fetch() {
+        return Optional.of(ZonedDateTime.now(zone));
     }
 
     @Override

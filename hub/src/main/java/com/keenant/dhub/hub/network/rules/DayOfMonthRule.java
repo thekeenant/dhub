@@ -5,7 +5,7 @@ import com.keenant.dhub.hub.network.provider.DateTimeProvider;
 
 import java.time.ZonedDateTime;
 
-public class DayOfMonthRule extends ProviderRule<DateTimeProvider, ZonedDateTime> {
+public class DayOfMonthRule extends ProviderRule<DateTimeProvider<?>, ZonedDateTime> {
     private final int startDay;
     private final int endDay;
 

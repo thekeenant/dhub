@@ -1,10 +1,8 @@
 package com.keenant.dhub.hub.plugin.zwave;
 
 import com.keenant.dhub.hub.network.Device;
-import com.keenant.dhub.hub.plugin.zwave.ability.ZBinaryAbility;
-import com.keenant.dhub.hub.plugin.zwave.ability.ZMultilevelAbility;
-import com.keenant.dhub.hub.plugin.zwave.provider.ZBinaryProvider;
-import com.keenant.dhub.hub.plugin.zwave.provider.ZMultilevelProvider;
+import com.keenant.dhub.hub.plugin.zwave.feature.ZBinaryFeature;
+import com.keenant.dhub.hub.plugin.zwave.feature.ZMultilevelFeature;
 import com.keenant.dhub.zwave.Cmd;
 import com.keenant.dhub.zwave.CmdClass;
 import com.keenant.dhub.zwave.InboundCmd;
@@ -53,12 +51,10 @@ public class ZDevice extends Device<ZNetwork> {
 
         for (CmdClass cmd : info.getCmdClasses()) {
             if (cmd instanceof SwitchBinaryCmd) {
-                ZBinaryProvider provider = addProvider(new ZBinaryProvider(this));
-                addAbility(new ZBinaryAbility(this, provider));
+                addFeature(new ZBinaryFeature(this));
             }
             else if (cmd instanceof SwitchMultilevelCmd) {
-                ZMultilevelProvider provider = addProvider(new ZMultilevelProvider(this));
-                addAbility(new ZMultilevelAbility(this, provider));
+                addFeature(new ZMultilevelFeature(this));
             }
         }
     }

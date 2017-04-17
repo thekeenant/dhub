@@ -20,7 +20,7 @@ public class ClockDevice extends Device<ClockNetwork> {
     public ClockDevice(ClockNetwork network, ZoneId zone) {
         super(network);
         this.zone = zone;
-        this.provider = new DateTimeProvider(this, () -> ZonedDateTime.ofInstant(Instant.now(), zone));
+        this.provider = new DateTimeProvider<>(this, zone);
     }
 
     @Override

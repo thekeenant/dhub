@@ -1,6 +1,6 @@
 package com.keenant.dhub.hub.network;
 
-public abstract class ProviderRule<P extends Provider<T>, T> {
+public abstract class ProviderRule<P extends Provider<?, T>, T> {
     private final P provider;
 
     public ProviderRule(P provider) {
@@ -12,7 +12,8 @@ public abstract class ProviderRule<P extends Provider<T>, T> {
     }
 
     public boolean evaluate() {
-        return evaluate(provider.get());
+        T value = provider.get().orElse(null);
+        return value != null && evaluate(value);
     }
 
     protected abstract boolean evaluate(T current);

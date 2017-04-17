@@ -6,13 +6,13 @@ import com.keenant.dhub.hub.network.event.ProviderChangeEvent;
 import net.engio.mbassy.listener.Handler;
 
 public class ProviderChangeAction implements Action, NetworkListener {
-    private final Provider<?> provider;
+    private final Provider provider;
     private final Action action;
 
     private boolean changed;
     private boolean stopped;
 
-    public ProviderChangeAction(Provider<?> provider, Action action) {
+    public ProviderChangeAction(Provider provider, Action action) {
         this.provider = provider;
         this.action = action;
     }

@@ -3,25 +3,24 @@ package com.keenant.dhub.hub.network;
 import com.keenant.dhub.hub.network.event.ProviderChangeEvent;
 import lombok.ToString;
 
-import java.util.function.Supplier;
+import java.util.Optional;
 
-@ToString(exclude = {"device", "supplier"})
-public abstract class Provider<T> {
-    private final Device<?> device;
-    private final Supplier<T> supplier;
+@ToString(exclude = {"device"})
+public abstract class Provider<D extends Device, T> {
+    private final D device;
 
     private T lastValue;
 
-    public Provider(Device<?> device, Supplier<T> supplier, T defValue) {
+    public Provider(D device) {
         this.device = device;
-        this.supplier = supplier;
-        this.lastValue = defValue;
     }
+
+    public abstract Optional<T> fetch();
 
     public abstract boolean isEqual(T before, T after);
 
     private T getNewValue() {
-        T value = supplier.get();
+        T value = fetch().orElse(null);
         if (value == null) {
             throw new RuntimeException(getClass().getName() + " supplied a null value.");
         }
@@ -39,11 +38,11 @@ public abstract class Provider<T> {
         }
     }
 
-    public T get() {
-        return lastValue;
+    public Optional<T> get() {
+        return Optional.ofNullable(lastValue);
     }
 
-    public Device getDevice() {
+    public D getDevice() {
         return device;
     }
 }
