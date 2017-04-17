@@ -20,7 +20,9 @@ public class IfElseAction implements Action {
     @Override
     public void execute() {
         if (rule.evaluate()) {
-            ifAction.execute();
+            if (ifAction != null) {
+                ifAction.execute();
+            }
         }
         else if (elseAction != null) {
             elseAction.execute();

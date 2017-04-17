@@ -33,6 +33,16 @@ public class NetworkManager {
         network.stop();
     }
 
+    @SuppressWarnings("unchecked")
+    public <N extends Network> Optional<N> getNetwork(Class<N> type) {
+        for (Network network : networks) {
+            if (type.isInstance(network)) {
+                return Optional.of((N) network);
+            }
+        }
+        return Optional.empty();
+    }
+
     public Optional<Network> getNetwork(String id) {
         return networks.stream()
                 .filter((network) -> network.getUniqueId().equals(id))

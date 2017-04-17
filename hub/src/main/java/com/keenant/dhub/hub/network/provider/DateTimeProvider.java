@@ -12,10 +12,10 @@ import java.util.Optional;
  * Provides a zoned datetime, with precision to seconds.
  */
 @ToString(callSuper = true)
-public class DateTimeProvider<D extends Device> extends Provider<D, ZonedDateTime> {
+public class DateTimeProvider extends Provider<Device, ZonedDateTime> {
     private final ZoneId zone;
 
-    public DateTimeProvider(D device, ZoneId zone) {
+    public DateTimeProvider(Device device, ZoneId zone) {
         super(device);
         this.zone = zone;
     }

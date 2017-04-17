@@ -4,9 +4,7 @@ import com.keenant.dhub.hub.network.Device;
 import com.keenant.dhub.hub.network.provider.DateTimeProvider;
 import lombok.ToString;
 
-import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,7 +18,11 @@ public class ClockDevice extends Device<ClockNetwork> {
     public ClockDevice(ClockNetwork network, ZoneId zone) {
         super(network);
         this.zone = zone;
-        this.provider = new DateTimeProvider<>(this, zone);
+        this.provider = new DateTimeProvider(this, zone);
+    }
+
+    public DateTimeProvider getProvider() {
+        return provider;
     }
 
     @Override
