@@ -20,6 +20,8 @@ public abstract class Device<T extends Network> {
 
     public abstract void stop();
 
+    public abstract String getUniqueId();
+
     public T getNetwork() {
         return network;
     }
@@ -34,11 +36,37 @@ public abstract class Device<T extends Network> {
         return provider;
     }
 
+    public List<Feature> getFeatures() {
+        return features;
+    }
+
+    public List<Provider> getProviders() {
+        return providers;
+    }
+
+    public Optional<Feature<?, ?>> getFeature(String id) {
+        for (Feature<?, ?> feature : features) {
+            if (feature.getUniqueId().equals(id)) {
+                return Optional.of(feature);
+            }
+        }
+        return Optional.empty();
+    }
+
     @SuppressWarnings("unchecked")
     public <F extends Feature> Optional<F> getFeature(Class<F> type) {
         for (Feature feature : features) {
             if (type.isInstance(feature)) {
                 return Optional.of((F) feature);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Provider<?, ?>> getProvider(String id) {
+        for (Provider<?, ?> provider : providers) {
+            if (provider.getUniqueId().equals(id)) {
+                return Optional.of(provider);
             }
         }
         return Optional.empty();

@@ -1,8 +1,8 @@
 package com.keenant.dhub.zwave;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
+import com.keenant.dhub.zwave.util.ByteList;
 import lombok.ToString;
 
 /**

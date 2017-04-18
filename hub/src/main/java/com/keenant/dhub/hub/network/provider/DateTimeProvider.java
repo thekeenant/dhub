@@ -1,7 +1,11 @@
 package com.keenant.dhub.hub.network.provider;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonPrimitive;
 import com.keenant.dhub.hub.network.Device;
 import com.keenant.dhub.hub.network.Provider;
+import com.keenant.dhub.hub.util.Transformer;
 import lombok.ToString;
 
 import java.time.ZoneId;
@@ -21,6 +25,16 @@ public class DateTimeProvider extends Provider<Device, ZonedDateTime> {
     }
 
     @Override
+    public String getUniqueId() {
+        return "datetime";
+    }
+
+    @Override
+    public String getDataType() {
+        return "datetime";
+    }
+
+    @Override
     public Optional<ZonedDateTime> fetch() {
         return Optional.of(ZonedDateTime.now(zone));
     }
@@ -28,5 +42,10 @@ public class DateTimeProvider extends Provider<Device, ZonedDateTime> {
     @Override
     public boolean isEqual(ZonedDateTime before, ZonedDateTime after) {
         return before.toEpochSecond() == after.toEpochSecond();
+    }
+
+    @Override
+    protected Transformer<Optional<ZonedDateTime>, JsonElement> toJson() {
+        return (opt) -> opt.isPresent() ? new JsonPrimitive(opt.orElse(null) + "") : JsonNull.INSTANCE;
     }
 }

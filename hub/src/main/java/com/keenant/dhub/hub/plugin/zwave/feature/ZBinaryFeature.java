@@ -13,7 +13,12 @@ public class ZBinaryFeature extends BooleanFeature<ZDevice> {
     }
 
     @Override
-    public Optional<Boolean> fetch() {
+    public String getUniqueId() {
+        return "switch";
+    }
+
+    @Override
+    protected Optional<Boolean> fetch() {
         return getDevice().send(CmdClass.SWITCH_BINARY.get()).map(Report::getValue);
     }
 

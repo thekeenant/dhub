@@ -1,6 +1,5 @@
 package com.keenant.dhub.zwave.messages;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.Controller;
 import com.keenant.dhub.zwave.InboundMessage;
 import com.keenant.dhub.zwave.Message;
@@ -10,6 +9,7 @@ import com.keenant.dhub.zwave.event.message.VersionReplyEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.VersionMsg.Reply;
 import com.keenant.dhub.zwave.transaction.ReplyTxn;
+import com.keenant.dhub.zwave.util.ByteList;
 import lombok.ToString;
 
 import java.util.Optional;

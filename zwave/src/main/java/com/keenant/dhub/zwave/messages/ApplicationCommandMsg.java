@@ -1,12 +1,12 @@
 package com.keenant.dhub.zwave.messages;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.*;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.event.message.ApplicationCommandEvent;
 import com.keenant.dhub.zwave.exception.DataFrameException;
 import com.keenant.dhub.zwave.exception.IllegalDataFrameTypeException;
 import com.keenant.dhub.zwave.frame.DataFrameType;
+import com.keenant.dhub.zwave.util.ByteList;
 import lombok.ToString;
 
 import java.util.Optional;

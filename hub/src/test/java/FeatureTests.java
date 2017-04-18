@@ -6,7 +6,6 @@ import com.keenant.dhub.hub.action.LogAction;
 import com.keenant.dhub.hub.network.rules.TimeIntervalRule;
 import com.keenant.dhub.hub.plugin.clock.ClockDevice;
 import com.keenant.dhub.hub.plugin.clock.ClockNetwork;
-import com.sun.org.apache.bcel.internal.generic.IFEQ;
 import org.junit.Test;
 
 import java.util.logging.Logger;

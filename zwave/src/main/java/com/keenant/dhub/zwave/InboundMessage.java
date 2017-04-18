@@ -1,10 +1,10 @@
 package com.keenant.dhub.zwave;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.event.InboundMessageEvent;
 import com.keenant.dhub.zwave.frame.DataFrameType;
 import com.keenant.dhub.zwave.messages.ApplicationCommandMsg;
 import com.keenant.dhub.zwave.messages.ApplicationUpdateMsg;
+import com.keenant.dhub.zwave.util.ByteList;
 
 import java.util.Arrays;
 import java.util.List;

@@ -1,6 +1,9 @@
 package com.keenant.dhub.hub.network;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.keenant.dhub.hub.network.event.ProviderChangeEvent;
+import com.keenant.dhub.hub.util.Transformer;
 import lombok.ToString;
 
 import java.util.Optional;
@@ -15,24 +18,36 @@ public abstract class Provider<D extends Device, T> {
         this.device = device;
     }
 
-    public abstract Optional<T> fetch();
+    public abstract String getUniqueId();
 
-    public abstract boolean isEqual(T before, T after);
+    public abstract String getDataType();
 
-    private T getNewValue() {
-        T value = fetch().orElse(null);
-        if (value == null) {
-            throw new RuntimeException(getClass().getName() + " supplied a null value.");
-        }
-        return value;
-    }
+    protected abstract Optional<T> fetch();
+
+    protected abstract boolean isEqual(T before, T after);
+
+    protected abstract Transformer<Optional<T>, JsonElement> toJson();
 
     public void update() {
-        T newValue = getNewValue();
         T prevValue = lastValue;
+        T newValue = fetch().orElse(null);
         lastValue = newValue;
 
-        if (prevValue != null && !isEqual(prevValue, newValue)) {
+        boolean changed;
+
+        if (prevValue == null && newValue == null) {
+            changed = true;
+        }
+        else if ((prevValue == null) != (newValue == null)) {
+            changed = true;
+        }
+        else {
+            changed = !isEqual(prevValue, newValue);
+        }
+
+        System.out.println("Changed? " + changed + " (" + this + ")");
+
+        if (changed) {
             ProviderChangeEvent event = new ProviderChangeEvent(this);
             device.getNetwork().publish(event);
         }
@@ -40,6 +55,13 @@ public abstract class Provider<D extends Device, T> {
 
     public Optional<T> get() {
         return Optional.ofNullable(lastValue);
+    }
+
+    public JsonElement jsonGet() {
+        JsonObject json = new JsonObject();
+        json.add("data", toJson().transform(get()));
+        json.addProperty("data-type", getDataType());
+        return json;
     }
 
     public D getDevice() {

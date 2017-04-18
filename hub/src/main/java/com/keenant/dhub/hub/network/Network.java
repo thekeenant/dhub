@@ -6,14 +6,15 @@ import net.engio.mbassy.bus.error.IPublicationErrorHandler.ConsoleLogger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-public abstract class Network<T extends Device> {
+public abstract class Network<T extends Device> implements NetworkListener {
     private boolean started;
     private final List<T> devices = new ArrayList<>();
     private final MBassador<NetworkEvent> bus = new MBassador<>(new ConsoleLogger(true));
 
     public void publish(NetworkEvent event) {
-        bus.publish(event);
+        bus.publishAsync(event);
     }
 
     public void subscribe(NetworkListener listener) {
@@ -26,6 +27,10 @@ public abstract class Network<T extends Device> {
 
     public List<T> getDevices() {
         return devices;
+    }
+
+    public Optional<T> getDevice(String id) {
+        return devices.stream().filter((device) -> device.getUniqueId().equals(id)).findFirst();
     }
 
     public void addDevice(T device) {

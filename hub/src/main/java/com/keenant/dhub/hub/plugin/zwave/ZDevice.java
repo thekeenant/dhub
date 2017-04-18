@@ -63,4 +63,9 @@ public class ZDevice extends Device<ZNetwork> {
     public void stop() {
 
     }
+
+    @Override
+    public String getUniqueId() {
+        return String.valueOf(nodeId);
+    }
 }

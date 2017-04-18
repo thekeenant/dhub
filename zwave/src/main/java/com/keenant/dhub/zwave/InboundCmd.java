@@ -1,7 +1,7 @@
 package com.keenant.dhub.zwave;
 
-import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.event.CmdEvent;
+import com.keenant.dhub.zwave.util.ByteList;
 import com.keenant.dhub.zwave.util.EndPoint;
 
 import java.util.Optional;

@@ -45,6 +45,11 @@ public class ClockDevice extends Device<ClockNetwork> {
         }
     }
 
+    @Override
+    public String getUniqueId() {
+        return zone.getId();
+    }
+
     public ZoneId getZone() {
         return zone;
     }

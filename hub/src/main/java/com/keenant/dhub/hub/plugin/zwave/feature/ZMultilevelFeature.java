@@ -13,6 +13,11 @@ public class ZMultilevelFeature extends IntegerFeature<ZDevice> {
     }
 
     @Override
+    public String getUniqueId() {
+        return "level";
+    }
+
+    @Override
     protected void send(Integer data) {
         getDevice().send(CmdClass.SWITCH_MULTILEVEL.set(data));
     }

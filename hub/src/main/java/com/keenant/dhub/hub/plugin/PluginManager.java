@@ -13,7 +13,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @ToString
 public class PluginManager {
@@ -50,11 +49,11 @@ public class PluginManager {
 
     private void initInternalPlugins() {
         Hub.getHub().getLogger().info("Loading internal plugins");
-        Plugin plugin;
 
         List<InputStream> internals = Arrays.asList(
                 getClass().getResourceAsStream("/zplugin.json"),
-                getClass().getResourceAsStream("/clockplugin.json")
+//                getClass().getResourceAsStream("/clockplugin.json"),
+                getClass().getResourceAsStream("/webplugin.json")
         );
 
         // Fancy
